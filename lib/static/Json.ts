@@ -1,4 +1,4 @@
-import { LiveJson } from "../live/LiveJson.mjs";
+import { LiveJson } from "../live/LiveJson";
 import { UploadableFile } from "../UploadableFile";
 
 export class Json extends UploadableFile {

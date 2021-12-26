@@ -1,12 +1,23 @@
+import { Client, FileId } from "@hashgraph/sdk";
+
+type LiveJsonConstructorArgs = {
+    client: Client,
+    id: FileId,
+    data: object
+};
+
 /**
  * Represents a Hedera, HFS-managed Json object
  * 
  * TODO: add SDK methods to make this trully live 
  */
 export class LiveJson {
-    constructor({ client, id, data }) {
-        this._client = client;
-        this._id = id;
+    private readonly client: Client;
+    public readonly id: FileId;
+
+    constructor({ client, id, data }: LiveJsonConstructorArgs) {
+        this.client = client;
+        this.id = id;
         
         // Dynamically bind jData properties to instance
         Object.keys(data).forEach(jDataKey => Object.defineProperty(this, jDataKey, {
@@ -14,9 +25,5 @@ export class LiveJson {
             value: data[jDataKey],
             writable: false,
         }));
-    }
-
-    get id() {
-        return this._id;
     }
 }
