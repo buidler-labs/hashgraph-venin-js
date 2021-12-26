@@ -8,7 +8,7 @@ import * as process from "process";
 
 import { CredentialsInvalidError } from "./errors/CredentialsInvalidError.mjs";
 import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError.mjs";
-import { ApiSession } from "./ApiSession.mjs";
+import { ApiSession } from "./ApiSession";
 
 export const HEDERA_CUSTOM_NET_NAME = "customnet";
 

@@ -1,22 +1,30 @@
 import { Interface } from '@ethersproject/abi';
-import { ContractId, FileContentsQuery, FileId } from '@hashgraph/sdk';
+import { AccountInfo, Client, ContractId, FileContentsQuery, FileId } from '@hashgraph/sdk';
 
 import { LiveContract } from './live/LiveContract.mjs';
 import { LiveJson } from './live/LiveJson';
 import { Json } from './static/Json';
 import { UploadableFile } from './UploadableFile';
 
+type ApiSessionConstructorArgs = {
+  hClient: Client,
+  operatorInfo: AccountInfo
+};
+
 export class ApiSession {
-  constructor({ hClient, operatorInfo }) {
-    this._hClient = hClient;
-    this._opInfo = operatorInfo;
+  private readonly client: Client;
+  private readonly operatorInfo: AccountInfo;
+
+  constructor({ hClient, operatorInfo }: ApiSessionConstructorArgs) {
+    this.client = hClient;
+    this.operatorInfo = operatorInfo;
   }
 
   /**
    * Retrieves the operator account-id for this {@link ApiSession}.
    */
   get accountId() {
-    return this._hClient.operatorAccountId;
+    return this.client.operatorAccountId;
   }
 
   /**
@@ -52,7 +60,7 @@ export class ApiSession {
         throw new Error("Can only upload UploadableFile-s or Json-file acceptable content.");
       }
     }
-    return await uploadableWhat.uploadTo({ client: this._hClient, args });
+    return await uploadableWhat.uploadTo({ client: this.client, args });
   }
 
   /**
@@ -74,7 +82,7 @@ export class ApiSession {
       throw new Error("Please provide a valid Hedera contract id in order try to lock onto an already-deployed contract.");
     }
     return new LiveContract({ 
-      client: this._hClient,
+      client: this.client,
       id: targetedContractId,
       cInterface: abi instanceof Interface ? abi : new Interface(abi)
     });
@@ -96,12 +104,12 @@ export class ApiSession {
     }
     const fileContentsBuffer = await new FileContentsQuery()
       .setFileId(targetedFileId)
-      .execute(this._hClient);
+      .execute(this.client);
     const fileContents = new TextDecoder('utf8').decode(fileContentsBuffer);
     
     // TODO: use file Memo to store hash of file-contents and only return LiveJson instance if the 2 values match
     return new LiveJson({ 
-      client: this._hClient,
+      client: this.client,
       id: targetedFileId,
       data: JSON.parse(fileContents)
     });

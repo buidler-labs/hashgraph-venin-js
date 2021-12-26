@@ -1,3 +1,3 @@
-export * from './lib/ApiSession.mjs';
-export * from './lib/HederaNetwork.js';
+export * from './lib/ApiSession';
+export * from './lib/HederaNetwork';
 export * from './lib/static/Contract.mjs';
