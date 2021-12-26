@@ -2,7 +2,7 @@
   "name": "hedera-strato-js",
   "version": "0.0.1",
   "description": "The Hedera unoficial, high-level 'stratospheric' SDK for JS consumption",
-  "main": "index.mjs",
+  "main": "index.ts",
   "scripts": {
     "build:rollup": "rollup -c",
     "build:tsc": "tsc",
@@ -23,6 +23,7 @@
     "@rollup/plugin-commonjs": "^22.0.0-4",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.1.1",
+    "@rollup/plugin-typescript": "^8.3.0",
     "@types/jest": "^27.0.3",
     "jest": "^27.4.5",
     "rollup-jest": "^1.1.3",
