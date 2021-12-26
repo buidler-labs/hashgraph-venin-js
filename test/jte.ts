@@ -3,7 +3,7 @@ import fs from 'fs';
 
 import NodeEnvironment from 'jest-environment-node';
 import { HederaNetwork } from '../lib/HederaNetwork';
-import { Contract } from '../lib/static/Contract.mjs';
+import { Contract } from '../lib/static/Contract';
 import { read } from './utils';
 
 export default class JestTestEnvironment extends NodeEnvironment {

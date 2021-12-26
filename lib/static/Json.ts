@@ -1,7 +1,7 @@
 import { LiveJson } from "../live/LiveJson";
-import { UploadableFile } from "../UploadableFile";
+import { ArgumentsOnFileUploaded, UploadableFile } from "../UploadableFile";
 
-export class Json extends UploadableFile {
+export class Json extends UploadableFile<LiveJson> {
     static isInfoAcceptable(jInfo) {
         try {
             Json._guardForInvalid(jInfo);
@@ -38,7 +38,7 @@ export class Json extends UploadableFile {
         return JSON.stringify(this.info);
     }
 
-    protected override async _onFileUploaded({ client, receipt, args = [] }) {
+    protected override async _onFileUploaded({ client, receipt, args = [] }: ArgumentsOnFileUploaded) {
         return new LiveJson({
             client,
             id: receipt.fileId,

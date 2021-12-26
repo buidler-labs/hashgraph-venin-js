@@ -3,7 +3,7 @@ import {
 } from '@jest/globals';
 
 import { read } from './utils';
-import { Contract } from '../lib/static/Contract.mjs';
+import { Contract } from '../lib/static/Contract';
 import { HederaNetwork } from '../lib/HederaNetwork';
 
 describe('ApiSession', () => {

@@ -19,12 +19,7 @@ export class CompileIssues extends Error {
     /**
      * @private
      */
-    constructor(rawIssues) {
-        super(`There are issues with the contract code:\n${CompileIssues._listOfSimpleIssueMessagesFor(rawIssues).join('\n')}`);
-        this._issues = rawIssues;
-    }
-
-    get issues() {
-        return this._issues;
+    private constructor(public readonly issues: any) {
+        super(`There are issues with the contract code:\n${CompileIssues._listOfSimpleIssueMessagesFor(issues).join('\n')}`);
     }
 }

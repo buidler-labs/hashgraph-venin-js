@@ -5,19 +5,10 @@ function upperCaseFirstOf(string) {
 }
 
 export class ParamTypeToFunctionNameMapper {
-    /**
-     * @param {ParamType} paramType 
-     * @returns 
-     */
-    constructor(paramType) {
-        if (paramType instanceof ParamType === false) {
-            throw new Error("Can only map ParamType instances to function-names.");
-        }
-        this._paramType = paramType;
-    }
+    public constructor(private readonly paramType: ParamType) {}
 
     map({ prefix = '' }) {
-        const defTypeToTarget = this._geCanonicalTypeFor(this._paramType);
+        const defTypeToTarget = this._geCanonicalTypeFor(this.paramType);
         
         return `${prefix}${this._getFunctionParticleFor(defTypeToTarget)}`;
     }
