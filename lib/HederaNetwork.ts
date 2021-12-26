@@ -117,14 +117,7 @@ export class HederaNetwork {
     return { accountId, privateKey };
   }
 
-  /**
-   * @private
-   */
-  constructor(client) { this._client = client; }
-
-  get client() {
-    return this._client;
-  }
+  private constructor(public readonly client: Client) { }
 
   async login({ operatorId, operatorkey }) {
     // TODO: validate parameters
@@ -134,7 +127,7 @@ export class HederaNetwork {
         id: operatorId,
         key: operatorkey
       });
-      const hClient = this._client.setOperator(accountId, privateKey);
+      const hClient = this.client.setOperator(accountId, privateKey);
       const accountInfoQuery = new AccountInfoQuery().setAccountId(accountId);
       const accountInfo = await accountInfoQuery.execute(hClient);
 

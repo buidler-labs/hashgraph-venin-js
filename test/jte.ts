@@ -2,10 +2,9 @@
 import fs from 'fs';
 
 import NodeEnvironment from 'jest-environment-node';
-// const { HederaNetwork, Contract } = import('');
-import { HederaNetwork } from '../lib/HederaNetwork.mjs';
+import { HederaNetwork } from '../lib/HederaNetwork';
 import { Contract } from '../lib/static/Contract.mjs';
-import { read } from './utils.mjs';
+import { read } from './utils';
 
 export default class JestTestEnvironment extends NodeEnvironment {
     constructor(config) {

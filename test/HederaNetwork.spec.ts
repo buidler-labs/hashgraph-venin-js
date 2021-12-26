@@ -1,7 +1,7 @@
 import {
   HEDERA_CUSTOM_NET_NAME,
   HederaNetwork,
-} from '../lib/HederaNetwork.mjs';
+} from '../lib/HederaNetwork';
 import {
   afterAll, beforeAll,
   describe, expect, it,
