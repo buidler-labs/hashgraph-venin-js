@@ -1,5 +1,5 @@
 import { LiveJson } from "../live/LiveJson.mjs";
-import { UploadableFile } from "../UploadableFile.mjs";
+import { UploadableFile } from "../UploadableFile";
 
 export class Json extends UploadableFile {
     static isInfoAcceptable(jInfo) {
@@ -29,30 +29,20 @@ export class Json extends UploadableFile {
         }
     }
 
-    constructor(jInfo) {
-        Json._guardForInvalid(jInfo);
-
+    public constructor(private readonly info: object) {
         super();
-        this._info = jInfo;
+        Json._guardForInvalid(info);
     }
 
-    /**
-     * @override
-     * @protected
-     */
-    async _getContent() {
-        return JSON.stringify(this._info);
+    protected override async _getContent() {
+        return JSON.stringify(this.info);
     }
 
-    /**
-     * @override
-     * @protected
-     */
-    async _onFileUploaded({ client, receipt, args = [] }) {
+    protected override async _onFileUploaded({ client, receipt, args = [] }) {
         return new LiveJson({
             client,
             id: receipt.fileId,
-            data: this._info
+            data: this.info
         });
     }
 }

@@ -8,7 +8,7 @@ import {
 // Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
 const FILE_CHUNK_SIZE = 1024;
 
-export class UploadableFile {
+export abstract class UploadableFile {
   /**
    * Uploads this Uploadable to the desired client passing in arguments if provided.
    * 
@@ -46,23 +46,12 @@ export class UploadableFile {
     });
   }
 
-  /**
-   * @protected
-   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async _onFileUploaded({ client, receipt, args = [] }) {
+  protected _onFileUploaded({ client, receipt, args = [] }) {
     return receipt;
   }
 
-  /**
-   * @abstract
-   * @protected
-   * @returns {Uint8Array | string}
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async _getContent() {
-    throw new Error("Uploadable.getContent has not been implemented yet.");
-  }
+  protected abstract _getContent(): Promise<Uint8Array|string>;
 
   /**
    * @private
