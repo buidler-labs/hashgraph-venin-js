@@ -6,7 +6,7 @@ import * as solc from 'solc';
 export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = '__contract__.sol';
 
 export class SolidityCompiler {
-  static async compile({ code, path }) {
+  public static async compile({ code, path }: { code?: string, path?: string }) {
     const basePath = sdkPath.resolve(process.env.CONTRACTS_RELATIVE_PATH || 'contracts');
     const content = (code ? code : fs.readFileSync(sdkPath.join(basePath, path), 'utf8'));
     // Note: Further options and info is available 

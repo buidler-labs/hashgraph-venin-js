@@ -10,9 +10,8 @@ export class HContractFunctionParameters extends ContractFunctionParameters {
      * 
      * @param {ConstructorFragment|FunctionFragment} fDescription - The function/constructor schema
      * @param {Array} args - A list of arguments to be parsed into the underlying AbiDescription 
-     * @returns {ContractFunctionParameters} - A Hedera managed function-parameters object
      */
-    public constructor(fDescription: ConstructorFragment|FunctionFragment, args = []) {
+    public constructor(fDescription: ConstructorFragment|FunctionFragment, args: any[]) {
         super();
 
         if (!Array.isArray(args)) {

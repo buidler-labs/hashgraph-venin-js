@@ -7,7 +7,7 @@ function upperCaseFirstOf(string) {
 export class ParamTypeToFunctionNameMapper {
     public constructor(private readonly paramType: ParamType) {}
 
-    map({ prefix = '' }) {
+    public map({ prefix = '' }) {
         const defTypeToTarget = this._geCanonicalTypeFor(this.paramType);
         
         return `${prefix}${this._getFunctionParticleFor(defTypeToTarget)}`;
@@ -16,11 +16,8 @@ export class ParamTypeToFunctionNameMapper {
     /**
      * Retrieves the canonical value of the provided param type-definition such as an 'int256' whenever referencing its shorter form, 'int'.
      *   See {@link https://docs.soliditylang.org/en/v0.8.10/abi-spec.html#types} for a list of such mappings.
-     * 
-     * @param {ParamType} paramType
-     * @returns 
      */
-     _geCanonicalTypeFor(paramType) {
+    private _geCanonicalTypeFor(paramType: ParamType): string {
         if ('int' === paramType.type) return 'int256';
         if ('int[]' === paramType.type) return 'int256[]';
         if ('uint' === paramType.type) return 'uint256';
@@ -32,11 +29,8 @@ export class ParamTypeToFunctionNameMapper {
      * Given a type-name, it maps it to the Hedera Equivalent function-name expected value ready to be used in an actual SDK call 
      * such as a 'get'-ing operation or an 'add'-ing one.
      *   Ex. 'uint256[]' would get mapped to 'Uint256Array' which, when 'add'-ing, would end up to be used as 'addUint256Array'.
-     * 
-     * @param {string} typeName - the type-name to convert
-     * @returns 
      */
-    _getFunctionParticleFor(typeName) {
+    private _getFunctionParticleFor(typeName: string): string {
         let functionParticle = upperCaseFirstOf(typeName);
 
         if (functionParticle.endsWith("[]")) {

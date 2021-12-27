@@ -24,16 +24,14 @@ export class ApiSession {
   /**
    * Retrieves the operator account-id for this {@link ApiSession}.
    */
-  get accountId() {
+  public get accountId() {
     return this.client.operatorAccountId;
   }
 
   /**
    * Returns true if the provided {@see solidityAddress } also owns this {@link ApiSession} and false otherwise. 
-   * @param {object} options
-   * @param {string} options.solidityAddress 
    */
-  isOperatedBy({ solidityAddress }) {
+  public isOperatedBy({ solidityAddress }: { solidityAddress: string }): boolean {
     if (solidityAddress.indexOf('0x') === 0) {
       solidityAddress = solidityAddress.slice(2);
     }

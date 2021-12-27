@@ -4,10 +4,13 @@ import { Client,
     ContractCallQuery, 
     ContractCreateTransaction, 
     ContractExecuteTransaction, 
+    ContractFunctionResult, 
     ContractId, 
     Hbar, 
     Status, 
-    TransactionId
+    TransactionId,
+    TransactionRecord,
+    TransactionResponse
 } from "@hashgraph/sdk";
 
 import { Contract } from "../static/Contract";
@@ -70,12 +73,13 @@ export class LiveContract extends EventEmitter implements LiveEntity {
         // Dinamically inject ABI function handling
         Object.values(this.interface.functions).forEach(fDescription => Object.defineProperty(this, fDescription.name, {
                 enumerable: true,
-                value: (async function (fDescription, ...args) {
+                value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {
                     const request = this._createContractRequestFor({ fDescription, args });
                     const txResponse = await request.execute(this.client);
-                    let functionResult = txResponse;
+                    const didFunctionCallChangeState = txResponse instanceof TransactionResponse;
+                    let functionResult: ContractFunctionResult;
 
-                    if (!fDescription.constant) {
+                    if (didFunctionCallChangeState) {
                         const txRecord = await txResponse.getRecord(this.client);
 
                         this._tryToProcessForEvents(txRecord);
@@ -83,9 +87,10 @@ export class LiveContract extends EventEmitter implements LiveEntity {
                             throw new LiveContractExecutionError(`Receveid a non-successfull status message ${txRecord.receipt.status}`);
                         }
                         functionResult = txRecord.contractFunctionResult;
-
+                    } else {
+                        // Constant function call (query) was done
+                        functionResult = txResponse;
                     }
-                    // TODO: look at txResponse.logs and txResponse.errorMessage
                     return await this._tryExtractingResponse(functionResult, fDescription);
                 }).bind(this, fDescription),
                 writable: false,
@@ -97,13 +102,8 @@ export class LiveContract extends EventEmitter implements LiveEntity {
      * The first argument is checked to see if it matches the constructor arguments schema and, if it does, it's used to construct the
      * actual request instance, discarding it in the process so that the remaining arguments can all be used as the actual values sent to 
      * the targeted function.
-     * 
-     * @param {object} options
-     * @param {FunctionFragment} options.fDescription
-     * @param {Array<Object>} options.args
-     * @returns {ContractCallQuery | ContractExecuteTransaction}
      */
-    _createContractRequestFor({ fDescription, args }) {
+    private _createContractRequestFor({ fDescription, args }: { fDescription: FunctionFragment, args: any[] }): ContractCallQuery | ContractExecuteTransaction {
         let requestOptionsPresentInArgs = false;
         let constructorArgs: any = { 
             contractId: this.id,
@@ -186,14 +186,10 @@ export class LiveContract extends EventEmitter implements LiveEntity {
     /**
      * Given a contract-request response (txResponse) and a targeted function-description, it tries to extract and prepare the caller response based on
      * the contract's output function ABI specs.
-     * 
-     * @param {*} txResponse 
-     * @param {FunctionFragment} fDescription 
-     * @returns 
      */
-    _tryExtractingResponse(txResponse, fDescription) {
+    private _tryExtractingResponse(txResponse: ContractFunctionResult, fDescription: FunctionFragment) {
         const EthersBigNumber = require('@ethersproject/bignumber').BigNumber;
-        let fResponse = undefined;
+        let fResponse;
         const fResult = this.interface.decodeFunctionResult(fDescription, txResponse.asBytes());
         const fResultKeys = Object.keys(fResult).filter(evDataKey => isNaN(Number(evDataKey)));
 
@@ -222,10 +218,10 @@ export class LiveContract extends EventEmitter implements LiveEntity {
      * Given the Record of a transaction, we try to see if there have been any events emitted and, if so, we re-emit them on the live-contract instance.
      * @param {TransactionRecord} txRecord 
      */
-    _tryToProcessForEvents(txRecord) {
+    private _tryToProcessForEvents(txRecord: TransactionRecord): void {
         txRecord.contractFunctionResult.logs.forEach(recordLog => {
-            const data = `0x${recordLog.data.length === 0 ? "" : recordLog.data.toString('hex')}`;
-            const topics = recordLog.topics.map(topic => "0x" + topic.toString('hex'));
+            const data = `0x${recordLog.data.length === 0 ? "" : Buffer.from(recordLog.data).toString('hex')}`;
+            const topics = recordLog.topics.map(topic => "0x" + Buffer.from(topic).toString('hex'));
             let logDescription;
 
             try {

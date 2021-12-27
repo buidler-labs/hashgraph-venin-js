@@ -71,7 +71,7 @@ export class Contract extends UploadableEntity<LiveContract> {
    * @returns {Promise<Array<Contract>>} - A list of {@see Contract}s parsed via Hedera's officially supported solidity version compiler (`solc`) from the code
    */
   static async allFrom({ code, ignoreWarnings = false, path }: AllContractOptions): Promise<Array<Contract>> {
-    if (!code && ! path) {
+    if (!code && !path) {
       throw new Error("Can only retrieve contracts if either the direct solidity code is provided or a file path where that top-level code resides.");
     }
 
@@ -95,12 +95,9 @@ export class Contract extends UploadableEntity<LiveContract> {
   }
 
   /**
-   * Deserializes the provided Contract representation which is assumed to be the output of the {@see Contract.serialize} method call.
-   * 
-   * @param {string} what 
-   * @returns {Contract}
+   * Deserializes the provided Contract representation which is assumed to be the output of the {@link Contract.serialize} method call.
    */
-  static deserialize(what: string): Contract {
+  public static deserialize(what: string): Contract {
     let jWhat: any = {};
 
     try {
@@ -111,7 +108,7 @@ export class Contract extends UploadableEntity<LiveContract> {
     return new Contract(jWhat);
   }
 
-  static _tryParsingCompileResultFrom({ rawCompileResult, ignoreWarnings }) {
+  private static _tryParsingCompileResultFrom({ rawCompileResult, ignoreWarnings }) {
     const compileResult = JSON.parse(rawCompileResult);
 
     CompileIssues.tryThrowingIfErrorsIn({ compileResult, ignoreWarnings });
@@ -134,7 +131,7 @@ export class Contract extends UploadableEntity<LiveContract> {
    */
   public readonly interface: Interface;
 
-  private constructor({ name, abi, byteCode }) {
+  private constructor({ name, abi, byteCode }: { name: string, abi: any[], byteCode: string }) {
     if (!name) {
       throw new Error("Please provide a name for the Contract instance.");
     } else if(!abi) {
@@ -152,7 +149,7 @@ export class Contract extends UploadableEntity<LiveContract> {
   /**
    * Tests if this contract is the same (functionally speaking) as another one.
    */
-  equals(other: Contract): boolean {
+  public equals(other?: Contract): boolean {
     if (other instanceof Contract === false) {
       return false;
     }
@@ -166,7 +163,7 @@ export class Contract extends UploadableEntity<LiveContract> {
    * 
    * @returns {string} - The serialized representation of the current instance
    */
-  serialize(): string {
+  public serialize(): string {
     return JSON.stringify({
       name: this.name,
       byteCode: this.byteCode,
