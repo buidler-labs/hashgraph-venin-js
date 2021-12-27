@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 import {
   describe, expect, it,
 } from '@jest/globals';
-import { read } from "./utils";
+import { load, read } from "./utils";
 import { Contract } from "../lib/static/Contract";
 import { HederaNetwork } from "../lib/HederaNetwork";
 import { AccountId, Hbar } from "@hashgraph/sdk";
@@ -20,7 +20,9 @@ describe('LiveContract', () => {
     await expect(liveContract.MY_UINT()).resolves.toEqual(uintArgForConstructor);
   });
 
-  it("given the solidity-by-example > Hello World code, uploading it should allow interacting with its live instance", async (liveContract) => {
+  it("given the solidity-by-example > Hello World code, uploading it should allow interacting with its live instance", async () => {
+    const liveContract = await load('solidity-by-example/hello_world');
+
     await expect(liveContract.greet()).resolves.toEqual("Hello World!");
   });
 
@@ -63,7 +65,9 @@ describe('LiveContract', () => {
     await expect(liveContract.num()).resolves.toEqual(new BigNumber(42));
   });
 
-  it("given the solidity-by-example > Function code, quering them should succede giving back the expected answers", async (liveContract) => {
+  it("given the solidity-by-example > Function code, quering them should succede giving back the expected answers", async () => {
+    const liveContract = await load('solidity-by-example/function');
+
     await expect(liveContract.returnMany()).resolves.toEqual([new BigNumber(1), true, new BigNumber(2)]);
     await expect(liveContract.named()).resolves.toEqual({x: new BigNumber(1), b: true, y: new BigNumber(2)});
     await expect(liveContract.assigned()).resolves.toEqual({x: new BigNumber(1), b: true, y: new BigNumber(2)});
@@ -71,12 +75,16 @@ describe('LiveContract', () => {
     await expect(liveContract.arrayOutput()).resolves.toEqual([]);
   });
 
-  it("given the solidity-by-example > View and Pure Functions code, executing them with arguments should succede giving back the expected values", async (liveContract) => {
+  it("given the solidity-by-example > View and Pure Functions code, executing them with arguments should succede giving back the expected values", async () => {
+    const liveContract = await load('solidity-by-example/view_and_pure_functions');
+
     await expect(liveContract.addToX(69)).resolves.toEqual(new BigNumber(70));
     await expect(liveContract.add(2, 5)).resolves.toEqual(new BigNumber(7));
   });
 
-  it("given the solidity-by-example > First App code, interacting with the contract example should change its state as expected", async (liveContract) => {
+  it("given the solidity-by-example > First App code, interacting with the contract example should change its state as expected", async () => {
+    const liveContract = await load('solidity-by-example/first_app');
+
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(0));
     await expect(liveContract.inc()).resolves.toBeUndefined();
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(1));
@@ -86,7 +94,9 @@ describe('LiveContract', () => {
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(1));
   });
 
-  it("given the solidity-by-example > Error code, interacting with the contract example should error out as expected when appropriate", async (liveContract) => {
+  it("given the solidity-by-example > Error code, interacting with the contract example should error out as expected when appropriate", async () => {
+    const liveContract = await load('solidity-by-example/error');
+
     await expect(liveContract.testRequire(9)).rejects.toThrow();
     await expect(liveContract.testRequire(11)).resolves.toBeUndefined();
     await expect(liveContract.testRevert(10)).rejects.toThrow();
@@ -96,7 +106,9 @@ describe('LiveContract', () => {
     await expect(liveContract.testCustomError(0)).resolves.toBeUndefined();
   });
 
-  it("given the solidity-by-example > State Variables code, interacting with its methods should set state variables approprietly", async (liveContract) => {
+  it("given the solidity-by-example > State Variables code, interacting with its methods should set state variables approprietly", async () => {
+    const liveContract = await load('solidity-by-example/state_variables');
+
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(0));
     await expect(liveContract.set(69)).resolves.toBeUndefined();
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(69));
@@ -105,7 +117,9 @@ describe('LiveContract', () => {
     await expect(liveContract.num()).resolves.toEqual(new BigNumber(420));
   });
 
-  it("given the solidity-by-example > If Else code, interacting with its methods should be governed by their internel, conditional logic", async (liveContract) => {
+  it("given the solidity-by-example > If Else code, interacting with its methods should be governed by their internel, conditional logic", async () => {
+    const liveContract = await load('solidity-by-example/if_else');
+
     await expect(liveContract.foo(0)).resolves.toEqual(new BigNumber(0));
     await expect(liveContract.foo(11)).resolves.toEqual(new BigNumber(1));
     await expect(liveContract.foo(20)).resolves.toEqual(new BigNumber(2));
@@ -113,8 +127,9 @@ describe('LiveContract', () => {
     await expect(liveContract.ternary(10)).resolves.toEqual(new BigNumber(2));
   });
 
-  it.skip("given the solidity-by-example > Signature code, interacting doing the signature verification flow should work", async (liveContract) => {
+  it.skip("given the solidity-by-example > Signature code, interacting doing the signature verification flow should work", async () => {
     // TODO: activate this once secp is working on Hedera (and available through SDK ?)
+    const liveContract = await load('solidity-by-example/signature');
     const hapiSession = await HederaNetwork.defaultApiSession();
     const signer = hapiSession.accountId.toSolidityAddress();
     const to = AccountId.fromString('0.0.3').toSolidityAddress();
@@ -138,8 +153,10 @@ describe('LiveContract', () => {
     await expect(hapiSession.upload(testArrayContract)).resolves.not.toThrow();
   });
 
-  it("given the solidity-by-example > Events code, interacting with its single method should trigger the expected events", (liveContract) => {
-    return new Promise((accept) => {
+  it("given the solidity-by-example > Events code, interacting with its single method should trigger the expected events", async () => {
+    const liveContract = await load('solidity-by-example/events');
+
+    return new Promise<void>((accept) => {
       const receivedMessages = [];
 
       // Register all events of interest

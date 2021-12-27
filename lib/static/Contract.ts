@@ -2,9 +2,9 @@ import {
   ContractCreateTransaction,
 } from "@hashgraph/sdk";
 
-import { ArgumentsOnFileUploaded, UploadableFile } from "../UploadableFile";
+import { ArgumentsOnFileUploaded, UploadableEntity } from "./UploadableEntity";
 import { CompileIssues } from '../errors/CompileIssues';
-import { LiveContract } from '../live/LiveContract.mjs';
+import { LiveContract } from '../live/LiveContract';
 import { HContractFunctionParameters } from '../HContractFunctionParameters';
 import { Interface } from '@ethersproject/abi';
 import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../SolidityCompiler';
@@ -22,7 +22,7 @@ type NewContractOptions = {
   name?: string, 
 } & AllContractOptions;
 
-export class Contract extends UploadableFile<LiveContract> {
+export class Contract extends UploadableEntity<LiveContract> {
   /**
    * Given an index or a name, this returns a specific contract following the successfull compilation of 
    * either the contract code itself ({@param options.code}) or the solidity file located at the provided {@param options.path}
@@ -188,10 +188,10 @@ export class Contract extends UploadableFile<LiveContract> {
   protected override async _onFileUploaded({ client, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContract> {
     const createContractTransaction = new ContractCreateTransaction(this._getContractCreateOptionsFor({ client, receipt, args }));
 
-    return await LiveContract.newFor({
+    return await LiveContract.newFollowingUpload({
       client,
       contract: this,
-      createContractTransaction
+      transaction: createContractTransaction
     });
   }
 

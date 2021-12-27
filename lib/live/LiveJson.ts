@@ -1,4 +1,5 @@
 import { Client, FileId } from "@hashgraph/sdk";
+import { LiveEntity } from "./LiveEntity";
 
 type LiveJsonConstructorArgs = {
     client: Client,
@@ -8,12 +9,11 @@ type LiveJsonConstructorArgs = {
 
 /**
  * Represents a Hedera, HFS-managed Json object
- * 
- * TODO: add SDK methods to make this trully live 
  */
-export class LiveJson {
+export class LiveJson implements LiveEntity {
     private readonly client: Client;
     public readonly id: FileId;
+    readonly [ k: string ]: any;
 
     constructor({ client, id, data }: LiveJsonConstructorArgs) {
         this.client = client;

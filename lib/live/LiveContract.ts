@@ -15,26 +15,28 @@ import { Contract } from "../static/Contract";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
 import { HContractFunctionParameters } from "../HContractFunctionParameters";
 import { EventEmitter } from "events";
+import { LiveEntity } from "./LiveEntity";
 
 export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 69_000;
 
-export class LiveContract extends EventEmitter {
+export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
+
+export class LiveContract extends EventEmitter implements LiveEntity {
     /**
      * Constructs a new LiveContract to be interacted with.
-     * 
-     * @param {object} options
-     * @param {Client} options.client
-     * @param {Contract} options.contract
-     * @param {ContractCreateTransaction} options.createContractTransaction
      */
-    static async newFor({ client, contract, createContractTransaction }) {
+    public static async newFollowingUpload({ client, contract, transaction }: {
+        client: Client,
+        contract: Contract,
+        transaction: ContractCreateTransaction
+    }): Promise<LiveContract> {
         if (client instanceof Client === false ||
             contract instanceof Contract === false ||
-            createContractTransaction instanceof ContractCreateTransaction === false) {
+            transaction instanceof ContractCreateTransaction === false) {
             throw new Error("We need a reference to the underlying client tranport, the contract blueprint being deployed and " +
                             "a referance to the pre-filled contract-create transaction in order to execute the transaction and create the live-contract link.");
         }
-        const contractTransactionResponse = await createContractTransaction.execute(client);
+        const contractTransactionResponse = await transaction.execute(client);
         const createdContractReceipt = await contractTransactionResponse.getReceipt(client);
 
         if (createdContractReceipt.status !== Status.Success) {
@@ -47,29 +49,34 @@ export class LiveContract extends EventEmitter {
         });
     }
 
-    constructor({ client, id, cInterface }) {
+    private readonly client: Client;
+    public readonly id: ContractId;
+    private readonly interface: Interface;
+
+    // TODO: REFACTOR THIS AWAY! yet, there's no other way of making this quickly work right now!
+    readonly [ k: string ]: ContractMethod | any;
+
+    public constructor({ client, id, cInterface }: {
+        client: Client,
+        id: ContractId,
+        cInterface: Interface
+    }) {
         super();
 
-        if (client instanceof Client === false || 
-            id instanceof ContractId === false || 
-            cInterface instanceof Interface === false) {
-            throw new LiveContractCreationError("In order to create a new live-contract instance we would need a Hedera Client, a ContractId and a managed Contract Interface.");
-        }
-
-        this._client = client;
-        this._id = id;
-        this._interface = cInterface;
+        this.client = client;
+        this.id = id;
+        this.interface = cInterface;
 
         // Dinamically inject ABI function handling
-        Object.values(this._interface.functions).forEach(fDescription => Object.defineProperty(this, fDescription.name, {
+        Object.values(this.interface.functions).forEach(fDescription => Object.defineProperty(this, fDescription.name, {
                 enumerable: true,
                 value: (async function (fDescription, ...args) {
                     const request = this._createContractRequestFor({ fDescription, args });
-                    const txResponse = await request.execute(this._client);
+                    const txResponse = await request.execute(this.client);
                     let functionResult = txResponse;
 
                     if (!fDescription.constant) {
-                        const txRecord = await txResponse.getRecord(this._client);
+                        const txRecord = await txResponse.getRecord(this.client);
 
                         this._tryToProcessForEvents(txRecord);
                         if (txRecord.receipt.status !== Status.Success) {
@@ -85,10 +92,6 @@ export class LiveContract extends EventEmitter {
             }));
     }
 
-    get id() {
-        return this._id;
-    }
-
     /**
      * Creates a contract query/call request based for the given function-description and the desired arguments (args).
      * The first argument is checked to see if it matches the constructor arguments schema and, if it does, it's used to construct the
@@ -102,7 +105,7 @@ export class LiveContract extends EventEmitter {
      */
     _createContractRequestFor({ fDescription, args }) {
         let requestOptionsPresentInArgs = false;
-        let constructorArgs = { 
+        let constructorArgs: any = { 
             contractId: this.id,
             gas: DEFAULT_GAS_PER_CONTRACT_TRANSACTION
         };
@@ -191,8 +194,8 @@ export class LiveContract extends EventEmitter {
     _tryExtractingResponse(txResponse, fDescription) {
         const EthersBigNumber = require('@ethersproject/bignumber').BigNumber;
         let fResponse = undefined;
-        const fResult = this._interface.decodeFunctionResult(fDescription, txResponse.asBytes());
-        const fResultKeys = Object.keys(fResult).filter(evDataKey => isNaN(evDataKey));
+        const fResult = this.interface.decodeFunctionResult(fDescription, txResponse.asBytes());
+        const fResultKeys = Object.keys(fResult).filter(evDataKey => isNaN(Number(evDataKey)));
 
         if (fDescription.outputs && fDescription.outputs.length !== 0) {
             if (fResultKeys.length === fDescription.outputs.length) {
@@ -221,12 +224,12 @@ export class LiveContract extends EventEmitter {
      */
     _tryToProcessForEvents(txRecord) {
         txRecord.contractFunctionResult.logs.forEach(recordLog => {
-            const data = recordLog.data.length === 0 ? new Uint8Array() : "0x" + recordLog.data.toString('hex');
+            const data = `0x${recordLog.data.length === 0 ? "" : recordLog.data.toString('hex')}`;
             const topics = recordLog.topics.map(topic => "0x" + topic.toString('hex'));
             let logDescription;
 
             try {
-                logDescription = this._interface.parseLog({ data, topics });
+                logDescription = this.interface.parseLog({ data, topics });
             } catch (e) {
                 // No-op
             }
@@ -236,7 +239,7 @@ export class LiveContract extends EventEmitter {
             }
 
             const decodedEventObject = Object.keys(logDescription.args)
-                .filter(evDataKey => isNaN(evDataKey))
+                .filter(evDataKey => isNaN(Number(evDataKey)))
                 .map(namedEvDataKey => ({ [namedEvDataKey]: logDescription.args[namedEvDataKey] }))
                 .reduce((p, c) => ({...p, ...c}), {});
 
@@ -254,16 +257,13 @@ export class LiveContract extends EventEmitter {
 }
 
 export class LiveContractCreationError extends Error {
-    /**
-     * @param {Status} status 
-     */
-    constructor(status) {
+    constructor(status: Status) {
         super(`There was an issue (status ${status}) creating the live-contract link.`);
     }
 }
 
 export class LiveContractExecutionError extends Error {
-    constructor(msg) {
+    constructor(msg: string) {
         super(msg);
     }
 }

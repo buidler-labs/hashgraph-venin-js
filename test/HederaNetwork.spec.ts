@@ -8,8 +8,8 @@ import {
   jest,
 } from '@jest/globals';
 
-import { CredentialsInvalidError } from '../lib/errors/CredentialsInvalidError.mjs';
-import { EnvironmentInvalidError } from '../lib/errors/EnvironmentInvalidError.mjs';
+import { CredentialsInvalidError } from '../lib/errors/CredentialsInvalidError';
+import { EnvironmentInvalidError } from '../lib/errors/EnvironmentInvalidError';
 import { AccountId } from '@hashgraph/sdk';
 
 describe('HederaNetwork', () => {

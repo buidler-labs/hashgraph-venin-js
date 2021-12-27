@@ -2,7 +2,7 @@ module.exports = {
     preset: "ts-jest",
     collectCoverage: true,
     displayName: 'hedera-strato',
-    moduleFileExtensions: ['js', 'mjs', 'ts'],
+    moduleFileExtensions: ['js', 'ts'],
     setupFiles: [
         'dotenv/config'
     ],

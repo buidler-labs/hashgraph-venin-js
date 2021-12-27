@@ -1,8 +1,8 @@
 import { LiveJson } from "../live/LiveJson";
-import { ArgumentsOnFileUploaded, UploadableFile } from "../UploadableFile";
+import { ArgumentsOnFileUploaded, UploadableEntity } from "./UploadableEntity";
 
-export class Json extends UploadableFile<LiveJson> {
-    static isInfoAcceptable(jInfo) {
+export class Json extends UploadableEntity<LiveJson> {
+    public static isInfoAcceptable(jInfo: object): boolean {
         try {
             Json._guardForInvalid(jInfo);
             return true;
@@ -12,10 +12,7 @@ export class Json extends UploadableFile<LiveJson> {
         return false;
     }
 
-    /**
-     * @private 
-     */
-    static _guardForInvalid(jInfo) {
+    private static _guardForInvalid(jInfo: object) {
         if (jInfo === null || typeof jInfo !== 'object') {
             throw new Error("Please provide a valid JSON object to instantiate a static Json with.");
         } else {

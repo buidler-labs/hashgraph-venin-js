@@ -6,17 +6,14 @@ import {
 } from "@hashgraph/sdk";
 import * as process from "process";
 
-import { CredentialsInvalidError } from "./errors/CredentialsInvalidError.mjs";
-import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError.mjs";
+import { CredentialsInvalidError } from "./errors/CredentialsInvalidError";
+import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
 import { ApiSession } from "./ApiSession";
 
 export const HEDERA_CUSTOM_NET_NAME = "customnet";
 
 export class HederaNetwork {
-  /**
-   * @returns {Promise<ApiSession>}
-   */
-  static defaultApiSession(env = process.env) {
+  public static defaultApiSession(env = process.env): Promise<ApiSession> {
     return HederaNetwork.for({
       name: env.HEDERA_NETWORK,
       nodes: HederaNetwork._parseNetworkNodeFrom(env.HEDERA_NODES)

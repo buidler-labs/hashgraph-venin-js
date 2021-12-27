@@ -5,6 +5,7 @@ import {
   Status,
   TransactionReceipt,
 } from "@hashgraph/sdk";
+import { LiveEntity } from "../live/LiveEntity";
 
 // Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
 const FILE_CHUNK_SIZE = 1024;
@@ -26,7 +27,7 @@ type ArgumentsToGetFileTransaction = {
   args: any[]
 };
 
-export abstract class UploadableFile<T> {
+export abstract class UploadableEntity<T extends LiveEntity> {
   /**
    * Uploads this Uploadable to the desired client passing in arguments if provided.
    * 
@@ -36,7 +37,7 @@ export abstract class UploadableFile<T> {
    * @public
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async uploadTo({ client, args = [] }: ArgumentsForUpload) {
+  public async uploadTo({ client, args = [] }: ArgumentsForUpload): Promise<T> {
     const whatToUpload = await this._getContent();
     const { areOverridesProvided, fileTransactions } = await this._getFileTransactionsFor({ content: whatToUpload, client, args });
     const transactionResponse = await fileTransactions[0].execute(client);
