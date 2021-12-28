@@ -9,7 +9,7 @@ Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and w
 
 ## Installing it
 ``` bash
-$ npm i hedera-strato-js
+$ npm i @3vs/hedera-strato-js
 ```
 
 ### Getting started
@@ -20,7 +20,8 @@ HEDERA_OPERATOR_ID=0.0...
 HEDERA_OPERATOR_KEY=...
 ```
 2. Create a `contracts` folder in which you add your `hello_world.sol` solidity contract definition:
-``` sol
+
+```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.3;
 
@@ -29,6 +30,7 @@ contract HelloWorld {
 }
 ```
 3. Upload and run your contract with the following code:
+
 ``` js
 const hapiSession = await HederaNetwork.defaultApiSession();
 const helloWorldContract = await Contract.newFrom({ path: './hello_world.sol' });
@@ -39,10 +41,12 @@ console.log(await liveContract.greet());
 If all goes well, you should see the expected `Hello Hedera Strato!` logged inside your console signifying that the contract was successfully compiled, uploaded and executed. 
 
 ## Features
-`TODO`
+- Upload a [Solidity Contract](https://docs.soliditylang.org/en/v0.8.10/index.html) (either by _code_ or by _path_) to Hedera and directly interact with it in JS (via [_LiveContracts_](https://github.com/three-Vs/hedera-strato-js/blob/main/lib/live/LiveContract.ts))
+- Given a [ContractId](https://docs.hedera.com/guides/docs/hedera-api/basic-types/contractid) and its ABI, retrieve a live-instance of a contract and interact with it
+- Upload a JSON object to [Hedera File Services](https://docs.hedera.com/guides/docs/sdks/file-storage) allowing for later retrieval
 
 ## Using it
-`TODO: Link to API docs of some sort`
+`TODO: Link to API docs`
 
 ## Testing it
 Have the `.env` file ready (see above) and run 
@@ -52,10 +56,14 @@ $ npm test
 > **Note:** If you're targeting an official network such as a `testnet` or a `previewnet`, there will be a cost involved in running the library tests that has to do with API usage regarding contract deployments and execution (among other things). There's also the option of a `customnet` targeting a self-hosted `hedera-service` deployment. If you want to go down that path (recommended especially if you are planning to contribute), please [follow these instructions](https://github.com/three-Vs/dockerized-hedera-services).
 
 ## Roadmap
-`TODO`
+- ESM library support to allow browser embedding
+- Better align API outputs to Hedera SDK ones
+- Add library logs support
+- Add better compiler output support
+- ... others `TBD`
 
 ## Contributions
-`TODO`
+Of course, contributions are more then welcomed and encouraged on all fronts: open an issue, update the docs or, if you feel bold enough, directly open a PR and make your case as to why your changes would benefit the libray. For further discussions, we're social on [our Discord channel](https://discord.gg/YavYCwfcMQ).
 
 ## License
-`TODO`
+This work has been published under the MIT License.
