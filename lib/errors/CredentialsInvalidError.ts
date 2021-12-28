@@ -1,6 +1,6 @@
 
 export class CredentialsInvalidError extends Error {
-    constructor(message) {
+    constructor(message: string) {
         super(message);
     }
 }

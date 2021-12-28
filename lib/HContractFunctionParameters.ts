@@ -1,7 +1,7 @@
 import { ConstructorFragment, FunctionFragment } from "@ethersproject/abi";
 import { ContractFunctionParameters } from "@hashgraph/sdk";
 import BigNumber from "bignumber.js";
-import { ParamTypeToFunctionNameMapper } from "./ParamTypeToFunctionNameMapper.mjs";
+import { ParamTypeToFunctionNameMapper } from "./ParamTypeToFunctionNameMapper";
 
 export class HContractFunctionParameters extends ContractFunctionParameters {
     /**
@@ -10,14 +10,11 @@ export class HContractFunctionParameters extends ContractFunctionParameters {
      * 
      * @param {ConstructorFragment|FunctionFragment} fDescription - The function/constructor schema
      * @param {Array} args - A list of arguments to be parsed into the underlying AbiDescription 
-     * @returns {ContractFunctionParameters} - A Hedera managed function-parameters object
      */
-     constructor(fDescription, args = []) {
+    public constructor(fDescription: ConstructorFragment|FunctionFragment, args: any[]) {
         super();
 
-        if (fDescription instanceof ConstructorFragment === false && fDescription instanceof FunctionFragment === false) {
-            throw new ContractFunctionParametersParser("In order to create a contract-function-arguments instance we need a valid constructor/function fragment instance provided.");
-        } else if (!Array.isArray(args)) {
+        if (!Array.isArray(args)) {
             throw new ContractFunctionParametersParser("I need an array of args in order to construct the ContractFunctionParameters instance for.");
         } else if (fDescription.inputs.length !== args.length) {
             throw new ContractFunctionParametersParser(`The contract expects ${fDescription.inputs.length} arguments yet ${args.length} were provided.`);
@@ -44,7 +41,7 @@ export class HContractFunctionParameters extends ContractFunctionParameters {
 }
 
 export class ContractFunctionParametersParser extends Error {
-    constructor(msg) {
+    constructor(msg: string) {
         super(msg);
     }
 }

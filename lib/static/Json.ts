@@ -1,8 +1,8 @@
-import { LiveJson } from "../live/LiveJson.mjs";
-import { UploadableFile } from "../UploadableFile.mjs";
+import { LiveJson } from "../live/LiveJson";
+import { ArgumentsOnFileUploaded, UploadableEntity } from "./UploadableEntity";
 
-export class Json extends UploadableFile {
-    static isInfoAcceptable(jInfo) {
+export class Json extends UploadableEntity<LiveJson> {
+    public static isInfoAcceptable(jInfo: object): boolean {
         try {
             Json._guardForInvalid(jInfo);
             return true;
@@ -12,10 +12,7 @@ export class Json extends UploadableFile {
         return false;
     }
 
-    /**
-     * @private 
-     */
-    static _guardForInvalid(jInfo) {
+    private static _guardForInvalid(jInfo: object) {
         if (jInfo === null || typeof jInfo !== 'object') {
             throw new Error("Please provide a valid JSON object to instantiate a static Json with.");
         } else {
@@ -29,30 +26,20 @@ export class Json extends UploadableFile {
         }
     }
 
-    constructor(jInfo) {
-        Json._guardForInvalid(jInfo);
-
+    public constructor(private readonly info: object) {
         super();
-        this._info = jInfo;
+        Json._guardForInvalid(info);
     }
 
-    /**
-     * @override
-     * @protected
-     */
-    async _getContent() {
-        return JSON.stringify(this._info);
+    protected override async _getContent() {
+        return JSON.stringify(this.info);
     }
 
-    /**
-     * @override
-     * @protected
-     */
-    async _onFileUploaded({ client, receipt, args = [] }) {
+    protected override async _onFileUploaded({ client, receipt, args = [] }: ArgumentsOnFileUploaded) {
         return new LiveJson({
             client,
             id: receipt.fileId,
-            data: this._info
+            data: this.info
         });
     }
 }

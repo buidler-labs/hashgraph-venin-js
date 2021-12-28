@@ -3,12 +3,31 @@ import {
   FileAppendTransaction,
   FileCreateTransaction,
   Status,
+  TransactionReceipt,
 } from "@hashgraph/sdk";
+import { LiveEntity } from "../live/LiveEntity";
 
 // Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
 const FILE_CHUNK_SIZE = 1024;
 
-export class UploadableFile {
+type ArgumentsForUpload = {
+  client: Client,
+  args: any[]
+};
+
+export type ArgumentsOnFileUploaded = { 
+  client: Client, 
+  receipt: TransactionReceipt, 
+  args: any[] 
+};
+
+type ArgumentsToGetFileTransaction = {
+  client: Client,
+  content: Uint8Array|string,
+  args: any[]
+};
+
+export abstract class UploadableEntity<T extends LiveEntity> {
   /**
    * Uploads this Uploadable to the desired client passing in arguments if provided.
    * 
@@ -18,11 +37,7 @@ export class UploadableFile {
    * @public
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async uploadTo({ client, args = [] }) {
-    if (client instanceof Client === false) {
-      throw new Error("In order to upload something to Hedera, we would need a valid Client instance provided.");
-    }
-
+  public async uploadTo({ client, args = [] }: ArgumentsForUpload): Promise<T> {
     const whatToUpload = await this._getContent();
     const { areOverridesProvided, fileTransactions } = await this._getFileTransactionsFor({ content: whatToUpload, client, args });
     const transactionResponse = await fileTransactions[0].execute(client);
@@ -30,7 +45,7 @@ export class UploadableFile {
 
     if (transactionReceipt.status !== Status.Success) {
       throw new Error(`There was an issue while creating the file (status ${transactionReceipt.status}). Aborting file upload.`);
-    } else if (fileTransactions.length > 1) {
+    } else if (fileTransactions.length > 1 && fileTransactions[1] instanceof FileAppendTransaction) {
       // We update the upcoming file-append transaction request to reference the fileId
       await fileTransactions[1].setFileId(transactionReceipt.fileId)
         .executeAll(client);
@@ -46,29 +61,8 @@ export class UploadableFile {
     });
   }
 
-  /**
-   * @protected
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async _onFileUploaded({ client, receipt, args = [] }) {
-    return receipt;
-  }
-
-  /**
-   * @abstract
-   * @protected
-   * @returns {Uint8Array | string}
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async _getContent() {
-    throw new Error("Uploadable.getContent has not been implemented yet.");
-  }
-
-  /**
-   * @private
-   */
-  async _getFileTransactionsFor({ content, client, args = [] }) {
-    const fileTransactions = [];
+  private async _getFileTransactionsFor({ content, client, args = [] }: ArgumentsToGetFileTransaction) {
+    const fileTransactions: Array<FileCreateTransaction|FileAppendTransaction> = [];
     let fileCreationOverrides = {};
 
     // If available, lock onto any file-creation arguments to embedd when constructing the initial transaction
@@ -98,4 +92,7 @@ export class UploadableFile {
       fileTransactions
     };
   }
+
+  protected abstract _getContent(): Promise<Uint8Array|string>;
+  protected abstract _onFileUploaded({ client, receipt, args }: ArgumentsOnFileUploaded): Promise<T>;
 }

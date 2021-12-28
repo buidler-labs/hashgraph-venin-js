@@ -2,9 +2,9 @@ import {
     expect, describe, it,
 } from '@jest/globals';
 
-import { read } from './utils.mjs';
-import { Contract } from '../lib/static/Contract.mjs';
-import { CompileIssues } from '../lib/errors/CompileIssues.mjs';
+import { read } from './utils';
+import { Contract } from '../lib/static/Contract';
+import { CompileIssues } from '../lib/errors/CompileIssues';
 
 const CALL_CALLER_BYTECODE = read({ solo: 'call_caller' }).evm.bytecode.object;
 const CALL_RECEIVER_BYTECODE = read({ solo: 'call_receiver' }).evm.bytecode.object;
@@ -31,7 +31,6 @@ describe('Contract', () => {
     });
 
     it('given several invalid serialized solidity contracts, deserializing them should fail', async () => {
-        expect(() => Contract.deserialize()).toThrow();
         expect(() => Contract.deserialize(`{"byteCode": "ab", "abi": []}`)).toThrow();
         expect(() => Contract.deserialize(`{"name": "A", "abi": []}`)).toThrow();
         expect(() => Contract.deserialize(`{"name": "A", "byteCode": "$ab", "abi": []}`)).toThrow();

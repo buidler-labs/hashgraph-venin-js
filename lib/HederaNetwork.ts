@@ -6,23 +6,23 @@ import {
 } from "@hashgraph/sdk";
 import * as process from "process";
 
-import { CredentialsInvalidError } from "./errors/CredentialsInvalidError.mjs";
-import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError.mjs";
-import { ApiSession } from "./ApiSession.mjs";
+import { CredentialsInvalidError } from "./errors/CredentialsInvalidError";
+import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
+import { ApiSession } from "./ApiSession";
+import { NetworkName } from "@hashgraph/sdk/lib/client/ManagedNetwork";
 
 export const HEDERA_CUSTOM_NET_NAME = "customnet";
 
+type HederaNodesAddressBook = { [key: string]: string | AccountId };
+
 export class HederaNetwork {
-  /**
-   * @returns {Promise<ApiSession>}
-   */
-  static defaultApiSession(env = process.env) {
+  public static defaultApiSession(env = process.env): Promise<ApiSession> {
     return HederaNetwork.for({
       name: env.HEDERA_NETWORK,
       nodes: HederaNetwork._parseNetworkNodeFrom(env.HEDERA_NODES)
      }).login({
       operatorId: env.HEDERA_OPERATOR_ID,
-      operatorkey: env.HEDERA_OPERATOR_KEY,
+      operatorKey: env.HEDERA_OPERATOR_KEY
      });
   }
 
@@ -36,7 +36,10 @@ export class HederaNetwork {
    *                                 Required if {@param options.name} is customnet otherwise it's optional. 
    * @returns a {@see HederaNetwork} instance
    */
-  static for({ name, nodes = {} }) {
+  public static for({ name, nodes = {} }: { 
+    name: string, 
+    nodes: HederaNodesAddressBook
+  }): HederaNetwork {
     let chosenClient = null;
     
     const availableNetworkNames = [ HEDERA_CUSTOM_NET_NAME, "mainnet", "testnet", "previewnet" ];
@@ -46,7 +49,7 @@ export class HederaNetwork {
     }
 
     try {
-      chosenClient = Client.forName(name);
+      chosenClient = Client.forName(name as NetworkName);
     } catch(e) {
       // This is a non-standard client. Maybe it's a local-net one?
       if (HEDERA_CUSTOM_NET_NAME === name) {
@@ -70,10 +73,8 @@ export class HederaNetwork {
    *   "127.0.0.1:50211": new AccountId(2),
    *   "127.0.0.1:50212": new AccountId(5)
    * }
-   * @param {string} string
-   * @returns 
    */
-  static _parseNetworkNodeFrom(string) {
+  private static _parseNetworkNodeFrom(string: string): HederaNodesAddressBook {
     let networkInfo = {};
 
     if (string) {
@@ -99,7 +100,7 @@ export class HederaNetwork {
 
   _apiSessions = {};
 
-  static validateOperator({ id, key }) {
+  public static validateOperator({ id, key }: { id: string, key: string }): { accountId: AccountId, privateKey: PrivateKey } {
     let accountId;
     let privateKey;
 
@@ -117,24 +118,17 @@ export class HederaNetwork {
     return { accountId, privateKey };
   }
 
-  /**
-   * @private
-   */
-  constructor(client) { this._client = client; }
+  private constructor(public readonly client: Client) { }
 
-  get client() {
-    return this._client;
-  }
-
-  async login({ operatorId, operatorkey }) {
+  public async login({ operatorId, operatorKey }: { operatorId: string, operatorKey: string }) {
     // TODO: validate parameters
 
     if (!this._apiSessions[operatorId]) {
       const { accountId, privateKey } = HederaNetwork.validateOperator({
         id: operatorId,
-        key: operatorkey
+        key: operatorKey
       });
-      const hClient = this._client.setOperator(accountId, privateKey);
+      const hClient = this.client.setOperator(accountId, privateKey);
       const accountInfoQuery = new AccountInfoQuery().setAccountId(accountId);
       const accountInfo = await accountInfoQuery.execute(hClient);
 

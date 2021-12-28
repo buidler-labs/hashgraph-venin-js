@@ -2,16 +2,27 @@ import {
   ContractCreateTransaction,
 } from "@hashgraph/sdk";
 
-import { UploadableFile } from "../UploadableFile.mjs";
-import { CompileIssues } from '../errors/CompileIssues.mjs';
-import { LiveContract } from '../live/LiveContract.mjs';
-import { HContractFunctionParameters } from '../HContractFunctionParameters.mjs';
+import { ArgumentsOnFileUploaded, UploadableEntity } from "./UploadableEntity";
+import { CompileIssues } from '../errors/CompileIssues';
+import { LiveContract } from '../live/LiveContract';
+import { HContractFunctionParameters } from '../HContractFunctionParameters';
 import { Interface } from '@ethersproject/abi';
-import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../SolidityCompiler.mjs';
+import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../SolidityCompiler';
 
 const DEFAULT_GAS_FOR_CONTRACT_CREATION = 75_000;
 
-export class Contract extends UploadableFile {
+type AllContractOptions = {
+  code?: string,
+  ignoreWarnings?: boolean,
+  path?: string
+
+};
+type NewContractOptions = { 
+  index?: number, 
+  name?: string, 
+} & AllContractOptions;
+
+export class Contract extends UploadableEntity<LiveContract> {
   /**
    * Given an index or a name, this returns a specific contract following the successfull compilation of 
    * either the contract code itself ({@param options.code}) or the solidity file located at the provided {@param options.path}
@@ -27,7 +38,7 @@ export class Contract extends UploadableFile {
    * @param {string} options.path - The top-level solidity code file path
    * @returns {Promise<Contract>}
    */
-  static async newFrom({ code, index = 0, ignoreWarnings = false, name, path }) {
+  public static async newFrom({ code, index = 0, ignoreWarnings = false, name, path }: NewContractOptions): Promise<Contract> {
     if (!code && ! path) {
       throw new Error("In order to continue, either provide the direct solidity code or a file path where the top-level code resides.");
     }
@@ -59,8 +70,8 @@ export class Contract extends UploadableFile {
    * @param {string} options.path - The top-level solidity code file path
    * @returns {Promise<Array<Contract>>} - A list of {@see Contract}s parsed via Hedera's officially supported solidity version compiler (`solc`) from the code
    */
-  static async allFrom({ code, ignoreWarnings = false, path }) {
-    if (!code && ! path) {
+  static async allFrom({ code, ignoreWarnings = false, path }: AllContractOptions): Promise<Array<Contract>> {
+    if (!code && !path) {
       throw new Error("Can only retrieve contracts if either the direct solidity code is provided or a file path where that top-level code resides.");
     }
 
@@ -84,13 +95,10 @@ export class Contract extends UploadableFile {
   }
 
   /**
-   * Deserializes the provided Contract representation which is assumed to be the output of the {@see Contract.serialize} method call.
-   * 
-   * @param {string} what 
-   * @returns {Contract}
+   * Deserializes the provided Contract representation which is assumed to be the output of the {@link Contract.serialize} method call.
    */
-  static deserialize(what) {
-    let jWhat = {};
+  public static deserialize(what: string): Contract {
+    let jWhat: any = {};
 
     try {
       jWhat = JSON.parse(what)
@@ -100,7 +108,7 @@ export class Contract extends UploadableFile {
     return new Contract(jWhat);
   }
 
-  static _tryParsingCompileResultFrom({ rawCompileResult, ignoreWarnings }) {
+  private static _tryParsingCompileResultFrom({ rawCompileResult, ignoreWarnings }) {
     const compileResult = JSON.parse(rawCompileResult);
 
     CompileIssues.tryThrowingIfErrorsIn({ compileResult, ignoreWarnings });
@@ -108,9 +116,22 @@ export class Contract extends UploadableFile {
   }
 
   /**
-   * @private 
+   * The name of the referenced Solidity contract. 
+   * Note: this can be different then the source-file used to host it.
    */
-  constructor({ name, abi, byteCode }) {
+  public readonly name: string;
+  /**
+   * The byte-code representation of the contract's code ready to be uploaded and executed inside an EVM. 
+   */
+  public readonly byteCode: string;
+  /**
+   * Retrieves the Contract's Application Binary Interface (ABI) specs.
+   * {@link https://docs.soliditylang.org/en/v0.8.10/abi-spec.html#json}
+   * @returns {Interface}
+   */
+  public readonly interface: Interface;
+
+  private constructor({ name, abi, byteCode }: { name: string, abi: any[], byteCode: string }) {
     if (!name) {
       throw new Error("Please provide a name for the Contract instance.");
     } else if(!abi) {
@@ -120,42 +141,15 @@ export class Contract extends UploadableFile {
     }
 
     super();
-    this._name = name;
-    this._byteCode = byteCode;
-    this._interface = new Interface(abi);
-  }
-
-  /**
-   * The byte-code representation of the contract's code ready to be uploaded and executed inside an EVM. 
-   */
-  get byteCode() {
-    return this._byteCode;
-  }
-
-  /**
-   * Retrieves the Contract's Application Binary Interface (ABI) specs.
-   * {@link https://docs.soliditylang.org/en/v0.8.10/abi-spec.html#json}
-   * @returns {Interface}
-   */
-  get interface() {
-    return this._interface;
-  }
-
-  /**
-   * The name of the referenced Solidity contract. 
-   * Note: this can be different then the source-file used to host it.
-   */
-  get name() {
-    return this._name;
+    this.name = name;
+    this.byteCode = byteCode;
+    this.interface = new Interface(abi);
   }
 
   /**
    * Tests if this contract is the same (functionally speaking) as another one.
-   * 
-   * @param {Contract} other 
-   * @returns 
    */
-  equals(other) {
+  public equals(other?: Contract): boolean {
     if (other instanceof Contract === false) {
       return false;
     }
@@ -169,7 +163,7 @@ export class Contract extends UploadableFile {
    * 
    * @returns {string} - The serialized representation of the current instance
    */
-  serialize() {
+  public serialize(): string {
     return JSON.stringify({
       name: this.name,
       byteCode: this.byteCode,
@@ -177,11 +171,7 @@ export class Contract extends UploadableFile {
     });
   }
 
-  /**
-   * @override
-   * @protected
-   */
-  async _getContent() {
+  protected override async _getContent() {
     return this.byteCode;
   }
 
@@ -191,27 +181,21 @@ export class Contract extends UploadableFile {
    * as constructor arguments when publishing the Contract. 
    * If there is a constructor config object present (first args from list if it has the '_contract' property) this is consumed and the remainder of the arguments 
    * are passed to the Contract constructor.
-   * 
-   * @override
-   * @protected
    */
-  async _onFileUploaded({ client, receipt, args = [] }) {
+  protected override async _onFileUploaded({ client, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContract> {
     const createContractTransaction = new ContractCreateTransaction(this._getContractCreateOptionsFor({ client, receipt, args }));
 
-    return await LiveContract.newFor({
+    return await LiveContract.newFollowingUpload({
       client,
       contract: this,
-      createContractTransaction
+      transaction: createContractTransaction
     });
   }
 
-  /**
-   * @private 
-   */
-  _getContractCreateOptionsFor({ client, receipt, args = [] }) {
+  private _getContractCreateOptionsFor({ client, receipt, args = [] }: ArgumentsOnFileUploaded) {
     const contractFileId = receipt.fileId;
-    const constructorDefinition = this._interface.deploy;
-    let contractCreationOverrides = {};
+    const constructorDefinition = this.interface.deploy;
+    let contractCreationOverrides: any = {};
 
     if (args.length > 0 && Object.keys(args[0]).length !== 0 && Object.keys(args[0])[0] === '_contract') {
       contractCreationOverrides = args[0]._contract;

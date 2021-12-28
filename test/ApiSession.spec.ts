@@ -2,9 +2,9 @@ import {
   describe, expect, it,
 } from '@jest/globals';
 
-import { read } from './utils.mjs';
-import { Contract } from '../lib/static/Contract.mjs';
-import { HederaNetwork } from '../lib/HederaNetwork.mjs';
+import { read } from './utils';
+import { Contract } from '../lib/static/Contract';
+import { HederaNetwork } from '../lib/HederaNetwork';
 
 describe('ApiSession', () => {
   it('given enough hbar, uploading a simple solidity contract should succede', async () => {
