@@ -1,10 +1,12 @@
+import * as dotenv from 'dotenv';
+import * as process from "process";
+
 import {
   AccountId,
   AccountInfoQuery,
   Client,
   PrivateKey,
 } from "@hashgraph/sdk";
-import * as process from "process";
 
 import { CredentialsInvalidError } from "./errors/CredentialsInvalidError";
 import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
@@ -13,16 +15,29 @@ import { NetworkName } from "@hashgraph/sdk/lib/client/ManagedNetwork";
 
 export const HEDERA_CUSTOM_NET_NAME = "customnet";
 
+type HederaDefaultApiSessionEnvSource = { 
+  env?: { [key: string]: string }, 
+  path?: string 
+};
 type HederaNodesAddressBook = { [key: string]: string | AccountId };
 
 export class HederaNetwork {
-  public static defaultApiSession(env = process.env): Promise<ApiSession> {
+  /**
+   * Builds and retrieves the default {@link ApiSession} associated with this runtime. There are currently 2 ways of providing the parameters requried for the api-session to be built:
+   * - either pass them through the {@link env} parameter property (defaults to the 'process.env' for node environments) or 
+   * - give the path to a 'dotenv' like file (defaults to '.env') from which they are loaded by the library (the {@link path} parameter)
+   * 
+   * Note: If both these parameters are set, the environment/runtime (env) values overwrite the path-loaded (via path) dotenv ones.
+   */
+  public static defaultApiSession({ env = process.env, path = '.env' }: HederaDefaultApiSessionEnvSource = {}): Promise<ApiSession> {
+    const eParams = HederaNetwork._resolveDefaultSessionParamsFrom({ env, path });
+
     return HederaNetwork.for({
-      name: env.HEDERA_NETWORK,
-      nodes: HederaNetwork._parseNetworkNodeFrom(env.HEDERA_NODES)
+      name: eParams.HEDERA_NETWORK,
+      nodes: HederaNetwork._parseNetworkNodeFrom(eParams.HEDERA_NODES)
      }).login({
-      operatorId: env.HEDERA_OPERATOR_ID,
-      operatorKey: env.HEDERA_OPERATOR_KEY
+      operatorId: eParams.HEDERA_OPERATOR_ID,
+      operatorKey: eParams.HEDERA_OPERATOR_KEY
      });
   }
 
@@ -34,7 +49,7 @@ export class HederaNetwork {
    * @param {object} options.nodes - The 'Client.forNetwork' compatible method argument which consists of properties that are node lacations mapped to account Ids.
    *                                 Ex. { '127.0.0.1:50211': new AccountId(3), '127.0.0.1:50212': new AccountId(4) }
    *                                 Required if {@param options.name} is customnet otherwise it's optional. 
-   * @returns a {@see HederaNetwork} instance
+   * @returns a {@link HederaNetwork} instance
    */
   public static for({ name, nodes = {} }: { 
     name: string, 
@@ -63,6 +78,14 @@ export class HederaNetwork {
       }
     }
     return new HederaNetwork(chosenClient);
+  }
+
+
+  private static _resolveDefaultSessionParamsFrom(source: HederaDefaultApiSessionEnvSource): { [key: string]: string } {
+    const dEnv = dotenv.config({ path: source.path }).parsed;
+    const pEnv = source.env;
+
+    return Object.assign({}, dEnv, pEnv);
   }
 
   /**

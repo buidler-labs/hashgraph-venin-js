@@ -1,16 +1,19 @@
-import {
-  HEDERA_CUSTOM_NET_NAME,
-  HederaNetwork,
-} from '../lib/HederaNetwork';
+import * as fs from 'fs/promises';
+
 import {
   afterAll, beforeAll,
   describe, expect, it,
   jest,
 } from '@jest/globals';
+import { AccountId } from '@hashgraph/sdk';
+
+import {
+  HEDERA_CUSTOM_NET_NAME,
+  HederaNetwork,
+} from '../lib/HederaNetwork';
 
 import { CredentialsInvalidError } from '../lib/errors/CredentialsInvalidError';
 import { EnvironmentInvalidError } from '../lib/errors/EnvironmentInvalidError';
-import { AccountId } from '@hashgraph/sdk';
 
 describe('HederaNetwork', () => {
   const ORIGINAL_ENV = process.env;
@@ -68,6 +71,36 @@ describe('HederaNetwork', () => {
 
     expect(clientNetwork["node_0"]).toEqual(node0Account);
     expect(clientNetwork["node_1"]).toEqual(node1Account);
+  });
+
+  it('if environment params are not provided yet a dot-env file is present, dot-env properties should be used for default-session instantiation', async () => {
+    const tmpDotEnvFileName = `.env_testTemp`;
+    const tmpDotEnvFileContent = {
+      HEDERA_NETWORK: HEDERA_CUSTOM_NET_NAME,
+      HEDERA_NODES: "A#69",
+      HEDERA_OPERATOR_ID: "B",
+      HEDERA_OPERATOR_KEY: "C"
+    };
+    const spyHederaNetworkLogin = jest.fn();
+    const spyHederaNetworkFor = jest.spyOn(HederaNetwork, "for").mockReturnValue(<any>{ login: spyHederaNetworkLogin });
+
+    await fs.writeFile(tmpDotEnvFileName, Object.keys(tmpDotEnvFileContent).map(key => `${key}=${tmpDotEnvFileContent[key]}`).join('\n'));
+    try {
+      await HederaNetwork.defaultApiSession({ env: {}, path: tmpDotEnvFileName });
+
+      expect(spyHederaNetworkFor.mock.calls.length === 1).toBeTruthy();
+      expect(spyHederaNetworkFor.mock.calls[0][0]).toMatchObject({
+        name: tmpDotEnvFileContent.HEDERA_NETWORK,
+        nodes: { "A": new AccountId(69) }
+      });
+      expect(spyHederaNetworkLogin.mock.calls.length === 1).toBeTruthy();
+      expect(spyHederaNetworkLogin.mock.calls[0][0]).toMatchObject({
+        operatorId: tmpDotEnvFileContent.HEDERA_OPERATOR_ID,
+        operatorKey: tmpDotEnvFileContent.HEDERA_OPERATOR_KEY
+      });
+    } finally {
+      await fs.rm(tmpDotEnvFileName);
+    }
   });
 
   async function expectDefaultApiSessionToThrowFor(networkName, nodes, operatorId, operatorKey, expectedErrorType) {
