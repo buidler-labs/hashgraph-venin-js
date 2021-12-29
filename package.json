@@ -4,13 +4,12 @@
   },
   "name": "@3vs/hedera-strato-js",
   "description": "The Hedera unoficial, high-level 'stratospheric' SDK for JS consumption",
-  "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "main": "./index.js",
   "scripts": {
     "build:rollup": "rollup -c",
     "build:ts": "tsc",
     "docs": "typedoc ./index.ts",
-    "publish": "npm run build:ts && node ./script/prepare-publish.cjs && npm publish ./build",
+    "publish:npm": "rm -fr ./build && npm run build:ts && node ./script/prepare-publish.cjs && npm publish ./build --access public",
     "test": "jest"
   },
   "keywords": [
