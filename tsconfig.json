@@ -100,5 +100,14 @@
   },
   "exclude": [
     "test"
-  ]
+  ],
+  "typedocOptions": {
+    "entryPoints": ["index.ts"],
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "includeVersion": true,
+    "internalNamespace": "Internal",
+    "name": "Hedera Strato JS",
+    "out": "docs"
+  }
 }

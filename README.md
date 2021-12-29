@@ -14,7 +14,7 @@ $ npm i @3vs/hedera-strato-js
 
 ### Getting started
 1. Create an `.env` file at the root of your repo with the following content filledin accordingly (see [.env.sample](./.env.sample) for more details and options):
-```
+```sh
 HEDERA_NETWORK=testnet
 HEDERA_OPERATOR_ID=0.0...
 HEDERA_OPERATOR_KEY=...
@@ -40,13 +40,15 @@ console.log(await liveContract.greet());
 ```
 If all goes well, you should see the expected `Hello Hedera Strato!` logged inside your console signifying that the contract was successfully compiled, uploaded and executed. 
 
+Also, if you want a quick play-through a similar example, please have a look at [our minimum-working code](https://github.com/three-Vs/hsj-example) repo. 
+
 ## Features
 - Upload a [Solidity Contract](https://docs.soliditylang.org/en/v0.8.10/index.html) (either by _code_ or by _path_) to Hedera and directly interact with it in JS (via [_LiveContracts_](https://github.com/three-Vs/hedera-strato-js/blob/main/lib/live/LiveContract.ts))
 - Given a [ContractId](https://docs.hedera.com/guides/docs/hedera-api/basic-types/contractid) and its ABI, retrieve a live-instance of a contract and interact with it
 - Upload a JSON object to [Hedera File Services](https://docs.hedera.com/guides/docs/sdks/file-storage) allowing for later retrieval
 
 ## Using it
-`TODO: Link to API docs`
+You can find the API docs here (`TODO`). Alternativelly, if you want to locally spin up quickly some working code, have a look at our [minimal example repo](https://github.com/three-Vs/hsj-example).
 
 ## Testing it
 Have the `.env` file ready (see above) and run 

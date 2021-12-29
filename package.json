@@ -8,7 +8,7 @@
   "scripts": {
     "build:rollup": "rollup -c",
     "build:ts": "tsc",
-    "docs": "typedoc ./index.ts",
+    "docs": "typedoc && cp .env.sample docs/",
     "publish:npm": "rm -fr ./build && npm run build:ts && node ./script/prepare-publish.cjs && npm publish ./build --access public",
     "test": "jest"
   },
@@ -37,6 +37,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "ts-jest": "^27.1.2",
     "typedoc": "^0.22.10",
+    "typedoc-plugin-missing-exports": "^0.22.6",
     "typescript": "^4.5.4"
   },
   "repository": {

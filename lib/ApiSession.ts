@@ -1,5 +1,5 @@
 import { Interface } from '@ethersproject/abi';
-import { AccountInfo, Client, ContractId, FileContentsQuery, FileId } from '@hashgraph/sdk';
+import { AccountId, AccountInfo, Client, ContractId, FileContentsQuery, FileId } from '@hashgraph/sdk';
 
 import { LiveContract } from './live/LiveContract';
 import { LiveEntity } from './live/LiveEntity';
@@ -12,24 +12,37 @@ type ApiSessionConstructorArgs = {
   operatorInfo: AccountInfo
 };
 
+/**
+ * The core class used for all business-logic, runtime network-interactions.
+ * 
+ * Should only be instantiable through a {@link HederaNetwork} method such as the {@link HederaNetwork.defaultApiSession} one.
+ */
 export class ApiSession {
   private readonly client: Client;
   private readonly operatorInfo: AccountInfo;
 
+  /**
+   * @hidden
+   */
   constructor({ hClient, operatorInfo }: ApiSessionConstructorArgs) {
     this.client = hClient;
     this.operatorInfo = operatorInfo;
   }
 
   /**
-   * Retrieves the operator account-id for this {@link ApiSession}.
+   * Retrieves the operator {@link AccountId} for this {@link ApiSession}.
    */
   public get accountId() {
     return this.client.operatorAccountId;
   }
 
   /**
-   * Returns true if the provided {@see solidityAddress } also owns this {@link ApiSession} and false otherwise. 
+   * Returns true if the provided {@link who.solidityAddress} also owns this {@link ApiSession} and false otherwise. 
+   * 
+   * @deprecated Use the {@link accountId} property to check this
+   * 
+   * @param {object} who
+   * @param {string} who.solidityAddress
    */
   public isOperatedBy({ solidityAddress }: { solidityAddress: string }): boolean {
     if (solidityAddress.indexOf('0x') === 0) {
@@ -39,7 +52,7 @@ export class ApiSession {
   }
 
   /**
-   * Given an {@link UploadableEntity}, it triest ot upload it using the currently configured {@link Client} passing in-it any provided {@see args}.
+   * Given an {@link UploadableEntity}, it triest ot upload it using the currently configured {@link ApiSession} passing in-it any provided {@link args}.
    * 
    * @param {Uploadable} what - The {@link UploadableEntity} to push through this {@link ApiSession}
    * @param {*} args - A list of arguments to pass through the upload operation itself.
@@ -50,8 +63,14 @@ export class ApiSession {
   public async upload<T extends LiveEntity>(what: UploadableEntity<T>, ...args: any[]): Promise<T>;
 
   /**
-   * Given a raw JSON {@link object}, it triest ot upload it using the currently configured {@link Client} passing in-it any provided {@see args}.
-   * Note: This is the same as calling the more verbose equivalent of 'upload(new Json(what))'.
+   * Given a raw JSON {@link object}, it triest ot upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
+   * 
+   * `Note:` This is the same as calling the more verbose equivalent of `upload(new Json(what))`.
+   * 
+   * Example of usage:
+   * ```js
+   * await apiSession.upload({a: 1, {b: "c"}})
+   * ```
    * 
    * @param {object} what - The {@link Json}-acceptable payload to push through this {@link ApiSession}
    * @param {*} args - A list of arguments to pass through the upload operation itself.
@@ -85,9 +104,9 @@ export class ApiSession {
    * through the {@link abi} param.
    * 
    * @param {object} options
-   * @param {ContractId | string} options.id - the contract-id to load
-   * @param {Interface|Array} options.abi - either the etherjs contract interface or the etherjs Interface compatible ABI 
-   *                                        definitions to use with the resulting live-contract
+   * @param {ContractId|string} options.id - the {@link ContractId} to load being it string-serialized or already parsed
+   * @param {Interface|Array} options.abi - either the [etherjs contract interface](https://docs.ethers.io/v5/api/utils/abi/interface/) or the [etherjs Interface compatible ABI 
+   *                                        definitions](https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--creating) to use with the resulting live-contract
    */
   public async getLiveContract({ id, abi = [] }: { id: ContractId|string, abi?: Interface|any[] }): Promise<LiveContract> {
     let targetedContractId: ContractId;
@@ -105,9 +124,10 @@ export class ApiSession {
   }
 
   /**
-   * Given a {@link FileId} of a deployed {@link Json} instance, retrieves a {@link LiveJson} reference ready to be used
+   * Given a {@link FileId} (string-serialized or parsed) of a deployed {@link Json} instance, retrieves a {@link LiveJson} reference.
+   * 
    * @param {object} options 
-   * @param {FileId | string} options.id - the file-id to load
+   * @param {FileId | string} options.id - the file-id to load parsed as a {@link FileId} or raw in a string-serialized
    */
   public async getLiveJson({ id }: { id: FileId|string }): Promise<LiveJson> {
     let targetedFileId: FileId;

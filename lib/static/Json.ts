@@ -1,7 +1,16 @@
 import { LiveJson } from "../live/LiveJson";
 import { ArgumentsOnFileUploaded, UploadableEntity } from "./UploadableEntity";
 
+/**
+ * A data-holder class that can source the creation of a {@link LiveJson} persisted on the [Hedera File Service (HFS)](https://docs.hedera.com/guides/docs/sdks/file-storage)
+ */
 export class Json extends UploadableEntity<LiveJson> {
+    /**
+     * Checks to see if a piece of data can be referenced by a {@link Json} object or not.
+     * 
+     * @param {object} jInfo - info-param to check 
+     * @returns - true if the data is {@link Json} referenceable and false otherwise
+     */
     public static isInfoAcceptable(jInfo: object): boolean {
         try {
             Json._guardForInvalid(jInfo);
@@ -26,6 +35,11 @@ export class Json extends UploadableEntity<LiveJson> {
         }
     }
 
+    /**
+     * Tries to construct the a new {@link Json} instance that hosts the provided info. Throws an error if, for any reason, the provided data cannot be Json-referenced.
+     * 
+     * @param info - the payload to reference
+     */
     public constructor(private readonly info: object) {
         super();
         Json._guardForInvalid(info);

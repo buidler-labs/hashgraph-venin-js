@@ -12,30 +12,43 @@ import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../Solidity
 const DEFAULT_GAS_FOR_CONTRACT_CREATION = 75_000;
 
 type AllContractOptions = {
+  /**
+   * The Solidity full, human-readable, contract code
+   */
   code?: string,
+  /**
+   * Should we fail at compile-time warnings or not? Default: false
+   */
   ignoreWarnings?: boolean,
+  /**
+   * The top-level Solidity code file path if not using the 'code' alternative.
+   */
   path?: string
 
 };
 type NewContractOptions = { 
+  /**
+   * The Contract index to retrieve (if the name is not provided). Defaults to 0
+   */
   index?: number, 
+  /**
+   * The Contract we wish to retrieve (if no index is provided).
+   */
   name?: string, 
 } & AllContractOptions;
 
+/**
+ * The Solidity-backed, non-deployed, data-holder for a Smart Contract logic.
+ */
 export class Contract extends UploadableEntity<LiveContract> {
   /**
-   * Given an index or a name, this returns a specific contract following the successfull compilation of 
-   * either the contract code itself ({@param options.code}) or the solidity file located at the provided {@param options.path}
+   * Given an index or a name, this returns a specific {@link Contract} following the successfull compilation of 
+   * either the contract code itself ({@link options.code}) or the solidity file located at the provided {@link options.path}
    * 
-   * In terms of precidence, it first checks to see if the {@param options.name} is provided and, if so, it uses that otherwise
-   * it looks at the {@param options.index} one and goes with that.
+   * In terms of precidence, it first checks to see if the {@link options.name} is provided and, if so, it uses that otherwise
+   * it looks at the {@link options.index} one and goes with that.
    * 
    * @param {Object} options - Provides a source and controls various {@see Contract} construction settings.
-   * @param {string} options.code - The Solidity code to build the contracts from.
-   * @param {number} [options.index=0] - The Contract index to retrieve (if the name is not provided).
-   * @param {boolean} [options.ignoreWarnings=false] - Should we fail at compile-time warnings or not?
-   * @param {string} [options.name] - The Contract we wish to retrieve (if no index is provided).
-   * @param {string} options.path - The top-level solidity code file path
    * @returns {Promise<Contract>}
    */
   public static async newFrom({ code, index = 0, ignoreWarnings = false, name, path }: NewContractOptions): Promise<Contract> {
@@ -62,13 +75,10 @@ export class Contract extends UploadableEntity<LiveContract> {
   }
 
   /**
-   * Returns all the contracts present in a given {@param options.code}.
+   * Returns all the contracts present in the given 'options' (either from 'path' or from 'code').
    * 
    * @param {Object} options - Provides a source and controls various {@see Contract} construction settings.
-   * @param {string} options.code - The Solidity code to build the contracts from.
-   * @param {boolean} [options.ignoreWarnings=false] - Should we fail at compile-time warnings or not?
-   * @param {string} options.path - The top-level solidity code file path
-   * @returns {Promise<Array<Contract>>} - A list of {@see Contract}s parsed via Hedera's officially supported solidity version compiler (`solc`) from the code
+   * @returns {Promise<Array<Contract>>} - A list of {@link Contract}s parsed via Hedera's officially supported solidity version compiler (`solc`) from the code
    */
   static async allFrom({ code, ignoreWarnings = false, path }: AllContractOptions): Promise<Array<Contract>> {
     if (!code && !path) {
@@ -157,9 +167,9 @@ export class Contract extends UploadableEntity<LiveContract> {
   }
 
   /**
-   * Serializes the current entity. This then can be reversed via calling {@see Contract.deserialize}.
+   * Serializes the current entity. This then can be reversed via calling {@link Contract.deserialize}.
    * 
-   * Note: when de-serializing, the properties exported here should allow for a complete re-instantiation of the original {@see Contract}. 
+   * Note: when de-serializing, the properties exported here should allow for a complete re-instantiation of the original {@link Contract}. 
    * 
    * @returns {string} - The serialized representation of the current instance
    */
@@ -177,7 +187,7 @@ export class Contract extends UploadableEntity<LiveContract> {
 
   /**
    * Having a file-create {@link receipt} provided, this function uses it to create a contract via the Hedera Contract Service (HCS). The provided {@link args}
-   * are used both to populate the {@see ContractCreateTransaction} constructor (if the first object from the list has a '_contract' property) and to pass along
+   * are used both to populate the {@link ContractCreateTransaction} constructor (if the first object from the list has a '_contract' property) and to pass along
    * as constructor arguments when publishing the Contract. 
    * If there is a constructor config object present (first args from list if it has the '_contract' property) this is consumed and the remainder of the arguments 
    * are passed to the Contract constructor.
