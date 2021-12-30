@@ -193,7 +193,8 @@ export class Contract extends UploadableEntity<LiveContract> {
    * are passed to the Contract constructor.
    */
   protected override async _onFileUploaded({ client, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContract> {
-    const createContractTransaction = new ContractCreateTransaction(this._getContractCreateOptionsFor({ client, receipt, args }));
+    const contractTransactionArguments = await this._getContractCreateOptionsFor({ client, receipt, args });
+    const createContractTransaction = new ContractCreateTransaction(contractTransactionArguments);
 
     return await LiveContract.newFollowingUpload({
       client,
@@ -202,7 +203,7 @@ export class Contract extends UploadableEntity<LiveContract> {
     });
   }
 
-  private _getContractCreateOptionsFor({ client, receipt, args = [] }: ArgumentsOnFileUploaded) {
+  private async _getContractCreateOptionsFor({ client, receipt, args = [] }: ArgumentsOnFileUploaded) {
     const contractFileId = receipt.fileId;
     const constructorDefinition = this.interface.deploy;
     let contractCreationOverrides: any = {};
@@ -214,7 +215,7 @@ export class Contract extends UploadableEntity<LiveContract> {
     return Object.assign({}, {
       adminKey: client.operatorPublicKey,
       bytecodeFileId: contractFileId,
-      constructorParameters: new HContractFunctionParameters(constructorDefinition, args),
+      constructorParameters: await HContractFunctionParameters.newFor(constructorDefinition, args),
       gas: DEFAULT_GAS_FOR_CONTRACT_CREATION,
       ...contractCreationOverrides
     });

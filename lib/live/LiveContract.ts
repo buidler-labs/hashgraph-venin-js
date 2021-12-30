@@ -19,12 +19,13 @@ import { FunctionFragment, Interface } from "@ethersproject/abi";
 import { HContractFunctionParameters } from "../HContractFunctionParameters";
 import { EventEmitter } from "events";
 import { LiveEntity } from "./LiveEntity";
+import { SolidityAddressable } from "../SolidityAddressable";
 
 export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 69_000;
 
 export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
 
-export class LiveContract extends EventEmitter implements LiveEntity {
+export class LiveContract extends EventEmitter implements LiveEntity, SolidityAddressable {
     /**
      * Constructs a new LiveContract to be interacted with.
      */
@@ -74,7 +75,7 @@ export class LiveContract extends EventEmitter implements LiveEntity {
         Object.values(this.interface.functions).forEach(fDescription => Object.defineProperty(this, fDescription.name, {
                 enumerable: true,
                 value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {
-                    const request = this._createContractRequestFor({ fDescription, args });
+                    const request = await this._createContractRequestFor({ fDescription, args });
                     const txResponse = await request.execute(this.client);
                     const didFunctionCallChangeState = txResponse instanceof TransactionResponse;
                     let functionResult: ContractFunctionResult;
@@ -97,13 +98,17 @@ export class LiveContract extends EventEmitter implements LiveEntity {
             }));
     }
 
+    public async getSolidityAddress(): Promise<string> {
+        return this.id.toSolidityAddress();
+    }
+
     /**
      * Creates a contract query/call request based for the given function-description and the desired arguments (args).
      * The first argument is checked to see if it matches the constructor arguments schema and, if it does, it's used to construct the
      * actual request instance, discarding it in the process so that the remaining arguments can all be used as the actual values sent to 
      * the targeted function.
      */
-    private _createContractRequestFor({ fDescription, args }: { fDescription: FunctionFragment, args: any[] }): ContractCallQuery | ContractExecuteTransaction {
+    private async _createContractRequestFor({ fDescription, args }: { fDescription: FunctionFragment, args: any[] }): Promise<ContractCallQuery | ContractExecuteTransaction> {
         let requestOptionsPresentInArgs = false;
         let constructorArgs: any = { 
             contractId: this.id,
@@ -177,7 +182,7 @@ export class LiveContract extends EventEmitter implements LiveEntity {
         // Prepare the targeted function
         contractRequest.setFunction(
             fDescription.name, 
-            new HContractFunctionParameters(fDescription, args)
+            await HContractFunctionParameters.newFor(fDescription, args)
         );
 
         return contractRequest;

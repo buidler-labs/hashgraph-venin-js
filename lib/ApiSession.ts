@@ -4,6 +4,7 @@ import { AccountId, AccountInfo, Client, ContractId, FileContentsQuery, FileId }
 import { LiveContract } from './live/LiveContract';
 import { LiveEntity } from './live/LiveEntity';
 import { LiveJson } from './live/LiveJson';
+import { SolidityAddressable } from './SolidityAddressable';
 import { Json } from './static/Json';
 import { UploadableEntity } from './static/UploadableEntity';
 
@@ -17,7 +18,7 @@ type ApiSessionConstructorArgs = {
  * 
  * Should only be instantiable through a {@link HederaNetwork} method such as the {@link HederaNetwork.defaultApiSession} one.
  */
-export class ApiSession {
+export class ApiSession implements SolidityAddressable {
   private readonly client: Client;
   private readonly operatorInfo: AccountInfo;
 
@@ -34,6 +35,13 @@ export class ApiSession {
    */
   public get accountId() {
     return this.client.operatorAccountId;
+  }
+
+  /**
+   * Retrieves the solidity-address of the underlying {@link AccountId} that's operating this session.
+   */
+  async getSolidityAddress(): Promise<string> {
+    return this.accountId.toSolidityAddress();
   }
 
   /**

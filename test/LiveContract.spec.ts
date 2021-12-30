@@ -177,6 +177,14 @@ describe('LiveContract', () => {
     });
   });
 
+  it ("given a method that requires an address, passing it a solidity-addressable instance should resolve to the expected address type", async() => {
+    const hapiSession = await HederaNetwork.defaultApiSession();
+    const naiveOwnerCheckContract = await Contract.newFrom({ code: read({ contract: 'naive_owner_check' }) });
+    const liveContract = await hapiSession.upload(naiveOwnerCheckContract);
+
+    await expect(liveContract.isOwnedBy(hapiSession)).resolves.toBeTruthy();
+  });
+
   it ("given the taskbar use-case contracts, initializing a task should allow for getting it back later on", async() => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
     const taskId = new BigNumber(1);
@@ -188,8 +196,8 @@ describe('LiveContract', () => {
     const taskRegistryLiveContract = await hapiSession.upload(taskRegistryContract);
 
     await expect(taskRegistryLiveContract.initialize({ gas: 100000 }, 
-      hapiSession.accountId.toSolidityAddress(),
-      cappedRegistryLiveContract.id.toSolidityAddress()
+      hapiSession,
+      cappedRegistryLiveContract
     )).resolves.toBeUndefined();
     await expect(taskRegistryLiveContract.initializeTask({ gas: 200000 },
       taskId,
@@ -232,8 +240,8 @@ describe('LiveContract', () => {
     const taskRegistryLiveContract = await hapiSession.upload(taskRegistryContract);
     const taskRegistryManagerLiveContract = await hapiSession.upload(
       taskRegistryManagerContract, 
-      taskRegistryLiveContract.id.toSolidityAddress(), 
-      cappedRegistryLiveContract.id.toSolidityAddress()
+      taskRegistryLiveContract, 
+      cappedRegistryLiveContract
     );
 
     // Register events of interest
@@ -248,12 +256,12 @@ describe('LiveContract', () => {
     // Play around with the live-contracts testing ocasionally
     await expect(cappedRegistryLiveContract.getRegistrySize()).resolves.toEqual(maxNrOfTasksPerRegistry);
     await expect(taskRegistryLiveContract.initialize({ gas: 100000 }, 
-      hapiSession.accountId.toSolidityAddress(),
-      cappedRegistryLiveContract.id.toSolidityAddress())
+      hapiSession,
+      cappedRegistryLiveContract)
     ).resolves.toBeUndefined();
     await expect(taskRegistryLiveContract.initialize({ gas: 100000 }, 
-      hapiSession.accountId.toSolidityAddress(),
-      cappedRegistryLiveContract.id.toSolidityAddress())
+      hapiSession,
+      cappedRegistryLiveContract)
     ).rejects.toThrow();
 
     const taskRegistry = await taskRegistryManagerLiveContract.registryWithSlot({ gas: 250000 });
