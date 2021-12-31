@@ -17,7 +17,7 @@
     "Hashgraph",
     "Smart Contracts"
   ],
-  "author": "BuiDler Labs Developers <devs@3vs.ro>",
+  "author": "BuiDler Labs Developers <devs@buidlerlabs.com>",
   "license": "MIT",
   "dependencies": {
     "@ethersproject/abi": "^5.5.0",
