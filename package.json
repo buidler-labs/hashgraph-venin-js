@@ -2,7 +2,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "name": "@3vs/hedera-strato-js",
+  "name": "@buidlerlabs/hedera-strato-js",
   "description": "The Hedera unoficial, high-level 'stratospheric' SDK for JS consumption",
   "main": "./index.js",
   "scripts": {
@@ -17,13 +17,13 @@
     "Hashgraph",
     "Smart Contracts"
   ],
-  "author": "3Vs Developers <devs@3vs.ro>",
+  "author": "BuiDler Labs Developers <devs@3vs.ro>",
   "license": "MIT",
   "dependencies": {
     "@ethersproject/abi": "^5.5.0",
     "@hashgraph/sdk": "^2.6.0",
     "dotenv": "^10.0.0",
-    "solc": "^0.8.9",
+    "solc": "0.8.9",
     "traverse": "^0.6.6"
   },
   "devDependencies": {
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/three-Vs/hedera-strato-js"
+    "url": "https://github.com/buidler-labs/hedera-strato-js"
   },
   "types": "./index.d.ts",
   "version": "0.6.9"

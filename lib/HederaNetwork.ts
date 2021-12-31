@@ -20,7 +20,7 @@ import { NetworkName } from "@hashgraph/sdk/lib/client/ManagedNetwork";
  * `Note:` When this type of network is selected, its node addressbook must also be provided and that is usually done through something like the
  *         `HEDERA_NODES` env-parameter (when using {@link HederaNetwork.defaultApiSession})
  * 
- * Example of a `.env` file that targets a `customnet`, [local hedera-services](https://github.com/three-Vs/dockerized-hedera-services) deployment:
+ * Example of a `.env` file that targets a `customnet`, [local hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) deployment:
  * ```
  * HEDERA_NETWORK=customnet
  * HEDERA_NODES=127.0.0.1:50211#3
@@ -31,7 +31,7 @@ import { NetworkName } from "@hashgraph/sdk/lib/client/ManagedNetwork";
  * HEDERA_OPERATOR_ID=0.0.2
  * HEDERA_OPERATOR_KEY=91132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137
  * ```
- * Please see our [dockerized-hedera-services](https://github.com/three-Vs/dockerized-hedera-services) for more info as to how to run a local, [dockerized](https://hub.docker.com/r/buidlerlabs/hedera-services), 
+ * Please see our [dockerized-hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) for more info as to how to run a local, [dockerized](https://hub.docker.com/r/buidlerlabs/hedera-services), 
  * [hedera-services](https://github.com/hashgraph/hedera-services) network.
  */
 export const HEDERA_CUSTOM_NET_NAME = "customnet";

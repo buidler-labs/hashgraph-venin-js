@@ -9,7 +9,7 @@ Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and w
 
 ## Installing it
 ``` bash
-$ npm i @3vs/hedera-strato-js
+$ npm i @buidlerlabs/hedera-strato-js
 ```
 
 ### Getting started
@@ -40,26 +40,25 @@ console.log(await liveContract.greet());
 ```
 If all goes well, you should see the expected `Hello Hedera Strato!` logged inside your console signifying that the contract was successfully compiled, uploaded and executed. 
 
-Also, if you want a quick play-through a similar example, please have a look at [our minimum-working code](https://github.com/three-Vs/hsj-example) repo. 
+Also, if you want a quick play-through a similar example, please have a look at [our minimum-working code](https://github.com/buidler-labs/hsj-example) repo. 
 
 ## Features
-- Upload a [Solidity Contract](https://docs.soliditylang.org/en/v0.8.10/index.html) (either by _code_ or by _path_) to Hedera and directly interact with it in JS (via [_LiveContracts_](https://github.com/three-Vs/hedera-strato-js/blob/main/lib/live/LiveContract.ts))
+- Upload a [Solidity Contract](https://docs.soliditylang.org/en/v0.8.10/index.html) (either by _code_ or by _path_) to Hedera and directly interact with it in JS (via [_LiveContracts_](https://github.com/buidler-labs/hedera-strato-js/blob/main/lib/live/LiveContract.ts))
 - Given a [ContractId](https://docs.hedera.com/guides/docs/hedera-api/basic-types/contractid) and its ABI, retrieve a live-instance of a contract and interact with it
 - Upload a JSON object to [Hedera File Services](https://docs.hedera.com/guides/docs/sdks/file-storage) allowing for later retrieval
 
 ## Using it
-You can find the API docs here (`TODO`). Alternativelly, if you want to locally spin up quickly some working code, have a look at our [minimal example repo](https://github.com/three-Vs/hsj-example).
+You can find the API docs here (`TODO`). Alternativelly, if you want to locally spin up quickly some working code, have a look at our [minimal example repo](https://github.com/buidler-labs/hsj-example).
 
 ## Testing it
 Have the `.env` file ready (see above) and run 
 ```
 $ npm test
 ```
-> **Note:** If you're targeting an official network such as a `testnet` or a `previewnet`, there will be a cost involved in running the library tests that has to do with API usage regarding contract deployments and execution (among other things). There's also the option of a `customnet` targeting a self-hosted `hedera-service` deployment. If you want to go down that path (recommended especially if you are planning to contribute), please [follow these instructions](https://github.com/three-Vs/dockerized-hedera-services).
+> **Note:** If you're targeting an official network such as a `testnet` or a `previewnet`, there will be a cost involved in running the library tests that has to do with API usage regarding contract deployments and execution (among other things). There's also the option of a `customnet` targeting a self-hosted `hedera-service` deployment. If you want to go down that path (recommended especially if you are planning to contribute), please [follow these instructions](https://github.com/buidler-labs/dockerized-hedera-services).
 
 ## Roadmap
 - ESM library support to allow browser embedding
-- Better align API outputs to Hedera SDK ones
 - Add library logs support
 - Add better compiler output support
 - ... others `TBD`

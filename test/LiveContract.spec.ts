@@ -2,10 +2,12 @@ import BigNumber from "bignumber.js";
 import {
   describe, expect, it,
 } from '@jest/globals';
+import { AccountId, Hbar } from "@hashgraph/sdk";
+import { arrayify } from '@ethersproject/bytes';
+
 import { load, read } from "./utils";
 import { Contract } from "../lib/static/Contract";
 import { HederaNetwork } from "../lib/HederaNetwork";
-import { AccountId, Hbar } from "@hashgraph/sdk";
 
 describe('LiveContract', () => {
   it("using the solidity-by-example > Immutable example, deploying a contract with constructor arguments should work", async () => {
@@ -51,8 +53,8 @@ describe('LiveContract', () => {
 
     const [ recvBytes, recvBytes32 ] = await liveContract.get();
 
-    expect(recvBytes).toEqual("0x" + sentBytes.toString('hex'));
-    expect(recvBytes32).toEqual("0x" + sentBytes32.toString('hex'));
+    expect(Buffer.compare(recvBytes, sentBytes)).toEqual(0);
+    expect(Buffer.compare(recvBytes32, sentBytes32)).toEqual(0);
   });
 
   it("given a contract which has methods that allow both a state change and return something, when called, the expected value is returned", async () => {
@@ -215,14 +217,14 @@ describe('LiveContract', () => {
     expect(gottenTask).toMatchObject({
       disputed: [ false, false ],
       disputionTime: new BigNumber(0),
-      dloc: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      dloc: arrayify("0x0000000000000000000000000000000000000000000000000000000000000000"),
       needer: "0x0000000000000000000000000000000000000002",
-      nploc: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ploc: "0x3637333437343635363837343335373236383737373437323635363736353732",
+      nploc: arrayify("0x0000000000000000000000000000000000000000000000000000000000000000"),
+      ploc: arrayify("0x3637333437343635363837343335373236383737373437323635363736353732"),
       price: new BigNumber(200),
       taskType: 1,
       tasker: "0x0000000000000000000000000000000000000000",
-      tploc: "0x0000000000000000000000000000000000000000000000000000000000000000"
+      tploc: arrayify("0x0000000000000000000000000000000000000000000000000000000000000000")
     });
   });
 

@@ -12,10 +12,10 @@ import { Client,
     TransactionRecord,
     TransactionResponse
 } from "@hashgraph/sdk";
+import { FunctionFragment, Interface } from "@ethersproject/abi";
+import { arrayify } from '@ethersproject/bytes';
 
 import { Contract } from "../static/Contract";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { FunctionFragment, Interface } from "@ethersproject/abi";
 import { HContractFunctionParameters } from "../HContractFunctionParameters";
 import { EventEmitter } from "events";
 import { LiveEntity } from "./LiveEntity";
@@ -98,6 +98,9 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
             }));
     }
 
+    /**
+     * Retrieves the Solidity address representation of the underlying, deployed, contract.
+     */
     public async getSolidityAddress(): Promise<string> {
         return this.id.toSolidityAddress();
     }
@@ -201,27 +204,36 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
         if (fDescription.outputs && fDescription.outputs.length !== 0) {
             if (fResultKeys.length === fDescription.outputs.length) {
                 // A named object can be returned since all the outputs are named
-                fResponse = fResultKeys.map(namedfDataKey => ({ [namedfDataKey]: fResult[namedfDataKey] }))
+                const isBytesTypeExpectedFor = (propKey:string) => fDescription.outputs.find(o => o.name === propKey).type.startsWith('bytes');
+                const tryMappingToHederaBytes = (propKey:string) => isBytesTypeExpectedFor(propKey) ? arrayify(fResult[propKey]) : fResult[propKey];
+
+                fResponse = fResultKeys.map(namedfDataKey => ({ [namedfDataKey]: tryMappingToHederaBytes(namedfDataKey) }))
                     .reduce((p, c) => ({...p, ...c}), {});
             } else if (fDescription.outputs.length > 1) {
                 fResponse = [...fResult];
+
+                // Map all Ethers HexString representations of bytes-type responses to their UInt8Array forms (same used by Hedera)
+                fResponse = fDescription.outputs.map((dType, id) => dType.type.startsWith('bytes') ? arrayify(fResponse[id]) : fResponse[id]);
             } else {
                 fResponse = fResult[0];
             }
 
             // Map all Ethers' BigNumber to the Hedera-used, bignumber.js equivalent
-            fResponse = traverse(fResponse).map(function(x) {
-                if (EthersBigNumber.isBigNumber(x)) {
-                    this.update(new BigNumber(x.toString()));
-                }
-            });
+            if (EthersBigNumber.isBigNumber(fResponse)) {
+                fResponse = new BigNumber(fResponse.toString());
+            } else {
+                traverse(fResponse).forEach(function(x) {
+                    if (EthersBigNumber.isBigNumber(x)) {
+                        this.update(new BigNumber(x.toString()));
+                    }
+                });
+            }
         }
         return fResponse;
     }
 
     /**
      * Given the Record of a transaction, we try to see if there have been any events emitted and, if so, we re-emit them on the live-contract instance.
-     * @param {TransactionRecord} txRecord 
      */
     private _tryToProcessForEvents(txRecord: TransactionRecord): void {
         txRecord.contractFunctionResult.logs.forEach(recordLog => {
