@@ -45,5 +45,5 @@
     "url": "https://github.com/buidler-labs/hedera-strato-js"
   },
   "types": "./index.d.ts",
-  "version": "0.6.9"
+  "version": "0.6.10"
 }
