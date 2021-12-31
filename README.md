@@ -64,7 +64,7 @@ $ npm test
 - ... others `TBD`
 
 ## Contributions
-Of course, contributions are more then welcomed and encouraged on all fronts: open an issue, update the docs or, if you feel bold enough, directly open a PR and make your case as to why your changes would benefit the libray. For further discussions, we're social on [our Discord channel](https://discord.gg/YavYCwfcMQ).
+Of course, contributions are more then welcomed and encouraged on all fronts: open an issue, update the docs or, if you feel bold enough, directly open a PR and make your case as to why your changes would benefit the library.
 
 ## License
 This work has been published under the MIT License.
