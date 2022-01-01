@@ -162,7 +162,7 @@ export class HederaNetwork {
     return networkInfo;
   }
 
-  _apiSessions = {};
+  private _apiSessions: { [k: string]: ApiSession } = {};
 
   /**
    * Validates a string serialized account id-private key pair and returns their parsed counter-parts ready to be consumed by inner, Hedera SDK layers.

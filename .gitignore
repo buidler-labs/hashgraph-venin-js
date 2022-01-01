@@ -1,6 +1,5 @@
 .env
 build/
 coverage/
-docs/
 dist/
 node_modules/

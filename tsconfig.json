@@ -106,8 +106,8 @@
     "excludePrivate": true,
     "excludeProtected": true,
     "includeVersion": true,
-    "internalNamespace": "Internal",
     "name": "Hedera Strato JS",
-    "out": "docs"
+    "out": "docs",
+    "readme": "README_docs.md"
   }
 }
