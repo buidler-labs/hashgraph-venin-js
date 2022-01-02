@@ -95,21 +95,5 @@ Of course, storing a Json wouldn't be that helpful unless someone might be able 
 - Given a [ContractId](https://docs.hedera.com/guides/docs/hedera-api/basic-types/contractid) and its ABI, retrieve a live-instance of a contract and interact with it
 - Upload a JSON object to [Hedera File Services](https://docs.hedera.com/guides/docs/sdks/file-storage) allowing for later retrieval
 
-## Testing it
-Have the `.env` file ready (see above) and run 
-```
-$ npm test
-```
-> **Note:** If you're targeting an official network such as a `testnet` or a `previewnet`, there will be a cost involved in running the library tests that has to do with API usage regarding contract deployments and execution (among other things). There's also the option of a `customnet` targeting a self-hosted `hedera-service` deployment. If you want to go down that path (recommended especially if you are planning to contribute), please [follow these instructions](https://github.com/buidler-labs/dockerized-hedera-services).
-
-## Roadmap
-- ESM library support to allow browser embedding
-- Add library logs support
-- Add better compiler output support
-- ... others
-
-## Contributions
-Of course, contributions are more then welcomed and encouraged on all fronts: open an issue, update the docs or, if you feel bold enough, directly open a PR and make your case as to why your changes would benefit the library.
-
 ## License
 This work has been published under the MIT License.
