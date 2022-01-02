@@ -48,7 +48,7 @@ Also, if you want a quick play-through a similar example, please have a look at 
 - Upload a JSON object to [Hedera File Services](https://docs.hedera.com/guides/docs/sdks/file-storage) allowing for later retrieval
 
 ## Using it
-You can find the API docs here (`TODO`). Alternativelly, if you want to locally spin up quickly some working code, have a look at our [minimal example repo](https://github.com/buidler-labs/hsj-example).
+You can find the [API docs here](https://hsj-docs.buidlerlabs.com/). Alternativelly, if you want to locally spin up quickly some working code, have a look at our [minimal example repo](https://github.com/buidler-labs/hsj-example).
 
 ## Testing it
 Have the `.env` file ready (see above) and run 
