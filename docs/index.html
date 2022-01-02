@@ -71,24 +71,44 @@ parameters, have the second parameter contain a property called <code>_contract<
 <a href="#interacting-with-deployed-contracts" id="interacting-with-deployed-contracts" style="color: inherit; text-decoration: none;">
   <h3>Interacting with deployed contracts</h3>
 </a>
-<p>Following a succesfull deployment, <em>await</em>-ing a <code>ApiSession.upload</code> call returns a <code>LiveContract</code> instance which has the solidity&#39;s contract functions dinamically attached to it and available for calling. This means that if a contract <code>A</code> has a method <code>foo</code> on it, the resulting <code>LiveContract</code> will also have a function <code>foo</code> defined on it. Of course, if <code>foo</code> accepts arguments, the dinamically-binded JS method also requires those arguments passed in when calling it.</p>
-<p>Contract <em>events</em> are propagated from <code>LiveContract</code> through the inherited <code>EventEmitter</code> methods such as <code>.on(&quot;event_name&quot;, () =&gt; { ... })</code> pub-sub paradigm.</p>
-<p><code>TODO: Transaction meta-arguments</code></p>
+
+<a href="#calling-methods" id="calling-methods" style="color: inherit; text-decoration: none;">
+  <h4>Calling methods</h4>
+</a>
+<p>Following a succesfull deployment, <em>await</em>-ing a <code>ApiSession.upload</code> call returns a <code>LiveContract</code> instance which has the solidity&#39;s contract functions dinamically attached to it and available for calling. This means that if a contract <code>A</code> has a method <code>foo</code> on it, the resulting <code>LiveContract</code> will also have a function <code>foo</code> defined on it.</p>
+<p>So if, for example, we were to upload <a href="https://solidity-by-example.org/">solidity-by-example</a>&#39;s <a href="https://solidity-by-example.org/first-app/">First App</a> Contract via a <code>session.upload</code> call, that will eventually resolve to a <code>LiveContract</code> instance which would have a <code>get</code>, an <code>inc</code> and a <code>dec</code> <a href="https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L87">defined on it as one might expect</a>.</p>
+<p>Of course, function arguments are also supported so if we have such a live-contract function (<a href="https://solidity-by-example.org/state-variables/">solidity-by-example&#39;s State Variable</a> code, <a href="https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L111">for instance</a>), you can call into these methods, passing in the expected values as expected.</p>
+<p><code>Note:</code> When dealing with <em>big numbers</em>, the library uses the same one as Hedera SDK does: <a href="https://github.com/MikeMcl/bignumber.js/">bignumber.js</a> . This is intentional since one of the core design principles of it&#39;s API is to try to mimic as close as possible Hedera&#39;s own SDK return types.</p>
+
+<a href="#dealing-with-events" id="dealing-with-events" style="color: inherit; text-decoration: none;">
+  <h4>Dealing with events</h4>
+</a>
+<p>Contract <em>events</em> are propagated upwards from <code>LiveContract</code> through the inherited <code>EventEmitter</code> methods. As such one can <em>listen</em> to an event by simply calling a <code>.on(&quot;event_name&quot;, () =&gt; { ... })</code> on the live-contract instance. Our test cases include <a href="https://solidity-by-example.org/events/">solidity-by-example&#39;s Events code</a> to make sure this works. <a href="https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L158">Have a look for yourself</a> if interested.</p>
+
+<a href="#transaction-meta-arguments-1" id="transaction-meta-arguments-1" style="color: inherit; text-decoration: none;">
+  <h4>Transaction meta-arguments</h4>
+</a>
+<p>Similar to when uploading a <em>Smart Contract</em>, calling any of its methods follows the same meta-arguments passing logic: if the first argument is a JS object which has certain properties of interest, those properties are unpacked and used inside the transaction. One such property is the <code>maxQueryPayment</code> which makes for a good example: lets say that we would like to set a maximum query payment of 2 hbar for calling the <a href="https://solidity-by-example.org/state-variables/">solidity-by-example&#39;s State Variable &gt; get method</a>. In this case, you would simply do a <code>liveContract.get({maxQueryPayment: new HBar(2)})</code> and it would suffice.</p>
+<p>Of course, similar to the &quot;upload contract operation&quot; detailed above, any argument following the the meta-arguments object would be passed to the method itself. In this regards, using the same <em>State Variable</em> contract, doing a <code>liveContract.set({maxTransactionFee: new HBar(2)}, 42)</code> would call the <code>set</code> method passing in integer <code>42</code> as parameter and setting the <code>maxTransactionFee</code> for the transaction to 2 hbar.</p>
 
 <a href="#retrieving-deployed-contracts" id="retrieving-deployed-contracts" style="color: inherit; text-decoration: none;">
   <h3>Retrieving deployed contracts</h3>
 </a>
-<p><code>TODO</code></p>
+<p>Uploading a <code>Contract</code> is not the only way to get a hold on a deployed, <code>LiveContract</code> instance. <code>ApiSession</code> also exposes a <code>getLiveContract</code> method which takes in a <code>ContractId</code> as it&#39;s <code>id</code> object param and the contract&#39;s ABI as its <code>abi</code> parameter to lock onto a deployed version of that code on the network. </p>
+<p>Want to find out more? <a href="https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L31">Have a look at our test-case</a> for an example on how one might go about doing just that.</p>
 
 <a href="#uploading-json-data" id="uploading-json-data" style="color: inherit; text-decoration: none;">
   <h3>Uploading JSON data</h3>
 </a>
-<p><code>TODO</code></p>
+<p><code>Contract</code> are not the only thing that you can upload to Hedera. We also support pushing JSON entities through <code>ApiSession</code>s overloaded <code>upload</code> method. </p>
+<p>Let&#39;s say you have the following object that you want to persist to Hedera: <code>{a: 1, {b: &quot;d&quot;}}</code>. To do that, you would only have to do a <code>session.upload({a: 1, {b: &quot;d&quot;}})</code> (a less verbose form for <code>session.upload(new Json({a: 1, {b: &quot;d&quot;}}))</code>). This would result for an eventual return of a <code>LiveJson</code> object that is a generic object which exposes the underlying JSON.</p>
+<p><code>Note:</code> That uploading Jsons allow for the same meta-arguments transaction parameters to be provided as with <em>uploading a contract</em> (please see the above discussion).</p>
 
 <a href="#retrieving-the-json-data" id="retrieving-the-json-data" style="color: inherit; text-decoration: none;">
   <h3>Retrieving the JSON data</h3>
 </a>
-<p><code>TODO</code></p>
+<p>Of course, storing a Json wouldn&#39;t be that helpful unless someone might be able to retrieve it at some later moment in the future. That&#39;s done through the <code>session.getLiveJson</code> method call. You only need the <code>LiveJson.id</code> to pass in as the <code>id</code> object parameter.</p>
+<p><a href="https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveJson.spec.ts#L33">This test-case</a> shows how this can be done.</p>
 
 <a href="#features-summary" id="features-summary" style="color: inherit; text-decoration: none;">
   <h2>Features summary</h2>

@@ -56,20 +56,39 @@ Passing in constructor parameters is easy, just add them when `ApiSession.upload
 Example: `session.upload(contract, {_contract: {gas: 100_000}}, "This is a string")` - uploads a `contract` with a `gas` create-contract transaction set to 100000 hbar and calling the `contract`'s constructor passing in the string "This is a string".
 
 ### Interacting with deployed contracts
-Following a succesfull deployment, _await_-ing a `ApiSession.upload` call returns a `LiveContract` instance which has the solidity's contract functions dinamically attached to it and available for calling. This means that if a contract `A` has a method `foo` on it, the resulting `LiveContract` will also have a function `foo` defined on it. Of course, if `foo` accepts arguments, the dinamically-binded JS method also requires those arguments passed in when calling it.
+#### Calling methods
+Following a succesfull deployment, _await_-ing a `ApiSession.upload` call returns a `LiveContract` instance which has the solidity's contract functions dinamically attached to it and available for calling. This means that if a contract `A` has a method `foo` on it, the resulting `LiveContract` will also have a function `foo` defined on it.
 
-Contract _events_ are propagated from `LiveContract` through the inherited `EventEmitter` methods such as `.on("event_name", () => { ... })` pub-sub paradigm.
+So if, for example, we were to upload [solidity-by-example](https://solidity-by-example.org/)'s [First App](https://solidity-by-example.org/first-app/) Contract via a `session.upload` call, that will eventually resolve to a `LiveContract` instance which would have a `get`, an `inc` and a `dec` [defined on it as one might expect](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L87).
 
-`TODO: Transaction meta-arguments`
+Of course, function arguments are also supported so if we have such a live-contract function ([solidity-by-example's State Variable](https://solidity-by-example.org/state-variables/) code, [for instance](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L111)), you can call into these methods, passing in the expected values as expected.
+
+`Note:` When dealing with _big numbers_, the library uses the same one as Hedera SDK does: [bignumber.js](https://github.com/MikeMcl/bignumber.js/) . This is intentional since one of the core design principles of it's API is to try to mimic as close as possible Hedera's own SDK return types.
+
+#### Dealing with events
+Contract _events_ are propagated upwards from `LiveContract` through the inherited `EventEmitter` methods. As such one can _listen_ to an event by simply calling a `.on("event_name", () => { ... })` on the live-contract instance. Our test cases include [solidity-by-example's Events code](https://solidity-by-example.org/events/) to make sure this works. [Have a look for yourself](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L158) if interested.
+
+#### Transaction meta-arguments
+Similar to when uploading a _Smart Contract_, calling any of its methods follows the same meta-arguments passing logic: if the first argument is a JS object which has certain properties of interest, those properties are unpacked and used inside the transaction. One such property is the `maxQueryPayment` which makes for a good example: lets say that we would like to set a maximum query payment of 2 hbar for calling the [solidity-by-example's State Variable > get method](https://solidity-by-example.org/state-variables/). In this case, you would simply do a `liveContract.get({maxQueryPayment: new HBar(2)})` and it would suffice.
+
+Of course, similar to the "upload contract operation" detailed above, any argument following the the meta-arguments object would be passed to the method itself. In this regards, using the same _State Variable_ contract, doing a `liveContract.set({maxTransactionFee: new HBar(2)}, 42)` would call the `set` method passing in integer `42` as parameter and setting the `maxTransactionFee` for the transaction to 2 hbar.
 
 ### Retrieving deployed contracts
-`TODO`
+Uploading a `Contract` is not the only way to get a hold on a deployed, `LiveContract` instance. `ApiSession` also exposes a `getLiveContract` method which takes in a `ContractId` as it's `id` object param and the contract's ABI as its `abi` parameter to lock onto a deployed version of that code on the network. 
+
+Want to find out more? [Have a look at our test-case](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L31) for an example on how one might go about doing just that.
 
 ### Uploading JSON data
-`TODO`
+`Contract` are not the only thing that you can upload to Hedera. We also support pushing JSON entities through `ApiSession`s overloaded `upload` method. 
+
+Let's say you have the following object that you want to persist to Hedera: `{a: 1, {b: "d"}}`. To do that, you would only have to do a `session.upload({a: 1, {b: "d"}})` (a less verbose form for `session.upload(new Json({a: 1, {b: "d"}}))`). This would result for an eventual return of a `LiveJson` object that is a generic object which exposes the underlying JSON.
+
+`Note:` That uploading Jsons allow for the same meta-arguments transaction parameters to be provided as with _uploading a contract_ (please see the above discussion).
 
 ### Retrieving the JSON data
-`TODO`
+Of course, storing a Json wouldn't be that helpful unless someone might be able to retrieve it at some later moment in the future. That's done through the `session.getLiveJson` method call. You only need the `LiveJson.id` to pass in as the `id` object parameter.
+
+[This test-case](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveJson.spec.ts#L33) shows how this can be done.
 
 ## Features summary
 - Upload a [Solidity Contract](https://docs.soliditylang.org/en/v0.8.10/index.html) (either by _code_ or by _path_) to Hedera and directly interact with it in JS (via [_LiveContracts_](https://github.com/buidler-labs/hedera-strato-js/blob/main/lib/live/LiveContract.ts))
