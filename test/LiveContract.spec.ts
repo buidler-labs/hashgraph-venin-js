@@ -155,6 +155,12 @@ describe('LiveContract', () => {
     await expect(hapiSession.upload(testArrayContract)).resolves.not.toThrow();
   });
 
+  it("given the solidity-by-example > Events code, trying to register a non-existing event should error out", async () => {
+    const liveContract = await load('solidity-by-example/events');
+
+    expect(() => liveContract.onEvent("non-existing-event", () => {})).toThrow();
+  });
+
   it("given the solidity-by-example > Events code, interacting with its single method should trigger the expected events", async () => {
     const liveContract = await load('solidity-by-example/events');
 
@@ -162,12 +168,12 @@ describe('LiveContract', () => {
       const receivedMessages = [];
 
       // Register all events of interest
-      liveContract.on("Log", ({ sender, message }) => {
+      liveContract.onEvent("Log", ({ sender, message }) => {
         expect(sender).not.toBeNull();
         expect(receivedMessages).not.toContain(message);
         receivedMessages.push(message);
       });
-      liveContract.on("AnotherLog", () => {
+      liveContract.onEvent("AnotherLog", () => {
         expect(receivedMessages).toHaveLength(2);
         expect(receivedMessages[0]).toEqual("Hello World!");
         expect(receivedMessages[1]).toEqual("Hello EVM!");
@@ -175,6 +181,54 @@ describe('LiveContract', () => {
       });
 
       // Fire up the test by calling into the triggering method on the contract
+      expect(liveContract.test()).resolves.toBeUndefined();
+    });
+  });
+
+  it("given the solidity-by-example > Events code, registering a catch-all-if-none-defined handler should get called if one is provided and an unhandled event gets triggered", async () => {
+    const liveContract = await load('solidity-by-example/events');
+
+    return new Promise<void>((accept) => {
+      const receivedMessages = [];
+
+      liveContract.onEvent("Log", ({ sender, message }) => {
+        expect(sender).not.toBeNull();
+        expect(receivedMessages).not.toContain(message);
+        receivedMessages.push(message);
+      });
+      liveContract.onUnhandledEvents(() => {
+        expect(receivedMessages).toHaveLength(2);
+        expect(receivedMessages[0]).toEqual("Hello World!");
+        expect(receivedMessages[1]).toEqual("Hello EVM!");
+        accept();
+      });
+
+      expect(liveContract.test()).resolves.toBeUndefined();
+    });
+  });
+
+  it("given the solidity-by-example > Events code, de-registering an event should not call it any further when triggered from the contract", async () => {
+    const liveContract = await load('solidity-by-example/events');
+
+    return new Promise<void>((accept, reject) => {
+      const receivedMessages = [];
+
+      liveContract.onEvent("Log", ({ sender, message }) => {
+        expect(sender).not.toBeNull();
+        expect(receivedMessages).not.toContain(message);
+        receivedMessages.push(message);
+      });
+      liveContract.onEvent("AnotherLog", () => {
+        reject();
+      });
+      liveContract.onEvent("AnotherLog", undefined);
+      liveContract.onUnhandledEvents(() => {
+        expect(receivedMessages).toHaveLength(2);
+        expect(receivedMessages[0]).toEqual("Hello World!");
+        expect(receivedMessages[1]).toEqual("Hello EVM!");
+        accept();
+      });
+
       expect(liveContract.test()).resolves.toBeUndefined();
     });
   });
@@ -247,11 +301,11 @@ describe('LiveContract', () => {
     );
 
     // Register events of interest
-    taskRegistryLiveContract.on("OwnershipTransferred", ({ previousOwner, newOwner }) => {
+    taskRegistryLiveContract.onEvent("OwnershipTransferred", ({ previousOwner, newOwner }) => {
       expect(previousOwner).toEqual('0x0000000000000000000000000000000000000000');
       expect(hapiSession.isOperatedBy( { solidityAddress: newOwner })).toBeTruthy();
     });
-    taskRegistryManagerLiveContract.on("NewRegistryCreated", ({ registry }) => {
+    taskRegistryManagerLiveContract.onEvent("NewRegistryCreated", ({ registry }) => {
       expect(registry).not.toBeNull();
     });
 

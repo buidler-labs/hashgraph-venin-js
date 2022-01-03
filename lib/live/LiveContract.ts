@@ -1,3 +1,5 @@
+import { EventEmitter } from "events";
+
 import BigNumber from "bignumber.js";
 import traverse from 'traverse';
 import {
@@ -14,7 +16,6 @@ import { arrayify } from '@ethersproject/bytes';
 
 import { Contract } from "../static/Contract";
 import { HContractFunctionParameters } from "../HContractFunctionParameters";
-import { EventEmitter } from "events";
 import { LiveEntity } from "./LiveEntity";
 import { SolidityAddressable } from "../SolidityAddressable";
 import { ApiSession } from "../ApiSession";
@@ -22,9 +23,11 @@ import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
 
 export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 69_000;
 
+const UNHANDLED_EVENT_NAME = "UnhandledEventName";
+
 export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
 
-export class LiveContract extends EventEmitter implements LiveEntity, SolidityAddressable {
+export class LiveContract implements LiveEntity, SolidityAddressable {
     /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.
      */
@@ -49,6 +52,7 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
         });
     }
 
+    private readonly events: EventEmitter;
     private readonly session: ApiSession;
     public readonly id: ContractId;
     private readonly interface: Interface;
@@ -61,9 +65,8 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
         id: ContractId,
         cInterface: Interface
     }) {
-        super();
-
         this.session = session;
+        this.events = new EventEmitter();
         this.id = id;
         this.interface = cInterface;
 
@@ -86,6 +89,38 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
      */
     public async getSolidityAddress(): Promise<string> {
         return this.id.toSolidityAddress();
+    }
+
+    /**
+     * Registers/De-registers code to be executed when a particular contract event gets triggered.
+     * 
+     * @param name - the name of the event of interest
+     * @param clb - if {@link undefined}, it removes all registered callbacks for the provided event-name else, 
+     *              if a function callback is provided, registers it to be executed when the event gets fired
+     * @throws - if there is no such event-name defined, an error gets thrown
+     */
+    public onEvent(name: string, clb: undefined | { (...args: any[]): void }) {
+        let eventExists = Object.values(this.interface.events).find(ev => ev.name === name) !== undefined;
+
+        if (!eventExists && UNHANDLED_EVENT_NAME !== name) {
+            throw new Error(`There is no such event named '${name}' defined in this contract.`);
+        }
+        if (!clb) {
+            // remove all handlers for this event
+            this.events.removeAllListeners(name);
+        } else {
+            // register the event handler
+            this.events.on(name, clb);
+        }
+    }
+
+    /**
+     * Registers/De-registers code to be executed when a particular contract event gets triggered yet there are no event-handlers registerd to handle it.
+     * 
+     * @param clb - the callback to get executed, if defined, otherwise remove all callbacks for this special event
+     */
+    public onUnhandledEvents(clb: undefined | { (...args: any[]): void }) {
+        this.onEvent(UNHANDLED_EVENT_NAME, clb);
     }
 
     /**
@@ -216,12 +251,16 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
     }
 
     /**
-     * Given the call-response of a contract-method call/query, we try to see if there have been any events emitted and, if so, we re-emit them on the live-contract instance.
+     * Given the call-response of a contract-method call/query, we try to see if there have been any events emitted and, if so, we re-emit them on the live-contract events pub-sub channel.
+     * 
+     * Note: even if there is an event triggered, if there are no handlers registered, the first thing we do is try to dump it on the {@link UNHANDLED_EVENT_NAME} channel. 
+     *       if there are no handlers registered there either, we skipp the event all-together.
      */
     private _tryToProcessForEvents(callResponse: ContractFunctionResult): void {
         callResponse.logs.forEach(recordLog => {
             const data = `0x${recordLog.data.length === 0 ? "" : Buffer.from(recordLog.data).toString('hex')}`;
             const topics = recordLog.topics.map(topic => "0x" + Buffer.from(topic).toString('hex'));
+            let evNameToSendTo;
             let logDescription;
 
             try {
@@ -229,9 +268,17 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
             } catch (e) {
                 // No-op
             }
-            if (!logDescription || this.listenerCount(logDescription.name) === 0) {
-                // No one is interested in this event. Skip
-                return;
+            if (this.events.listenerCount(logDescription.name) === 0) {
+                // No one is interested in this event
+                // Try to dump it to the "catch-all-if-none-defined" event handler
+                if (this.events.listenerCount(UNHANDLED_EVENT_NAME) === 0) {
+                    // No default, catch-all event handler defined. Skip event entirely
+                    return;
+                }
+                evNameToSendTo = UNHANDLED_EVENT_NAME;
+            } else {
+                // We have listeners for this event. Business as usual
+                evNameToSendTo = logDescription.name;
             }
 
             const decodedEventObject = Object.keys(logDescription.args)
@@ -240,7 +287,7 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
                 .reduce((p, c) => ({...p, ...c}), {});
 
             try {
-                this.emit(logDescription.name, decodedEventObject);
+                this.events.emit(evNameToSendTo, decodedEventObject);
             } catch (e) {
                 if (process.env.NODE_ENV === 'test') {
                     // We re-interpret and throw it so that any tests running will be aware of it
