@@ -91,7 +91,7 @@ export class ApiSession implements SolidityAddressable {
    *                         eg. "_file" ({@link UploadableEntity}) or "_contract" ({@link Contract})
    * @returns - An instance of the {@link UploadableEntity} concrete result-type which is a subtype of {@link LiveEntity}.
    */
-  public async upload<T extends LiveEntity>(what: UploadableEntity<T>, ...args: any[]): Promise<T>;
+  public async upload<T extends LiveEntity<R>, R>(what: UploadableEntity<T, R>, ...args: any[]): Promise<T>;
 
   /**
    * Given a raw JSON {@link object}, it triest ot upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
@@ -112,20 +112,20 @@ export class ApiSession implements SolidityAddressable {
   public async upload(what: object, ...args: any[]): Promise<LiveJson>;
 
   // Overload implementation
-  public async upload<T extends LiveEntity>(what: UploadableEntity<T>|object, ...args: any[]): Promise<T|LiveJson> {
-    let uploadableWhat: UploadableEntity<T>;
+  public async upload<T extends LiveEntity<R>, R>(what: UploadableEntity<T, R>|object, ...args: any[]): Promise<T|LiveJson> {
+    let uploadableWhat: UploadableEntity<T, R>;
 
     if (what instanceof UploadableEntity === false) {
       // Try to go with a live-json upload
       if (Json.isInfoAcceptable(what)) {
-        uploadableWhat = (new Json(what) as unknown) as UploadableEntity<T>;
+        uploadableWhat = (new Json(what) as unknown) as UploadableEntity<T, R>;
       } else {
         // There's nothing we can do
         throw new Error("Can only upload UploadableFile-s or Json-file acceptable content.");
       }
     } else {
       // upload what was given as is since it's an UploadableEntity type already
-      uploadableWhat = (what as unknown) as UploadableEntity<T>;
+      uploadableWhat = (what as unknown) as UploadableEntity<T, R>;
     }
     return uploadableWhat.uploadTo({ session: this, args });
   }

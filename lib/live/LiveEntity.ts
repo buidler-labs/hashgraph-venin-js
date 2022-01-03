@@ -1,6 +1,11 @@
+import { ApiSession } from "../ApiSession";
+
 /**
- * Common functionality exhibited by LiveEntity instances.
- * 
- * TODO: add SDK methods to make this trully alive! 
+ * Common functionality exhibited by session-bounded, id-entifiable LiveEntity instances.
  */
-export interface LiveEntity {}
+export class LiveEntity<T> {
+    constructor(
+        protected readonly session: ApiSession,
+        public readonly id: T
+    ) {}
+}

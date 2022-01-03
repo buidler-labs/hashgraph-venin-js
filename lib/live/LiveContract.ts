@@ -27,7 +27,7 @@ const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
 export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
 
-export class LiveContract implements LiveEntity, SolidityAddressable {
+export class LiveContract extends LiveEntity<ContractId> implements SolidityAddressable {
     /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.
      */
@@ -53,8 +53,6 @@ export class LiveContract implements LiveEntity, SolidityAddressable {
     }
 
     private readonly events: EventEmitter;
-    private readonly session: ApiSession;
-    public readonly id: ContractId;
     private readonly interface: Interface;
 
     // TODO: REFACTOR THIS AWAY! yet, there's no other way of making this quickly work right now!
@@ -65,9 +63,8 @@ export class LiveContract implements LiveEntity, SolidityAddressable {
         id: ContractId,
         cInterface: Interface
     }) {
-        this.session = session;
+        super(session, id);
         this.events = new EventEmitter();
-        this.id = id;
         this.interface = cInterface;
 
         // Dinamically inject ABI function handling

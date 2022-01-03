@@ -28,7 +28,7 @@ type ArgumentsToGetFileTransaction = {
   args: any[]
 };
 
-export abstract class UploadableEntity<T extends LiveEntity> {
+export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
   /**
    * Uploads this Uploadable to the desired session passing in arguments if provided.
    * 
