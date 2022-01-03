@@ -1,5 +1,19 @@
 import { Interface } from '@ethersproject/abi';
-import { AccountId, AccountInfo, Client, ContractId, FileContentsQuery, FileId } from '@hashgraph/sdk';
+import { 
+  AccountInfo, 
+  Client, 
+  ContractCallQuery, 
+  ContractExecuteTransaction,
+  ContractFunctionResult, 
+  ContractId, 
+  FileContentsQuery, 
+  FileId, 
+  ReceiptStatusError, 
+  Status, 
+  Transaction, 
+  TransactionReceipt, 
+  TransactionResponse 
+} from '@hashgraph/sdk';
 
 import { LiveContract } from './live/LiveContract';
 import { LiveEntity } from './live/LiveEntity';
@@ -7,11 +21,13 @@ import { LiveJson } from './live/LiveJson';
 import { SolidityAddressable } from './SolidityAddressable';
 import { Json } from './static/Json';
 import { UploadableEntity } from './static/UploadableEntity';
+import { TransactionReceiptQuery } from './TransactionReceiptQuery';
 
 type ApiSessionConstructorArgs = {
   hClient: Client,
   operatorInfo: AccountInfo
 };
+type ContractFunctionCall = ContractCallQuery | ContractExecuteTransaction;
 
 /**
  * The core class used for all business-logic, runtime network-interactions.
@@ -35,6 +51,13 @@ export class ApiSession implements SolidityAddressable {
    */
   public get accountId() {
     return this.client.operatorAccountId;
+  }
+
+  /**
+   * Retrieves the operator's public-key.
+   */
+  public get publicKey() {
+    return this.client.operatorPublicKey;
   }
 
   /**
@@ -104,7 +127,7 @@ export class ApiSession implements SolidityAddressable {
       // upload what was given as is since it's an UploadableEntity type already
       uploadableWhat = (what as unknown) as UploadableEntity<T>;
     }
-    return uploadableWhat.uploadTo({ client: this.client, args });
+    return uploadableWhat.uploadTo({ session: this, args });
   }
 
   /**
@@ -125,7 +148,7 @@ export class ApiSession implements SolidityAddressable {
       throw new Error("Please provide a valid Hedera contract id in order try to lock onto an already-deployed contract.");
     }
     return new LiveContract({ 
-      client: this.client,
+      session: this,
       id: targetedContractId,
       cInterface: abi instanceof Interface ? abi : new Interface(abi)
     });
@@ -152,9 +175,51 @@ export class ApiSession implements SolidityAddressable {
     
     // TODO: use file Memo to store hash of file-contents and only return LiveJson instance if the 2 values match
     return new LiveJson({ 
-      client: this.client,
+      session: this,
       id: targetedFileId,
       data: JSON.parse(fileContents)
     });
+  }
+
+  /**
+   * Executes a {@link TransactionReceiptQuery} with the purpose of optaining a {@link TransactionReceipt} for apreviously executed, network, operation.
+   */
+  public async execute(transaction: TransactionReceiptQuery): Promise<TransactionReceipt>;
+  /**
+   * Queries/Executes a contract function, returning the {@link ContractFunctionResult} if successfull.
+   */
+  public async execute(transaction: ContractFunctionCall): Promise<ContractFunctionResult>;
+  /**
+   * A catch-all/generic {@link Transaction} execution operation yeilding, upon success, of a {@link TransactionResponse}.
+   */
+  public async execute(transaction: Transaction): Promise<TransactionResponse>;
+  public async execute(transaction: ContractFunctionCall|TransactionReceiptQuery|Transaction): Promise<ContractFunctionResult|TransactionReceipt|TransactionResponse> {
+    const isContractTransaction = transaction instanceof ContractCallQuery || transaction instanceof ContractExecuteTransaction;
+    const isReceiptQuery = transaction instanceof TransactionReceiptQuery;
+    const txResponse = await transaction.execute(this.client);
+
+    if (isContractTransaction) {
+      if (txResponse instanceof TransactionResponse) {
+        const txRecord = await txResponse.getRecord(this.client);
+  
+        // Inspired from https://github.com/hashgraph/hedera-sdk-js/blob/c4a8d339648651a545782089ae4b18b972f2e356/src/transaction/TransactionResponse.js#L39
+        // since, at this step, getRecord errors are the same as getReceipt ones
+        if (txRecord.receipt.status !== Status.Success) {
+          throw new ReceiptStatusError({
+              transactionReceipt: txRecord.receipt,
+              status: txRecord.receipt.status,
+              transactionId: txResponse.transactionId,
+          });
+        }
+        return txRecord.contractFunctionResult;
+      } else {
+        // Constant function call (query) was done
+        return txResponse as ContractFunctionResult;
+      }
+    } else if (isReceiptQuery) {
+      return (txResponse as unknown) as TransactionReceipt;
+    }
+    // Reaching this point means that the executed transaction is generic in which case we just return it rawly
+    return txResponse as TransactionResponse;
   }
 }

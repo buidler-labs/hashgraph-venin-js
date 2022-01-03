@@ -1,35 +1,36 @@
 import {
-  Client,
   FileAppendTransaction,
   FileCreateTransaction,
   Status,
   TransactionReceipt,
 } from "@hashgraph/sdk";
+import { ApiSession } from "../ApiSession";
 import { LiveEntity } from "../live/LiveEntity";
+import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
 
 // Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
 const FILE_CHUNK_SIZE = 1024;
 
 type ArgumentsForUpload = {
-  client: Client,
+  session: ApiSession,
   args: any[]
 };
 
 export type ArgumentsOnFileUploaded = { 
-  client: Client, 
+  session: ApiSession, 
   receipt: TransactionReceipt, 
   args: any[] 
 };
 
 type ArgumentsToGetFileTransaction = {
-  client: Client,
+  session: ApiSession,
   content: Uint8Array|string,
   args: any[]
 };
 
 export abstract class UploadableEntity<T extends LiveEntity> {
   /**
-   * Uploads this Uploadable to the desired client passing in arguments if provided.
+   * Uploads this Uploadable to the desired session passing in arguments if provided.
    * 
    * @param {Array} args - A list of arguments to use and/or pass along. If the first object contains a '_file' property, it's assumed that its content contains
    *                       FileCreateTransaction constructor arguments and is embedded in the transaction being created. It then goes on to discard that initial
@@ -37,31 +38,30 @@ export abstract class UploadableEntity<T extends LiveEntity> {
    * @public
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async uploadTo({ client, args = [] }: ArgumentsForUpload): Promise<T> {
+  public async uploadTo({ session, args = [] }: ArgumentsForUpload): Promise<T> {
     const whatToUpload = await this._getContent();
-    const { areOverridesProvided, fileTransactions } = await this._getFileTransactionsFor({ content: whatToUpload, client, args });
-    const transactionResponse = await fileTransactions[0].execute(client);
-    const transactionReceipt = await transactionResponse.getReceipt(client);
+    const { areOverridesProvided, fileTransactions } = await this._getFileTransactionsFor({ content: whatToUpload, session, args });
+    const transactionResponse = await session.execute(fileTransactions[0]);
+    const transactionReceipt = await session.execute(TransactionReceiptQuery.for(transactionResponse));
 
     if (transactionReceipt.status !== Status.Success) {
       throw new Error(`There was an issue while creating the file (status ${transactionReceipt.status}). Aborting file upload.`);
     } else if (fileTransactions.length > 1 && fileTransactions[1] instanceof FileAppendTransaction) {
       // We update the upcoming file-append transaction request to reference the fileId
-      await fileTransactions[1].setFileId(transactionReceipt.fileId)
-        .executeAll(client);
+      await session.execute(fileTransactions[1].setFileId(transactionReceipt.fileId));
     }
 
     if (areOverridesProvided) {
       args = args.slice(1);
     }
     return this._onFileUploaded({ 
-      client,  
+      session,  
       receipt: transactionReceipt,
       args
     });
   }
 
-  private async _getFileTransactionsFor({ content, client, args = [] }: ArgumentsToGetFileTransaction) {
+  private async _getFileTransactionsFor({ content, session, args = [] }: ArgumentsToGetFileTransaction) {
     const fileTransactions: Array<FileCreateTransaction|FileAppendTransaction> = [];
     let fileCreationOverrides = {};
 
@@ -73,7 +73,7 @@ export abstract class UploadableEntity<T extends LiveEntity> {
     // Start off with a file-create transaction
     fileTransactions.push(new FileCreateTransaction(Object.assign(
       {}, 
-      { keys: [client.operatorPublicKey], ...fileCreationOverrides }, 
+      { keys: [session.publicKey], ...fileCreationOverrides }, 
       { contents: content.length > FILE_CHUNK_SIZE ? content.slice(0, FILE_CHUNK_SIZE) : content }
     )));
 
@@ -94,5 +94,5 @@ export abstract class UploadableEntity<T extends LiveEntity> {
   }
 
   protected abstract _getContent(): Promise<Uint8Array|string>;
-  protected abstract _onFileUploaded({ client, receipt, args }: ArgumentsOnFileUploaded): Promise<T>;
+  protected abstract _onFileUploaded({ session, receipt, args }: ArgumentsOnFileUploaded): Promise<T>;
 }

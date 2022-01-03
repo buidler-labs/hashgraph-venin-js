@@ -1,16 +1,13 @@
 import BigNumber from "bignumber.js";
 import traverse from 'traverse';
-import { Client, 
+import {
     ContractCallQuery, 
     ContractCreateTransaction, 
     ContractExecuteTransaction, 
     ContractFunctionResult, 
     ContractId, 
     Hbar, 
-    Status, 
-    TransactionId,
-    TransactionRecord,
-    TransactionResponse
+    TransactionId
 } from "@hashgraph/sdk";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
 import { arrayify } from '@ethersproject/bytes';
@@ -20,6 +17,8 @@ import { HContractFunctionParameters } from "../HContractFunctionParameters";
 import { EventEmitter } from "events";
 import { LiveEntity } from "./LiveEntity";
 import { SolidityAddressable } from "../SolidityAddressable";
+import { ApiSession } from "../ApiSession";
+import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
 
 export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 69_000;
 
@@ -27,47 +26,44 @@ export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
 
 export class LiveContract extends EventEmitter implements LiveEntity, SolidityAddressable {
     /**
-     * Constructs a new LiveContract to be interacted with.
+     * Constructs a new LiveContract to be interacted with on the Hashgraph.
      */
-    public static async newFollowingUpload({ client, contract, transaction }: {
-        client: Client,
+    public static async newFollowingUpload({ session, contract, transaction }: {
+        session: ApiSession,
         contract: Contract,
         transaction: ContractCreateTransaction
     }): Promise<LiveContract> {
-        if (client instanceof Client === false ||
+        if (session instanceof ApiSession === false ||
             contract instanceof Contract === false ||
             transaction instanceof ContractCreateTransaction === false) {
             throw new Error("We need a reference to the underlying client tranport, the contract blueprint being deployed and " +
                             "a referance to the pre-filled contract-create transaction in order to execute the transaction and create the live-contract link.");
         }
-        const contractTransactionResponse = await transaction.execute(client);
-        const createdContractReceipt = await contractTransactionResponse.getReceipt(client);
+        const contractTransactionResponse = await session.execute(transaction);
+        const createdContractReceipt = await session.execute(TransactionReceiptQuery.for(contractTransactionResponse));
 
-        if (createdContractReceipt.status !== Status.Success) {
-            throw new LiveContractCreationError(createdContractReceipt.status);
-        }
         return new LiveContract({ 
-            client, 
+            session, 
             id: createdContractReceipt.contractId,
             cInterface: contract.interface,
         });
     }
 
-    private readonly client: Client;
+    private readonly session: ApiSession;
     public readonly id: ContractId;
     private readonly interface: Interface;
 
     // TODO: REFACTOR THIS AWAY! yet, there's no other way of making this quickly work right now!
     readonly [ k: string ]: ContractMethod | any;
 
-    public constructor({ client, id, cInterface }: {
-        client: Client,
+    public constructor({ session, id, cInterface }: {
+        session: ApiSession,
         id: ContractId,
         cInterface: Interface
     }) {
         super();
 
-        this.client = client;
+        this.session = session;
         this.id = id;
         this.interface = cInterface;
 
@@ -76,23 +72,10 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
                 enumerable: true,
                 value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {
                     const request = await this._createContractRequestFor({ fDescription, args });
-                    const txResponse = await request.execute(this.client);
-                    const didFunctionCallChangeState = txResponse instanceof TransactionResponse;
-                    let functionResult: ContractFunctionResult;
+                    const callResponse = await this.session.execute(request);
 
-                    if (didFunctionCallChangeState) {
-                        const txRecord = await txResponse.getRecord(this.client);
-
-                        this._tryToProcessForEvents(txRecord);
-                        if (txRecord.receipt.status !== Status.Success) {
-                            throw new LiveContractExecutionError(`Receveid a non-successfull status message ${txRecord.receipt.status}`);
-                        }
-                        functionResult = txRecord.contractFunctionResult;
-                    } else {
-                        // Constant function call (query) was done
-                        functionResult = txResponse;
-                    }
-                    return await this._tryExtractingResponse(functionResult, fDescription);
+                    this._tryToProcessForEvents(callResponse);
+                    return await this._tryExtractingResponse(callResponse, fDescription);
                 }).bind(this, fDescription),
                 writable: false,
             }));
@@ -233,10 +216,10 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
     }
 
     /**
-     * Given the Record of a transaction, we try to see if there have been any events emitted and, if so, we re-emit them on the live-contract instance.
+     * Given the call-response of a contract-method call/query, we try to see if there have been any events emitted and, if so, we re-emit them on the live-contract instance.
      */
-    private _tryToProcessForEvents(txRecord: TransactionRecord): void {
-        txRecord.contractFunctionResult.logs.forEach(recordLog => {
+    private _tryToProcessForEvents(callResponse: ContractFunctionResult): void {
+        callResponse.logs.forEach(recordLog => {
             const data = `0x${recordLog.data.length === 0 ? "" : Buffer.from(recordLog.data).toString('hex')}`;
             const topics = recordLog.topics.map(topic => "0x" + Buffer.from(topic).toString('hex'));
             let logDescription;
@@ -266,17 +249,5 @@ export class LiveContract extends EventEmitter implements LiveEntity, SolidityAd
                 // otherwise, it's a No-op
             }
         });
-    }
-}
-
-export class LiveContractCreationError extends Error {
-    constructor(status: Status) {
-        super(`There was an issue (status ${status}) creating the live-contract link.`);
-    }
-}
-
-export class LiveContractExecutionError extends Error {
-    constructor(msg: string) {
-        super(msg);
     }
 }

@@ -49,9 +49,9 @@ export class Json extends UploadableEntity<LiveJson> {
         return JSON.stringify(this.info);
     }
 
-    protected override async _onFileUploaded({ client, receipt, args = [] }: ArgumentsOnFileUploaded) {
+    protected override async _onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded) {
         return new LiveJson({
-            client,
+            session,
             id: receipt.fileId,
             data: this.info
         });

@@ -1,8 +1,9 @@
-import { Client, FileId } from "@hashgraph/sdk";
+import { FileId } from "@hashgraph/sdk";
+import { ApiSession } from "../ApiSession";
 import { LiveEntity } from "./LiveEntity";
 
 type LiveJsonConstructorArgs = {
-    client: Client,
+    session: ApiSession,
     id: FileId,
     data: object
 };
@@ -11,12 +12,12 @@ type LiveJsonConstructorArgs = {
  * Represents a Hedera, HFS-managed Json object
  */
 export class LiveJson implements LiveEntity {
-    private readonly client: Client;
+    private readonly session: ApiSession;
     public readonly id: FileId;
     readonly [ k: string ]: any;
 
-    constructor({ client, id, data }: LiveJsonConstructorArgs) {
-        this.client = client;
+    constructor({ session, id, data }: LiveJsonConstructorArgs) {
+        this.session = session;
         this.id = id;
         
         // Dynamically bind jData properties to instance

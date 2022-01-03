@@ -192,18 +192,18 @@ export class Contract extends UploadableEntity<LiveContract> {
    * If there is a constructor config object present (first args from list if it has the '_contract' property) this is consumed and the remainder of the arguments 
    * are passed to the Contract constructor.
    */
-  protected override async _onFileUploaded({ client, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContract> {
-    const contractTransactionArguments = await this._getContractCreateOptionsFor({ client, receipt, args });
+  protected override async _onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContract> {
+    const contractTransactionArguments = await this._getContractCreateOptionsFor({ session, receipt, args });
     const createContractTransaction = new ContractCreateTransaction(contractTransactionArguments);
 
     return await LiveContract.newFollowingUpload({
-      client,
+      session,
       contract: this,
       transaction: createContractTransaction
     });
   }
 
-  private async _getContractCreateOptionsFor({ client, receipt, args = [] }: ArgumentsOnFileUploaded) {
+  private async _getContractCreateOptionsFor({ session, receipt, args = [] }: ArgumentsOnFileUploaded) {
     const contractFileId = receipt.fileId;
     const constructorDefinition = this.interface.deploy;
     let contractCreationOverrides: any = {};
@@ -213,7 +213,7 @@ export class Contract extends UploadableEntity<LiveContract> {
       args = args.slice(1);
     }
     return Object.assign({}, {
-      adminKey: client.operatorPublicKey,
+      adminKey: session.publicKey,
       bytecodeFileId: contractFileId,
       constructorParameters: await HContractFunctionParameters.newFor(constructorDefinition, args),
       gas: DEFAULT_GAS_FOR_CONTRACT_CREATION,
