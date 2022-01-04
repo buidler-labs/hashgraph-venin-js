@@ -16,9 +16,7 @@ describe('LiveContract', () => {
     const immutableContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/immutable' }) });
     const liveContract = await hapiSession.upload(immutableContract, uintArgForConstructor);
 
-    await liveContract.MY_ADDRESS().then(contractInnerAddress => {
-      expect(hapiSession.isOperatedBy( { solidityAddress: contractInnerAddress })).toBeTruthy();
-    });
+    await expect(liveContract.MY_ADDRESS()).resolves.toEqual(`0x${await hapiSession.getSolidityAddress()}`);
     await expect(liveContract.MY_UINT()).resolves.toEqual(uintArgForConstructor);
   });
 
@@ -301,9 +299,9 @@ describe('LiveContract', () => {
     );
 
     // Register events of interest
-    taskRegistryLiveContract.onEvent("OwnershipTransferred", ({ previousOwner, newOwner }) => {
-      expect(previousOwner).toEqual('0x0000000000000000000000000000000000000000');
-      expect(hapiSession.isOperatedBy( { solidityAddress: newOwner })).toBeTruthy();
+    taskRegistryLiveContract.onEvent("OwnershipTransferred", async ({ previousOwner, newOwner }) => {
+      expect(previousOwner).toEqual('0x0000000000000000000000000000000000000002');
+      expect(newOwner).toEqual(`0x${await hapiSession.getSolidityAddress()}`);
     });
     taskRegistryManagerLiveContract.onEvent("NewRegistryCreated", ({ registry }) => {
       expect(registry).not.toBeNull();

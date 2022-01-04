@@ -68,21 +68,6 @@ export class ApiSession implements SolidityAddressable {
   }
 
   /**
-   * Returns true if the provided {@link who.solidityAddress} also owns this {@link ApiSession} and false otherwise. 
-   * 
-   * @deprecated Use the {@link accountId} property to check this
-   * 
-   * @param {object} who
-   * @param {string} who.solidityAddress
-   */
-  public isOperatedBy({ solidityAddress }: { solidityAddress: string }): boolean {
-    if (solidityAddress.indexOf('0x') === 0) {
-      solidityAddress = solidityAddress.slice(2);
-    }
-    return this.accountId.toSolidityAddress() === solidityAddress;
-  }
-
-  /**
    * Given an {@link UploadableEntity}, it triest ot upload it using the currently configured {@link ApiSession} passing in-it any provided {@link args}.
    * 
    * @param {Uploadable} what - The {@link UploadableEntity} to push through this {@link ApiSession}
