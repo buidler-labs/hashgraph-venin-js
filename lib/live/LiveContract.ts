@@ -21,6 +21,7 @@ import { extractSolidityAddressFrom, SolidityAddressable } from "../SolidityAddr
 import { ApiSession } from "../ApiSession";
 import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
 import { LiveAddress } from "./LiveAddress";
+import Long from "long";
 
 export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 69_000;
 
@@ -37,12 +38,6 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         contract: Contract,
         transaction: ContractCreateTransaction
     }): Promise<LiveContract> {
-        if (session instanceof ApiSession === false ||
-            contract instanceof Contract === false ||
-            transaction instanceof ContractCreateTransaction === false) {
-            throw new Error("We need a reference to the underlying client tranport, the contract blueprint being deployed and " +
-                            "a referance to the pre-filled contract-create transaction in order to execute the transaction and create the live-contract link.");
-        }
         const contractTransactionResponse = await session.execute(transaction);
         const createdContractReceipt = await session.execute(TransactionReceiptQuery.for(contractTransactionResponse));
 
@@ -134,21 +129,15 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
             gas: DEFAULT_GAS_PER_CONTRACT_TRANSACTION
         };
         let contractRequest;
-
-        // Try to pick up any specific constructor arguments provided at call-time such as 'gas' or 'amount' to transfer
+        
+        // Try to unpack common meta-args that can be passed in at query/transaction construction time
         if (args && args.length > 0) {
-            if (Number.isInteger(args[0].gas)) {
+            if (Number.isInteger(args[0].gas) || args[0].gas instanceof Long) {
                 constructorArgs.gas = args[0].gas;
                 requestOptionsPresentInArgs = true;
             }
-            if (!fDescription.constant) {
-                if (Number.isInteger(args[0].amount)) {
-                    constructorArgs.amount = args[0].amount;
-                    requestOptionsPresentInArgs = true;
-                }
-            }
         }
-        
+
         // Initialize the Hedera request-object itself passing in any additional constructor args (if provided)
         contractRequest = fDescription.constant ? new ContractCallQuery(constructorArgs) : new ContractExecuteTransaction(constructorArgs);
         
@@ -170,6 +159,10 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
                 }
             } else {
                 // This is a state-changing Transaction. Try setting aditional properties as well
+                if (args[0].amount) {  // number | string | Long | BigNumber | Hbar
+                    contractRequest.setPayableAmount(args[0].amount);
+                    requestOptionsPresentInArgs = true;
+                }
                 if (args[0].maxTransactionFee) {  // number | string | Long | BigNumber | Hbar
                     contractRequest.setMaxTransactionFee(args[0].maxTransactionFee);
                     requestOptionsPresentInArgs = true;

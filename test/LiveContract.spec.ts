@@ -81,9 +81,7 @@ describe('LiveContract', () => {
   });
 
   it("given a contract which has methods that allow both a state change and return something, when called, the expected value is returned", async () => {
-    const hapiSession = await HederaNetwork.defaultApiSession();
-    const solidityContract = await Contract.newFrom({ code: read({ contract: 'change_state_with_return' }) });
-    const liveContract = await hapiSession.upload(solidityContract);
+    const liveContract = await load('change_state_with_return');
 
     await expect(liveContract.num()).resolves.toEqual(new BigNumber(0));
     await expect(liveContract.setAndRetrieve(42)).resolves.toEqual(new BigNumber(42));
@@ -351,8 +349,4 @@ describe('LiveContract', () => {
 
     // TODO: expect various task-registry methods to work from this point forward
   });
-
-  it.todo("Write test for Query (non state-changing/constant contract method call) > maxQueryPayment/paymentTransactionId/queryPayment");
-
-  it.todo("Write test for Transaction (state-changing contract method calls) > maxTransactionFee/nodeAccountIds/transactionId/transactionMemo/transactionValidDuration");
 });

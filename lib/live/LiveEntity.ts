@@ -5,7 +5,7 @@ import { ApiSession } from "../ApiSession";
  */
 export class LiveEntity<T> {
     constructor(
-        protected readonly session: ApiSession,
+        public readonly session: ApiSession,
         public readonly id: T
     ) {}
 
