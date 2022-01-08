@@ -17,9 +17,10 @@ import { arrayify } from '@ethersproject/bytes';
 import { Contract } from "../static/Contract";
 import { HContractFunctionParameters } from "../HContractFunctionParameters";
 import { LiveEntity } from "./LiveEntity";
-import { SolidityAddressable } from "../SolidityAddressable";
+import { extractSolidityAddressFrom, SolidityAddressable } from "../SolidityAddressable";
 import { ApiSession } from "../ApiSession";
 import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
+import { LiveAddress } from "./LiveAddress";
 
 export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 69_000;
 
@@ -233,14 +234,26 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
                 fResponse = fResult[0];
             }
 
-            // Map all Ethers' BigNumber to the Hedera-used, bignumber.js equivalent
-            if (EthersBigNumber.isBigNumber(fResponse)) {
-                fResponse = new BigNumber(fResponse.toString());
-            } else {
+            // Do various type re-mapings such as:
+            //    - Ethers' BigNumber to the Hedera-used, bignumber.js equivalent
+            //    - solidity-address compatible values to LiveAddress-es
+            const tryRemapingValue = (what: any, f: {(...args: any[]): any}) => {
+                let wasMapped = false;
+
+                if (typeof what === 'string' && extractSolidityAddressFrom(what) !== undefined) {
+                    // most likely, this is a solidity-address
+                    f(new LiveAddress({ session: this.session, address: what }), true);
+                    wasMapped = true;
+                } else if (EthersBigNumber.isBigNumber(what)) {
+                    f(new BigNumber(what.toString()), false);
+                    wasMapped = true;
+                }
+                return wasMapped;
+            };
+
+            if (!tryRemapingValue(fResponse, newVal => { fResponse = newVal })) {
                 traverse(fResponse).forEach(function(x) {
-                    if (EthersBigNumber.isBigNumber(x)) {
-                        this.update(new BigNumber(x.toString()));
-                    }
+                    tryRemapingValue(x, this.update);
                 });
             }
         }

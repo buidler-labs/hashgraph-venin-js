@@ -8,15 +8,40 @@ import { arrayify } from '@ethersproject/bytes';
 import { load, read } from "./utils";
 import { Contract } from "../lib/static/Contract";
 import { HederaNetwork } from "../lib/HederaNetwork";
+import { LiveEntity } from "../lib/live/LiveEntity";
+import { LiveAddress } from "../lib/live/LiveAddress";
 
 describe('LiveContract', () => {
+  it("using the solidity-by-example > Contract that Creates other Contracts example, creating a contract should allow its live-address to be convertable to the underlying model", async () => {
+    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSessionOwnerAddress = await hapiSession.getSolidityAddress();
+    const carContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/new_contract' }), name: 'Car', ignoreWarnings: true });
+    const carFactoryContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/new_contract' }), name: 'CarFactory', ignoreWarnings: true });
+    const liveCarFactoryContract = await hapiSession.upload(carFactoryContract);
+
+    await expect(liveCarFactoryContract.create({ gas: 200_000 }, 
+      hapiSessionOwnerAddress, 
+      "Logan"
+    )).resolves.toBeUndefined();
+
+    const { carAddr } = await liveCarFactoryContract.getCar(0);
+
+    expect(carAddr).toBeInstanceOf(LiveAddress);
+
+    const liveCar = await carAddr.toLiveContract(carContract.interface);
+
+    await expect(liveCar.model()).resolves.toEqual("Logan");
+  });
+
   it("using the solidity-by-example > Immutable example, deploying a contract with constructor arguments should work", async () => {
     const uintArgForConstructor = new BigNumber(42);
     const hapiSession = await HederaNetwork.defaultApiSession();
     const immutableContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/immutable' }) });
     const liveContract = await hapiSession.upload(immutableContract, uintArgForConstructor);
+    const returnedMyAddress = await liveContract.MY_ADDRESS();
 
-    await expect(liveContract.MY_ADDRESS()).resolves.toEqual(`0x${await hapiSession.getSolidityAddress()}`);
+    expect(returnedMyAddress).toBeInstanceOf(LiveEntity);
+    expect(returnedMyAddress.equals(await hapiSession.getSolidityAddress())).toBeTruthy();
     await expect(liveContract.MY_UINT()).resolves.toEqual(uintArgForConstructor);
   });
 
@@ -266,16 +291,18 @@ describe('LiveContract', () => {
       taskId
     );
     expect(gottenTask.disputionTime).not.toBeUndefined();
+    expect(gottenTask.needer).toBeInstanceOf(LiveEntity);
+    expect(gottenTask.needer.equals("0x0000000000000000000000000000000000000002")).toBeTruthy();
+    expect(gottenTask.tasker).toBeInstanceOf(LiveEntity);
+    expect(gottenTask.tasker.equals("0x0000000000000000000000000000000000000000")).toBeTruthy();
     expect(gottenTask).toMatchObject({
       disputed: [ false, false ],
       disputionTime: new BigNumber(0),
       dloc: arrayify("0x0000000000000000000000000000000000000000000000000000000000000000"),
-      needer: "0x0000000000000000000000000000000000000002",
       nploc: arrayify("0x0000000000000000000000000000000000000000000000000000000000000000"),
       ploc: arrayify("0x3637333437343635363837343335373236383737373437323635363736353732"),
       price: new BigNumber(200),
       taskType: 1,
-      tasker: "0x0000000000000000000000000000000000000000",
       tploc: arrayify("0x0000000000000000000000000000000000000000000000000000000000000000")
     });
   });
