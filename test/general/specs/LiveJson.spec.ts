@@ -1,9 +1,9 @@
 import {
     expect, describe, it,
 } from '@jest/globals';
-import { HederaNetwork } from '../lib/HederaNetwork';
+import { HederaNetwork } from '../../../lib/HederaNetwork';
 
-import { Json } from '../lib/static/Json';
+import { Json } from '../../../lib/static/Json';
 
 describe('LiveJson', () => {
     it("given a valid Json instance, uploading it should succede", async () => {

@@ -2,9 +2,9 @@ import {
     expect, describe, it,
 } from '@jest/globals';
 
-import { read } from './utils';
-import { Contract } from '../lib/static/Contract';
-import { CompileIssues } from '../lib/errors/CompileIssues';
+import { read } from '../../utils';
+import { Contract } from '../../../lib/static/Contract';
+import { CompileIssues } from '../../../lib/errors/CompileIssues';
 
 const CALL_CALLER_BYTECODE = read({ solo: 'call_caller' }).evm.bytecode.object;
 const CALL_RECEIVER_BYTECODE = read({ solo: 'call_receiver' }).evm.bytecode.object;
@@ -101,11 +101,11 @@ describe('Contract', () => {
     it("given a valid contract that is inter-linked via chain-import-ing with others and its path-prefix not set in env, compiling it should not fail", async () => {
         expect(process.env.CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/)).not.toContain('import_resolution');
 
-        await expect(Contract.allFrom({ path: './import_resolution/hello_imports.sol' })).resolves.not.toThrow();
+        await expect(Contract.allFrom({ path: './general/contracts/import_resolution/hello_imports.sol' })).resolves.not.toThrow();
     });
 
     it("given a valid contract that is inter-linked via chain-import-ing with others, compiling it should recurse to importing all of its dependencies", async () => {
-        const path = './import_resolution/hello_imports.sol';
+        const path = './general/contracts/import_resolution/hello_imports.sol';
         const contracts = await Contract.allFrom({ path });
         
         expect(contracts).toHaveLength(1);

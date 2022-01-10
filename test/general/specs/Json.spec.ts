@@ -2,7 +2,7 @@ import {
     expect, describe, it,
 } from '@jest/globals';
 
-import { Json } from '../lib/static/Json';
+import { Json } from '../../../lib/static/Json';
 
 describe('Json', () => {
     it("given a JSON object that has keys starting with the underscore (_) character, creating an instance should error out", async () => {

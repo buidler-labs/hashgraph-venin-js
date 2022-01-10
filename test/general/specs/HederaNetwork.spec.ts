@@ -10,10 +10,10 @@ import { AccountId } from '@hashgraph/sdk';
 import {
   HEDERA_CUSTOM_NET_NAME,
   HederaNetwork,
-} from '../lib/HederaNetwork';
+} from '../../../lib/HederaNetwork';
 
-import { CredentialsInvalidError } from '../lib/errors/CredentialsInvalidError';
-import { EnvironmentInvalidError } from '../lib/errors/EnvironmentInvalidError';
+import { CredentialsInvalidError } from '../../../lib/errors/CredentialsInvalidError';
+import { EnvironmentInvalidError } from '../../../lib/errors/EnvironmentInvalidError';
 
 describe('HederaNetwork', () => {
   const ORIGINAL_ENV = process.env;
@@ -112,7 +112,7 @@ describe('HederaNetwork', () => {
         HEDERA_OPERATOR_ID: operatorId,
         HEDERA_OPERATOR_KEY: operatorKey
       };
-      const localisedHederaNetwork = require('../lib/HederaNetwork');
+      const localisedHederaNetwork = require('../../../lib/HederaNetwork');
 
       await localisedHederaNetwork.HederaNetwork.defaultApiSession();
       return Promise.reject('Test should have thrown an exception by now but it did not.');

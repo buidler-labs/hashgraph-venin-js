@@ -4,11 +4,13 @@ import { HederaNetwork } from '../lib/HederaNetwork';
 import { LiveContract } from '../lib/live/LiveContract';
 import { Contract } from '../lib/static/Contract';
 
-export function read({ contract, solo }: { contract?: string, solo?: string }) {
+export type ResouorceReadOptions = { relativeTo?: string, contract?: string, solo?: string };
+
+export function read({ relativeTo = 'general', contract, solo }: ResouorceReadOptions) {
     if (undefined != contract) {
-        return fs.readFileSync(path.join(__dirname, 'resources/contracts/sources', `${contract}.sol`), 'utf8');
+        return fs.readFileSync(path.join(__dirname, `${relativeTo}/contracts`, `${contract}.sol`), 'utf8');
     } else {
-        return require(`./resources/contracts/solos/${solo}.json`);
+        return require(`./${relativeTo}/solos/${solo}.json`);
     }
 }
 

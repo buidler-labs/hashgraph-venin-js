@@ -4,7 +4,7 @@ import {
 } from '@jest/globals';
 import { ContractCallQuery, ContractExecuteTransaction, Hbar, TransactionId } from "@hashgraph/sdk";
 
-import { load } from "./utils";
+import { load } from "../../utils";
 import Long from "long";
 
 describe('LiveContract.meta-arguments', () => {
