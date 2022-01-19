@@ -14,9 +14,9 @@ export function read({ relativeTo = 'general', contract, solo }: ResouorceReadOp
     }
 }
 
-export async function load(liveContractPath: string): Promise<LiveContract> {
+export async function load(liveContractPath: string, relativeTo: string = 'general'): Promise<LiveContract> {
     const hapiSession = await HederaNetwork.defaultApiSession();
-    const sbeContract = await Contract.newFrom({ code: read({ contract: liveContractPath }) });
+    const sbeContract = await Contract.newFrom({ code: read({ contract: liveContractPath, relativeTo }) });
     
     return await hapiSession.upload(sbeContract);
 }

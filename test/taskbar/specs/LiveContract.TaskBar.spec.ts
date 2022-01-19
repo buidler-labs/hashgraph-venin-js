@@ -18,7 +18,7 @@ function read(what: ResouorceReadOptions) {
 }
 
 describe('LiveContract.TaskBar', () => {
-  it ("given the taskbar use-case contracts, initializing a task should allow for getting it back later on", async() => {
+  it("given the taskbar use-case contracts, initializing a task should allow for getting it back later on", async() => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
     const taskId = new BigNumber(1);
 
