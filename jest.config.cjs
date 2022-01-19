@@ -10,7 +10,7 @@ module.exports = {
     testMatch: [
         "**/?(*.)+(spec|test).ts"
     ],
-    testTimeout: 60000,
+    testTimeout: 180000,
     transform: {
         "\\.m?js$": ["rollup-jest", {"output": {"sourcemap": true}}],
         "^.+\\.ts?$": "ts-jest"
