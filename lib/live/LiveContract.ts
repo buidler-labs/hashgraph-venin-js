@@ -23,7 +23,7 @@ import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
 import { LiveAddress } from "./LiveAddress";
 import Long from "long";
 
-export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 69_000;
+export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 169_000;
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
@@ -126,7 +126,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         let requestOptionsPresentInArgs = false;
         let constructorArgs: any = { 
             contractId: this.id,
-            gas: DEFAULT_GAS_PER_CONTRACT_TRANSACTION
+            gas: this.session.defaults.contract_transaction_gas || DEFAULT_GAS_PER_CONTRACT_TRANSACTION
         };
         let contractRequest;
         
@@ -141,6 +141,13 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         // Initialize the Hedera request-object itself passing in any additional constructor args (if provided)
         contractRequest = fDescription.constant ? new ContractCallQuery(constructorArgs) : new ContractExecuteTransaction(constructorArgs);
         
+        // Inject session-configurable defaults
+        if (fDescription.constant) {
+            const queryPaymentInHbar = new Hbar(this.session.defaults.payment_for_contract_query || 0);
+
+            contractRequest.setQueryPayment(queryPaymentInHbar);
+        }
+
         // Try to inject setter-only options
         if (args && args.length > 0) {
             if (fDescription.constant) {

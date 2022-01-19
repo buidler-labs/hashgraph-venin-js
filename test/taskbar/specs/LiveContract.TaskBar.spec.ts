@@ -46,7 +46,7 @@ describe('LiveContract.TaskBar', () => {
     );
     expect(gottenTask.disputionTime).not.toBeUndefined();
     expect(gottenTask.needer).toBeInstanceOf(LiveEntity);
-    expect(gottenTask.needer.equals("0x0000000000000000000000000000000000000002")).toBeTruthy();
+    expect(gottenTask.needer.equals(hapiSession.accountId.toSolidityAddress())).toBeTruthy();
     expect(gottenTask.tasker).toBeInstanceOf(LiveEntity);
     expect(gottenTask.tasker.equals("0x0000000000000000000000000000000000000000")).toBeTruthy();
     expect(gottenTask).toMatchObject({
@@ -81,8 +81,10 @@ describe('LiveContract.TaskBar', () => {
 
     // Register events of interest
     taskRegistryLiveContract.onEvent("OwnershipTransferred", async ({ previousOwner, newOwner }) => {
+      const hapAccountSolidityAddress = `0x${await hapiSession.getSolidityAddress()}`; 
+      
       expect(previousOwner).toEqual('0x0000000000000000000000000000000000000002');
-      expect(newOwner).toEqual(`0x${await hapiSession.getSolidityAddress()}`);
+      expect(newOwner).toEqual(hapAccountSolidityAddress);
     });
     taskRegistryManagerLiveContract.onEvent("NewRegistryCreated", ({ registry }) => {
       expect(registry).not.toBeNull();

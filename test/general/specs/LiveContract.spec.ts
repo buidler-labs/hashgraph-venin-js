@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 import {
   describe, expect, it,
 } from '@jest/globals';
-import { AccountId, Hbar } from "@hashgraph/sdk";
+import { AccountId } from "@hashgraph/sdk";
 
 import { load, read } from "../../utils";
 import { Contract } from "../../../lib/static/Contract";
@@ -23,13 +23,13 @@ describe('LiveContract', () => {
       "Logan"
     )).resolves.toBeUndefined();
 
-    const { carAddr } = await liveCarFactoryContract.getCar({ queryPayment: new Hbar(2) }, 0);
+    const { carAddr } = await liveCarFactoryContract.getCar(0);
 
     expect(carAddr).toBeInstanceOf(LiveAddress);
 
     const liveCar = await carAddr.toLiveContract(carContract.interface);
 
-    await expect(liveCar.model({ queryPayment: new Hbar(2) })).resolves.toEqual("Logan");
+    await expect(liveCar.model()).resolves.toEqual("Logan");
   });
 
   it("using the solidity-by-example > Immutable example, deploying a contract with constructor arguments should work", async () => {
@@ -47,7 +47,7 @@ describe('LiveContract', () => {
   it("given the solidity-by-example > Hello World code, uploading it should allow interacting with its live instance", async () => {
     const liveContract = await load('solidity-by-example/hello_world');
 
-    await expect(liveContract.greet({ queryPayment: new Hbar(2) })).resolves.toEqual("Hello World!");
+    await expect(liveContract.greet()).resolves.toEqual("Hello World!");
   });
 
   it("using the solidity-by-example > Hello World code, uploading it followed by a cold retrieval should be permitted provided it is deployed ID and ABI interface are available", async () => {
@@ -61,7 +61,7 @@ describe('LiveContract', () => {
     // instead, retrieve it through an api session call
     const liveContract = await hapiSession.getLiveContract({ id, abi: helloWorldContract.interface });
 
-    await expect(liveContract.greet({ queryPayment: new Hbar(2) })).resolves.toEqual("Hello World!");
+    await expect(liveContract.greet()).resolves.toEqual("Hello World!");
   });
 
   it("given a contract which has methods that make use of the Hedera supported bytes type, calling them should work as expected", async () => {
@@ -73,7 +73,7 @@ describe('LiveContract', () => {
 
     await expect(liveContract.set(sentBytes, sentBytes32)).resolves.not.toThrow();
 
-    const [ recvBytes, recvBytes32 ] = await liveContract.get({ queryPayment: new Hbar(2) });
+    const [ recvBytes, recvBytes32 ] = await liveContract.get();
 
     expect(Buffer.compare(recvBytes, sentBytes)).toEqual(0);
     expect(Buffer.compare(recvBytes32, sentBytes32)).toEqual(0);
@@ -88,14 +88,13 @@ describe('LiveContract', () => {
   });
 
   it("given the solidity-by-example > Function code, quering them should succede giving back the expected answers", async () => {
-    const paying = { queryPayment: new Hbar(2) };
     const liveContract = await load('solidity-by-example/function');
 
-    await expect(liveContract.returnMany(paying)).resolves.toEqual([new BigNumber(1), true, new BigNumber(2)]);
-    await expect(liveContract.named(paying)).resolves.toEqual({x: new BigNumber(1), b: true, y: new BigNumber(2)});
-    await expect(liveContract.assigned(paying)).resolves.toEqual({x: new BigNumber(1), b: true, y: new BigNumber(2)});
-    await expect(liveContract.destructingAssigments(paying)).resolves.toEqual([new BigNumber(1), true, new BigNumber(2), new BigNumber(4), new BigNumber(6)]);
-    await expect(liveContract.arrayOutput(paying)).resolves.toEqual([]);
+    await expect(liveContract.returnMany()).resolves.toEqual([new BigNumber(1), true, new BigNumber(2)]);
+    await expect(liveContract.named()).resolves.toEqual({x: new BigNumber(1), b: true, y: new BigNumber(2)});
+    await expect(liveContract.assigned()).resolves.toEqual({x: new BigNumber(1), b: true, y: new BigNumber(2)});
+    await expect(liveContract.destructingAssigments()).resolves.toEqual([new BigNumber(1), true, new BigNumber(2), new BigNumber(4), new BigNumber(6)]);
+    await expect(liveContract.arrayOutput()).resolves.toEqual([]);
   });
 
   it("given the solidity-by-example > View and Pure Functions code, executing them with arguments should succede giving back the expected values", async () => {

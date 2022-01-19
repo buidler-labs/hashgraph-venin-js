@@ -3,15 +3,14 @@ import * as process from "process";
 
 import {
   AccountId,
-  AccountInfoQuery,
   Client,
   PrivateKey,
 } from "@hashgraph/sdk";
+import { NetworkName } from '@hashgraph/sdk/lib/client/Client';
 
 import { CredentialsInvalidError } from "./errors/CredentialsInvalidError";
 import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
-import { ApiSession } from "./ApiSession";
-import { NetworkName } from "@hashgraph/sdk/lib/client/ManagedNetwork";
+import { ApiSession, SessionDefaults } from "./ApiSession";
 
 /**
  * The Hedera Network label value used in library configurations (such as the {@link HederaNetwork.defaultApiSession} method) to signify 
@@ -34,7 +33,17 @@ import { NetworkName } from "@hashgraph/sdk/lib/client/ManagedNetwork";
  * Please see our [dockerized-hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) for more info as to how to run a local, [dockerized](https://hub.docker.com/r/buidlerlabs/hedera-services), 
  * [hedera-services](https://github.com/hashgraph/hedera-services) network.
  */
-export const HEDERA_CUSTOM_NET_NAME = "customnet";
+export const HEDERA_CUSTOM_NET_NAME: string = "customnet";
+
+// Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
+const DEFAULT_FILE_CHUNK_SIZE = 1024;
+
+const AVAILABLE_NETWORK_NAMES = {
+  CustomNet: HEDERA_CUSTOM_NET_NAME, 
+  MainNet: "mainnet", 
+  TestNet: "testnet", 
+  PreviewNet: "previewnet" 
+};
 
 type HederaDefaultApiSessionParamsSource = {
   /**
@@ -47,6 +56,25 @@ type HederaDefaultApiSessionParamsSource = {
   path?: string 
 };
 type HederaNodesAddressBook = { [key: string]: string | AccountId };
+
+type NetworkDefaults = { 
+  file_chunk_size: number
+};
+
+const DefinedNetworkDefaults: { [k: string]: NetworkDefaults } = {
+  [AVAILABLE_NETWORK_NAMES.CustomNet]: {
+    file_chunk_size: DEFAULT_FILE_CHUNK_SIZE
+  }, 
+  [AVAILABLE_NETWORK_NAMES.MainNet]: {
+    file_chunk_size: DEFAULT_FILE_CHUNK_SIZE
+  }, 
+  [AVAILABLE_NETWORK_NAMES.TestNet]: {
+    file_chunk_size: DEFAULT_FILE_CHUNK_SIZE
+  }, 
+  [AVAILABLE_NETWORK_NAMES.PreviewNet]: {
+    file_chunk_size: DEFAULT_FILE_CHUNK_SIZE
+  }, 
+};
 
 /**
  * The main entry-class for the Hedera Strato library.
@@ -72,15 +100,16 @@ export class HederaNetwork {
    * @param {HederaDefaultApiSessionParamsSource} source
    */
   public static defaultApiSession({ env = process.env, path = '.env' }: HederaDefaultApiSessionParamsSource = {}): Promise<ApiSession> {
-    const eParams = HederaNetwork._resolveDefaultSessionParamsFrom({ env, path });
+    const eParams = HederaNetwork.resolveDefaultSessionParamsFrom({ env, path });
 
     return HederaNetwork.for({
       name: eParams.HEDERA_NETWORK,
-      nodes: HederaNetwork._parseNetworkNodeFrom(eParams.HEDERA_NODES)
-     }).login({
+      nodes: HederaNetwork.parseNetworkNodeFrom(eParams.HEDERA_NODES)
+    }).login({
       operatorId: eParams.HEDERA_OPERATOR_ID,
-      operatorKey: eParams.HEDERA_OPERATOR_KEY
-     });
+      operatorKey: eParams.HEDERA_OPERATOR_KEY,
+      defaults: HederaNetwork.parseSessionDefaultsFrom(eParams.HEDERA_NETWORK, eParams)
+    });
   }
 
   /**
@@ -98,11 +127,10 @@ export class HederaNetwork {
     nodes: HederaNodesAddressBook
   }): HederaNetwork {
     let chosenClient = null;
-    
-    const availableNetworkNames = [ HEDERA_CUSTOM_NET_NAME, "mainnet", "testnet", "previewnet" ];
+    const acceptedNetworkNames = Object.values(AVAILABLE_NETWORK_NAMES);
 
-    if (!availableNetworkNames.includes(name)) {
-      throw new EnvironmentInvalidError(`There is no such '${name}' network available. In order to continue, please choose a valid name from: ${availableNetworkNames.join(', ')}`);
+    if (!acceptedNetworkNames.includes(name)) {
+      throw new EnvironmentInvalidError(`There is no such '${name}' network available. In order to continue, please choose a valid name from: ${acceptedNetworkNames.join(', ')}`);
     }
 
     try {
@@ -116,17 +144,28 @@ export class HederaNetwork {
         chosenClient = Client.forNetwork(nodes);
       } else {
         // Note: this should never happen, but still ... better play it safe
-        throw new EnvironmentInvalidError(`There is no such ${name} network available in this library. Available network names to choose from are: ${availableNetworkNames.join(', ')}`);
+        throw new EnvironmentInvalidError(`There is no such ${name} network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(', ')}`);
       }
     }
-    return new HederaNetwork(chosenClient);
+    return new HederaNetwork(chosenClient, DefinedNetworkDefaults[name]);
   }
 
-  private static _resolveDefaultSessionParamsFrom(source: HederaDefaultApiSessionParamsSource): { [key: string]: string } {
+  private static resolveDefaultSessionParamsFrom(source: HederaDefaultApiSessionParamsSource): { [key: string]: string } {
     const dEnv = dotenv.config({ path: source.path }).parsed;
     const pEnv = source.env;
 
     return Object.assign({}, dEnv, pEnv);
+  }
+
+  private static parseSessionDefaultsFrom(networkName: string, params: { [k: string]: string }): SessionDefaults {
+    const resolveSessionDefaultValueFor = (particle: string) => 
+      params[`HEDERA_${networkName.toUpperCase()}_DEFAULT_${particle.toUpperCase()}`] || params[`HEDERA_DEFAULT_${particle.toUpperCase()}`];
+
+    return {
+      contract_creation_gas: parseInt(resolveSessionDefaultValueFor("contract_creation_gas")),
+      contract_transaction_gas: parseInt(resolveSessionDefaultValueFor("contract_transaction_gas")),
+      payment_for_contract_query: parseInt(resolveSessionDefaultValueFor("payment_for_contract_query"))
+    };
   }
 
   /**
@@ -138,7 +177,7 @@ export class HederaNetwork {
    *   "127.0.0.1:50212": new AccountId(5)
    * }
    */
-  private static _parseNetworkNodeFrom(string: string): HederaNodesAddressBook {
+  private static parseNetworkNodeFrom(string: string): HederaNodesAddressBook {
     let networkInfo = {};
 
     if (string) {
@@ -161,8 +200,6 @@ export class HederaNetwork {
     }
     return networkInfo;
   }
-
-  private _apiSessions: { [k: string]: ApiSession } = {};
 
   /**
    * Validates a string serialized account id-private key pair and returns their parsed counter-parts ready to be consumed by inner, Hedera SDK layers.
@@ -191,7 +228,10 @@ export class HederaNetwork {
     return { accountId, privateKey };
   }
 
-  private constructor(public readonly client: Client) { }
+  private constructor(
+    public readonly client: Client,
+    public readonly defaults: NetworkDefaults
+  ) { }
 
   /**
    * Creates a new {@link ApiSession} by 'logging in' with an `operator` credentials pair.
@@ -200,22 +240,16 @@ export class HederaNetwork {
    * @param {AccountId} options.operatorId - the {@link AccountId} of the entity operating the resulting {@link ApiSession} 
    * @param {PrivateKey} options.operatorKey - the {@link PrivateKey} of the resulting {@link ApiSession} operator that will pay for all 
    *                                           the resulting subsequent API transaction operations 
+   * @params {SessionDefaults} options.defaults - the {@link SessionDefaults} instance that preloads the resulting session with
+   *                                              sensible defaults (eg. for creating contracts or executing methods)
    */
-  public async login({ operatorId, operatorKey }: { operatorId: string, operatorKey: string }): Promise<ApiSession> {
-    if (!this._apiSessions[operatorId]) {
-      const { accountId, privateKey } = HederaNetwork.validateOperator({
-        id: operatorId,
-        key: operatorKey
-      });
-      const hClient = this.client.setOperator(accountId, privateKey);
-      const accountInfoQuery = new AccountInfoQuery().setAccountId(accountId);
-      const accountInfo = await accountInfoQuery.execute(hClient);
+  public async login({ operatorId, operatorKey, defaults = {} }: { operatorId: string, operatorKey: string, defaults: SessionDefaults }): Promise<ApiSession> {
+    const { accountId, privateKey } = HederaNetwork.validateOperator({
+      id: operatorId,
+      key: operatorKey
+    });
+    const client = this.client.setOperator(accountId, privateKey);
 
-      // TODO: check accountInfo response
-      //       see https://docs.hedera.com/guides/docs/sdks/cryptocurrency/get-account-info
-      this._apiSessions[operatorId] = new ApiSession({ hClient, operatorInfo: accountInfo });
-    }
-
-    return this._apiSessions[operatorId];
+    return new ApiSession({ network: this, client, defaults });
   }
 }

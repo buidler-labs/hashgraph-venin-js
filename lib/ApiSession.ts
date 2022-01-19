@@ -1,6 +1,6 @@
 import { Interface } from '@ethersproject/abi';
 import { 
-  AccountInfo, 
+  AccountId,
   Client, 
   ContractCallQuery, 
   ContractExecuteTransaction,
@@ -8,26 +8,69 @@ import {
   ContractId, 
   FileContentsQuery, 
   FileId, 
+  Key, 
   ReceiptStatusError, 
   Status, 
+  Timestamp, 
+  TokenCreateTransaction, 
+  TokenSupplyType, 
+  TokenType, 
   Transaction, 
   TransactionReceipt, 
   TransactionResponse 
 } from '@hashgraph/sdk';
+import Duration from '@hashgraph/sdk/lib/Duration';
+import { HederaNetwork } from '..';
 
 import { LiveContract } from './live/LiveContract';
 import { LiveEntity } from './live/LiveEntity';
 import { LiveJson } from './live/LiveJson';
+import { LiveToken } from './live/LiveToken';
 import { SolidityAddressable } from './SolidityAddressable';
 import { Json } from './static/Json';
 import { UploadableEntity } from './static/UploadableEntity';
 import { TransactionReceiptQuery } from './TransactionReceiptQuery';
 
 type ApiSessionConstructorArgs = {
-  hClient: Client,
-  operatorInfo: AccountInfo
+  network: HederaNetwork,
+  client: Client,
+  defaults: SessionDefaults
 };
 type ContractFunctionCall = ContractCallQuery | ContractExecuteTransaction;
+
+export type SessionDefaults = { 
+  contract_creation_gas?: number,
+  contract_transaction_gas?: number,
+  payment_for_contract_query?: number
+};
+
+type TokenKeys = {
+  admin?: Key,
+  feeSchedule?: Key,
+  freeze?: Key,
+  kyc?: Key,
+  pause?: Key,
+  supply?: Key,
+  wipe?: Key
+};
+
+type TokenFeatures = {
+  name: string,
+  symbol: string,
+  decimals?: number | Long.Long,
+  initialSupply?: number | Long.Long,
+  treasuryAccountId?: string | AccountId,
+  keys?: TokenKeys,
+  freezeDefault?: boolean,
+  autoRenewAccountId?: string | AccountId,
+  expirationTime?: Date | Timestamp,
+  autoRenewPeriod?: number | Long.Long | Duration,
+  tokenMemo?: string,
+  customFees?: { feeCollectorAccountId?: string | AccountId | undefined }[],
+  type: TokenType,
+  supplyType?: TokenSupplyType,
+  maxSupply?: number | Long.Long
+};
 
 /**
  * The core class used for all business-logic, runtime network-interactions.
@@ -35,15 +78,17 @@ type ContractFunctionCall = ContractCallQuery | ContractExecuteTransaction;
  * Should only be instantiable through a {@link HederaNetwork} method such as the {@link HederaNetwork.defaultApiSession} one.
  */
 export class ApiSession implements SolidityAddressable {
+  public readonly network: HederaNetwork;
   private readonly client: Client;
-  private readonly operatorInfo: AccountInfo;
+  public readonly defaults: SessionDefaults;
 
   /**
    * @hidden
    */
-  constructor({ hClient, operatorInfo }: ApiSessionConstructorArgs) {
-    this.client = hClient;
-    this.operatorInfo = operatorInfo;
+  constructor({ network, client, defaults }: ApiSessionConstructorArgs) {
+    this.network = network;
+    this.client = client;
+    this.defaults = defaults;
   }
 
   /**
@@ -58,6 +103,37 @@ export class ApiSession implements SolidityAddressable {
    */
   public get publicKey() {
     return this.client.operatorPublicKey;
+  }
+
+  /**
+   * Creates a new Token on the network returning a {@link LiveToken} in the process.
+   * 
+   * @param features - The token's feature as accepted by the {@link TokenCreateTransaction} constructor
+   * @returns - an interactive {@link LiveToken} instance
+   */
+  public async createToken(features: TokenFeatures): Promise<any> {
+    const constructorArgs = {
+      // First map to expected properties
+      adminKey: this.client.operatorPublicKey,
+      feeScheduleKey: this.client.operatorPublicKey,
+      freezeKey: this.client.operatorPublicKey,
+      kycKey: this.client.operatorPublicKey,
+      pauseKey: this.client.operatorPublicKey,
+      supplyKey: this.client.operatorPublicKey,
+      tokenName: features.name,
+      tokenType: features.type,
+      tokenSymbol: features.symbol,
+      treasuryAccountId: this.accountId,
+      wipeKey: this.client.operatorPublicKey,
+
+      // Merge everything with what's provided
+      ...features
+    };
+    const createTokenTransaction = new TokenCreateTransaction(constructorArgs as any);
+    const creationResponse = await this.execute(createTokenTransaction);
+    const creationReceipt = await creationResponse.getReceipt(this.client);
+
+    return new LiveToken({ session: this, id: creationReceipt.tokenId });
   }
 
   /**
@@ -160,7 +236,7 @@ export class ApiSession implements SolidityAddressable {
     });
   }
 
-    /**
+  /**
    * Given an {@link UploadableEntity}, it triest ot upload it using the currently configured {@link ApiSession} passing in-it any provided {@link args}.
    * 
    * @param {Uploadable} what - The {@link UploadableEntity} to push through this {@link ApiSession}

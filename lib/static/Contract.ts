@@ -9,7 +9,14 @@ import { HContractFunctionParameters } from '../HContractFunctionParameters';
 import { Interface } from '@ethersproject/abi';
 import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../SolidityCompiler';
 
-const DEFAULT_GAS_FOR_CONTRACT_CREATION = 75_000;
+/**
+ * Default gas allocated for creating contracts.
+ * 
+ * Changelog (tailored against the 'hedera-services' version):
+ *  - <= v0.21.0: 75_000
+ *  - >= v0.22.0: 150_000
+ */
+const DEFAULT_GAS_FOR_CONTRACT_CREATION = 150_000;
 
 type AllContractOptions = {
   /**
@@ -216,7 +223,7 @@ export class Contract extends UploadableEntity<LiveContract> {
       adminKey: session.publicKey,
       bytecodeFileId: contractFileId,
       constructorParameters: await HContractFunctionParameters.newFor(constructorDefinition, args),
-      gas: DEFAULT_GAS_FOR_CONTRACT_CREATION,
+      gas: session.defaults.contract_creation_gas || DEFAULT_GAS_FOR_CONTRACT_CREATION,
       ...contractCreationOverrides
     });
   }

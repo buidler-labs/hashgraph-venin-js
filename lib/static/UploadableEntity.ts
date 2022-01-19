@@ -8,9 +8,6 @@ import { ApiSession } from "../ApiSession";
 import { LiveEntity } from "../live/LiveEntity";
 import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
 
-// Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
-const FILE_CHUNK_SIZE = 1024;
-
 type ArgumentsForUpload = {
   session: ApiSession,
   args: any[]
@@ -62,6 +59,7 @@ export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
   }
 
   private async _getFileTransactionsFor({ content, session, args = [] }: ArgumentsToGetFileTransaction) {
+    const fileChunkSize: number = session.network.defaults.file_chunk_size;
     const fileTransactions: Array<FileCreateTransaction|FileAppendTransaction> = [];
     let fileCreationOverrides = {};
 
@@ -74,16 +72,16 @@ export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
     fileTransactions.push(new FileCreateTransaction(Object.assign(
       {}, 
       { keys: [session.publicKey], ...fileCreationOverrides }, 
-      { contents: content.length > FILE_CHUNK_SIZE ? content.slice(0, FILE_CHUNK_SIZE) : content }
+      { contents: content.length > fileChunkSize ? content.slice(0, fileChunkSize) : content }
     )));
 
     // Add, if necessary, other file-append transactions to consume the rest of the chunks
-    if (content.length > FILE_CHUNK_SIZE) {
-      const contentToAppend = content.slice(FILE_CHUNK_SIZE);
+    if (content.length > fileChunkSize) {
+      const contentToAppend = content.slice(fileChunkSize);
 
       fileTransactions.push(new FileAppendTransaction({
         contents: contentToAppend,
-        maxChunks: Math.ceil(contentToAppend.length / FILE_CHUNK_SIZE)
+        maxChunks: Math.ceil(contentToAppend.length / fileChunkSize)
       }));
     }
     

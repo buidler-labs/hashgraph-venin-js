@@ -63,14 +63,14 @@ describe('HederaNetwork', () => {
     const hederaNet = HederaNetwork.for({ 
       name: HEDERA_CUSTOM_NET_NAME, 
       nodes: {
-        "node_0": node0Account,
-        "node_1": node1Account
+        "node_0:52111": node0Account,
+        "node_1:52111": node1Account
       }
     });
     const clientNetwork = hederaNet.client.network;
 
-    expect(clientNetwork["node_0"]).toEqual(node0Account);
-    expect(clientNetwork["node_1"]).toEqual(node1Account);
+    expect(clientNetwork["node_0:52111"]).toEqual(node0Account);
+    expect(clientNetwork["node_1:52111"]).toEqual(node1Account);
   });
 
   it('if environment params are not provided yet a dot-env file is present, dot-env properties should be used for default-session instantiation', async () => {
