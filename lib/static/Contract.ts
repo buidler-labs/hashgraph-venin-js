@@ -4,7 +4,7 @@ import {
 
 import { ArgumentsOnFileUploaded, UploadableEntity } from "./UploadableEntity";
 import { CompileIssues } from '../errors/CompileIssues';
-import { LiveContract } from '../live/LiveContract';
+import { LiveContract, LiveContractWithLogs } from '../live/LiveContract';
 import { HContractFunctionParameters } from '../HContractFunctionParameters';
 import { Interface } from '@ethersproject/abi';
 import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../SolidityCompiler';
@@ -47,7 +47,7 @@ type NewContractOptions = {
 /**
  * The Solidity-backed, non-deployed, data-holder for a Smart Contract logic.
  */
-export class Contract extends UploadableEntity<LiveContract> {
+export class Contract extends UploadableEntity<LiveContractWithLogs> {
   /**
    * Given an index or a name, this returns a specific {@link Contract} following the successfull compilation of 
    * either the contract code itself ({@link options.code}) or the solidity file located at the provided {@link options.path}
@@ -55,7 +55,7 @@ export class Contract extends UploadableEntity<LiveContract> {
    * In terms of precidence, it first checks to see if the {@link options.name} is provided and, if so, it uses that otherwise
    * it looks at the {@link options.index} one and goes with that.
    * 
-   * @param {Object} options - Provides a source and controls various {@see Contract} construction settings.
+   * @param {Object} options - Provides a source and controls various {@see Contract} construction settings
    * @returns {Promise<Contract>}
    */
   public static async newFrom({ code, index = 0, ignoreWarnings = false, name, path }: NewContractOptions): Promise<Contract> {
@@ -199,7 +199,7 @@ export class Contract extends UploadableEntity<LiveContract> {
    * If there is a constructor config object present (first args from list if it has the '_contract' property) this is consumed and the remainder of the arguments 
    * are passed to the Contract constructor.
    */
-  protected override async _onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContract> {
+  protected override async _onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
     const contractTransactionArguments = await this._getContractCreateOptionsFor({ session, receipt, args });
     const createContractTransaction = new ContractCreateTransaction(contractTransactionArguments);
 

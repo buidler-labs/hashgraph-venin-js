@@ -8,6 +8,7 @@ import {
     ContractExecuteTransaction, 
     ContractFunctionResult, 
     ContractId, 
+    ContractLogInfo, 
     Hbar, 
     TransactionId
 } from "@hashgraph/sdk";
@@ -19,15 +20,55 @@ import { HContractFunctionParameters } from "../HContractFunctionParameters";
 import { LiveEntity } from "./LiveEntity";
 import { extractSolidityAddressFrom, SolidityAddressable } from "../SolidityAddressable";
 import { ApiSession } from "../ApiSession";
-import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
 import { LiveAddress } from "./LiveAddress";
 import Long from "long";
+import { QueryForTransactionRecord } from "../query/QueryForTransactionRecord";
 
+/**
+ * Default gas allocated for executing contract method calls (both queries and transactions)
+ * 
+ * Changelog (tailored against the 'hedera-services' version):
+ *  - <= v0.21.0: 69_000
+ *  - >= v0.22.0: 169_000
+ */
 export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 169_000;
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
 export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
+export type LiveContractConstructorArgs = {
+    session: ApiSession,
+    id: ContractId,
+    cInterface: Interface
+};
+type ParsedEvent = {
+    name: string,
+    payload: any
+};
+
+function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[] {
+    return logs.map(recordLog => {
+        const data = `0x${recordLog.data.length === 0 ? "" : Buffer.from(recordLog.data).toString('hex')}`;
+        const topics = recordLog.topics.map(topic => "0x" + Buffer.from(topic).toString('hex'));
+        
+        try {
+            const logDescription = cInterface.parseLog({ data, topics });
+            const decodedEventObject = Object.keys(logDescription.args)
+                .filter(evDataKey => isNaN(Number(evDataKey)))
+                .map(namedEvDataKey => ({ [namedEvDataKey]: logDescription.args[namedEvDataKey] }))
+                .reduce((p, c) => ({...p, ...c}), {});
+        
+            return {
+                name: logDescription.name,
+                payload: decodedEventObject
+            };
+        } catch (e) {
+            // No-op, yet we need to filter this element out because something went wrong
+            // TODO: log something here
+            return null;
+        }
+    }).filter(parsedLogCandidate => parsedLogCandidate !== null);
+}
 
 export class LiveContract extends LiveEntity<ContractId> implements SolidityAddressable {
     /**
@@ -37,14 +78,16 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         session: ApiSession,
         contract: Contract,
         transaction: ContractCreateTransaction
-    }): Promise<LiveContract> {
+    }): Promise<LiveContractWithLogs> {
         const contractTransactionResponse = await session.execute(transaction);
-        const createdContractReceipt = await session.execute(TransactionReceiptQuery.for(contractTransactionResponse));
+        const createdContractRecord = await session.execute(QueryForTransactionRecord.of(contractTransactionResponse));
+        const logs = parseLogs(contract.interface, createdContractRecord.contractFunctionResult.logs);
 
-        return new LiveContract({ 
+        return new LiveContractWithLogs({ 
             session, 
-            id: createdContractReceipt.contractId,
+            id: createdContractRecord.receipt.contractId,
             cInterface: contract.interface,
+            logs
         });
     }
 
@@ -54,11 +97,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
     // TODO: REFACTOR THIS AWAY! yet, there's no other way of making this quickly work right now!
     readonly [ k: string ]: ContractMethod | any;
 
-    public constructor({ session, id, cInterface }: {
-        session: ApiSession,
-        id: ContractId,
-        cInterface: Interface
-    }) {
+    public constructor({ session, id, cInterface }: LiveContractConstructorArgs) {
         super(session, id);
         this.events = new EventEmitter();
         this.interface = cInterface;
@@ -267,18 +306,12 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
      *       if there are no handlers registered there either, we skipp the event all-together.
      */
     private _tryToProcessForEvents(callResponse: ContractFunctionResult): void {
-        callResponse.logs.forEach(recordLog => {
-            const data = `0x${recordLog.data.length === 0 ? "" : Buffer.from(recordLog.data).toString('hex')}`;
-            const topics = recordLog.topics.map(topic => "0x" + Buffer.from(topic).toString('hex'));
-            let evNameToSendTo;
-            let logDescription;
+        const loggedEvents = parseLogs(this.interface, callResponse.logs);
 
-            try {
-                logDescription = this.interface.parseLog({ data, topics });
-            } catch (e) {
-                // No-op
-            }
-            if (this.events.listenerCount(logDescription.name) === 0) {
+        loggedEvents.forEach(({ name, payload }) => {
+            let evNameToSendTo: string;
+
+            if (this.events.listenerCount(name) === 0) {
                 // No one is interested in this event
                 // Try to dump it to the "catch-all-if-none-defined" event handler
                 if (this.events.listenerCount(UNHANDLED_EVENT_NAME) === 0) {
@@ -288,23 +321,33 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
                 evNameToSendTo = UNHANDLED_EVENT_NAME;
             } else {
                 // We have listeners for this event. Business as usual
-                evNameToSendTo = logDescription.name;
+                evNameToSendTo = name;
             }
 
-            const decodedEventObject = Object.keys(logDescription.args)
-                .filter(evDataKey => isNaN(Number(evDataKey)))
-                .map(namedEvDataKey => ({ [namedEvDataKey]: logDescription.args[namedEvDataKey] }))
-                .reduce((p, c) => ({...p, ...c}), {});
-
             try {
-                this.events.emit(evNameToSendTo, decodedEventObject);
+                this.events.emit(evNameToSendTo, payload);
             } catch (e) {
                 if (process.env.NODE_ENV === 'test') {
                     // We re-interpret and throw it so that any tests running will be aware of it
-                    throw new Error(`The event-emitter handle '${logDescription.name}' failed to execute with the following reason: ${e.message}`);
+                    throw new Error(`The event-emitter handle '${name}' failed to execute with the following reason: ${e.message}`);
                 }
                 // otherwise, it's a No-op
             }
         });
+    }
+}
+
+/**
+ * A wrapper class that contains both a {@link LiveContract} and its associated logs generated at construction time.
+ * Consequently, this is meant to be generated when first {@link ApiSession.upload}-ing a {@link Contract}.
+ */
+export class LiveContractWithLogs extends LiveContract {
+    public readonly logs: ParsedEvent[];
+    public readonly liveContract: LiveContract;
+
+    constructor({ session, id, cInterface, logs }: LiveContractConstructorArgs & { logs: ParsedEvent[] }) {
+        super({ session, id, cInterface });
+        this.liveContract = this;
+        this.logs = logs;
     }
 }

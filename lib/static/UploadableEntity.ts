@@ -6,7 +6,7 @@ import {
 } from "@hashgraph/sdk";
 import { ApiSession } from "../ApiSession";
 import { LiveEntity } from "../live/LiveEntity";
-import { TransactionReceiptQuery } from "../TransactionReceiptQuery";
+import { QueryForTransactionReceipt } from "../query/QueryForTransactionReceipt";
 
 type ArgumentsForUpload = {
   session: ApiSession,
@@ -39,7 +39,7 @@ export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
     const whatToUpload = await this._getContent();
     const { areOverridesProvided, fileTransactions } = await this._getFileTransactionsFor({ content: whatToUpload, session, args });
     const transactionResponse = await session.execute(fileTransactions[0]);
-    const transactionReceipt = await session.execute(TransactionReceiptQuery.for(transactionResponse));
+    const transactionReceipt = await session.execute(QueryForTransactionReceipt.of(transactionResponse));
 
     if (transactionReceipt.status !== Status.Success) {
       throw new Error(`There was an issue while creating the file (status ${transactionReceipt.status}). Aborting file upload.`);

@@ -15,8 +15,7 @@ import {
   TokenCreateTransaction, 
   TokenSupplyType, 
   TokenType, 
-  Transaction, 
-  TransactionReceipt, 
+  Transaction,
   TransactionResponse 
 } from '@hashgraph/sdk';
 import Duration from '@hashgraph/sdk/lib/Duration';
@@ -29,7 +28,8 @@ import { LiveToken } from './live/LiveToken';
 import { SolidityAddressable } from './SolidityAddressable';
 import { Json } from './static/Json';
 import { UploadableEntity } from './static/UploadableEntity';
-import { TransactionReceiptQuery } from './TransactionReceiptQuery';
+import {  } from './query/QueryForTransactionReceipt';
+import { QueryForSomething } from './query/QueryForSomething';
 
 type ApiSessionConstructorArgs = {
   network: HederaNetwork,
@@ -137,9 +137,9 @@ export class ApiSession implements SolidityAddressable {
   }
 
   /**
-   * Executes a {@link TransactionReceiptQuery} with the purpose of optaining a {@link TransactionReceipt} for apreviously executed, network, operation.
+   * Executes a {@link QueryForSomething} with the purpose of optaining a response (whatever that might be).
    */
-   public async execute(transaction: TransactionReceiptQuery): Promise<TransactionReceipt>;
+   public async execute<T extends QueryForSomething<R>, R>(transaction: T): Promise<T extends QueryForSomething<infer R> ? R : never>;
    /**
     * Queries/Executes a contract function, returning the {@link ContractFunctionResult} if successfull.
     */
@@ -148,34 +148,42 @@ export class ApiSession implements SolidityAddressable {
     * A catch-all/generic {@link Transaction} execution operation yeilding, upon success, of a {@link TransactionResponse}.
     */
    public async execute(transaction: Transaction): Promise<TransactionResponse>;
-   public async execute(transaction: ContractFunctionCall|TransactionReceiptQuery|Transaction): Promise<ContractFunctionResult|TransactionReceipt|TransactionResponse> {
+
+   // Overload implementation
+   public async execute<T extends QueryForSomething<R>, R>(transaction: ContractFunctionCall|Transaction|T): Promise<ContractFunctionResult|TransactionResponse|R> {
      const isContractTransaction = transaction instanceof ContractCallQuery || transaction instanceof ContractExecuteTransaction;
-     const isReceiptQuery = transaction instanceof TransactionReceiptQuery;
-     const txResponse = await transaction.execute(this.client);
+     const isQuery = transaction instanceof QueryForSomething;
  
-     if (isContractTransaction) {
-       if (txResponse instanceof TransactionResponse) {
-         const txRecord = await txResponse.getRecord(this.client);
-   
-         // Inspired from https://github.com/hashgraph/hedera-sdk-js/blob/c4a8d339648651a545782089ae4b18b972f2e356/src/transaction/TransactionResponse.js#L39
-         // since, at this step, getRecord errors are the same as getReceipt ones
-         if (txRecord.receipt.status !== Status.Success) {
-           throw new ReceiptStatusError({
-               transactionReceipt: txRecord.receipt,
-               status: txRecord.receipt.status,
-               transactionId: txResponse.transactionId,
-           });
-         }
-         return txRecord.contractFunctionResult;
-       } else {
-         // Constant function call (query) was done
-         return txResponse as ContractFunctionResult;
-       }
-     } else if (isReceiptQuery) {
-       return (txResponse as unknown) as TransactionReceipt;
+     if (isQuery) {
+      return await transaction.queryOn(this.client) as R;
+     } else {
+      const txResponse = await transaction.execute(this.client);
+
+      if (isContractTransaction) {
+        if (txResponse instanceof TransactionResponse) {
+          const txRecord = await txResponse.getRecord(this.client);
+    
+          // Inspired from https://github.com/hashgraph/hedera-sdk-js/blob/c4a8d339648651a545782089ae4b18b972f2e356/src/transaction/TransactionResponse.js#L39
+          // since, at this step, getRecord errors are the same as getReceipt ones
+          if (txRecord.receipt.status !== Status.Success) {
+            throw new ReceiptStatusError({
+                transactionReceipt: txRecord.receipt,
+                status: txRecord.receipt.status,
+                transactionId: txResponse.transactionId,
+            });
+          }
+          return txRecord.contractFunctionResult;
+        } else {
+          // No-op; Constant function call (query) was done
+        }
+      }
+
+      // Reaching this point means either 
+      // 1. that the executed transaction is generic or
+      // 2. the transaction was a contract-query function call
+      // ... both cases allow us to return the response 'as is'.
+      return txResponse;
      }
-     // Reaching this point means that the executed transaction is generic in which case we just return it rawly
-     return txResponse as TransactionResponse;
    }
 
   /**

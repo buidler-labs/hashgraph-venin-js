@@ -9,8 +9,22 @@ import { Contract } from "../../../lib/static/Contract";
 import { HederaNetwork } from "../../../lib/HederaNetwork";
 import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { LiveAddress } from "../../../lib/live/LiveAddress";
+import { LiveContract } from "../../../lib/live/LiveContract";
 
 describe('LiveContract', () => {
+  it("emitting an event during contract construction time should be returned following a successfull upload", async () => {
+    const { liveContract, logs } = await load('constructor_event');
+
+    expect(liveContract).toBeInstanceOf(LiveContract);
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toEqual({
+      name: "Log",
+      payload: {
+        message: "Hello World!"
+      }
+    });
+  });
+
   it("using the solidity-by-example > Contract that Creates other Contracts example, creating a contract should allow its live-address to be convertable to the underlying model", async () => {
     const hapiSession = await HederaNetwork.defaultApiSession();
     const hapiSessionOwnerAddress = await hapiSession.getSolidityAddress();
