@@ -34,7 +34,7 @@ async function verifyContractUploadEventFiringsFor(contract: string, emitConstru
     });
 }
 
-describe('LiveContract.Events', () => {
+describe('ApiSession.Receipts', () => {
     it('uploading a json should generate appropriate receipts', async () => {
         const session = await HederaNetwork.defaultApiSession();
         
