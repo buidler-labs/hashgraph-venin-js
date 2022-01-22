@@ -200,12 +200,13 @@ export class Contract extends UploadableEntity<LiveContractWithLogs> {
    * are passed to the Contract constructor.
    */
   protected override async _onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
-    const contractTransactionArguments = await this._getContractCreateOptionsFor({ session, receipt, args });
-    const createContractTransaction = new ContractCreateTransaction(contractTransactionArguments);
+    const { createContractOptions, emitConstructorLogs } = await this._getContractCreateOptionsFor({ session, receipt, args });
+    const createContractTransaction = new ContractCreateTransaction(createContractOptions);
 
     return await LiveContract.newFollowingUpload({
       session,
       contract: this,
+      emitConstructorLogs,
       transaction: createContractTransaction
     });
   }
@@ -214,17 +215,29 @@ export class Contract extends UploadableEntity<LiveContractWithLogs> {
     const contractFileId = receipt.fileId;
     const constructorDefinition = this.interface.deploy;
     let contractCreationOverrides: any = {};
+    let emitConstructorLogs = session.defaults.emit_constructor_logs ?? true;
 
     if (args.length > 0 && Object.keys(args[0]).length !== 0 && Object.keys(args[0])[0] === '_contract') {
-      contractCreationOverrides = args[0]._contract;
+      const contractCreationArgs = args[0]._contract;
+
+      // try locking onto library-controlling behaviour flags
+      emitConstructorLogs = contractCreationArgs.emitConstructorLogs !== undefined ? contractCreationArgs.emitConstructorLogs : emitConstructorLogs;
+      delete contractCreationArgs.emitConstructorLogs;
+
+      // consider everything else as contract-creation constructor arguments
+      contractCreationOverrides = contractCreationArgs;
+
       args = args.slice(1);
     }
-    return Object.assign({}, {
-      adminKey: session.publicKey,
-      bytecodeFileId: contractFileId,
-      constructorParameters: await HContractFunctionParameters.newFor(constructorDefinition, args),
-      gas: session.defaults.contract_creation_gas || DEFAULT_GAS_FOR_CONTRACT_CREATION,
-      ...contractCreationOverrides
-    });
+    return {
+      emitConstructorLogs,
+      createContractOptions: Object.assign({}, {
+        adminKey: session.publicKey,
+        bytecodeFileId: contractFileId,
+        constructorParameters: await HContractFunctionParameters.newFor(constructorDefinition, args),
+        gas: session.defaults.contract_creation_gas || DEFAULT_GAS_FOR_CONTRACT_CREATION,
+        ...contractCreationOverrides
+      })
+    }
   }
 }

@@ -4,9 +4,8 @@ import {
   Status,
   TransactionReceipt,
 } from "@hashgraph/sdk";
-import { ApiSession } from "../ApiSession";
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveEntity } from "../live/LiveEntity";
-import { QueryForTransactionReceipt } from "../query/QueryForTransactionReceipt";
 
 type ArgumentsForUpload = {
   session: ApiSession,
@@ -38,14 +37,13 @@ export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
   public async uploadTo({ session, args = [] }: ArgumentsForUpload): Promise<T> {
     const whatToUpload = await this._getContent();
     const { areOverridesProvided, fileTransactions } = await this._getFileTransactionsFor({ content: whatToUpload, session, args });
-    const transactionResponse = await session.execute(fileTransactions[0]);
-    const transactionReceipt = await session.execute(QueryForTransactionReceipt.of(transactionResponse));
+    const transactionReceipt = await session.execute(fileTransactions[0], TypeOfExecutionReturn.Receipt, true);
 
     if (transactionReceipt.status !== Status.Success) {
       throw new Error(`There was an issue while creating the file (status ${transactionReceipt.status}). Aborting file upload.`);
     } else if (fileTransactions.length > 1 && fileTransactions[1] instanceof FileAppendTransaction) {
       // We update the upcoming file-append transaction request to reference the fileId
-      await session.execute(fileTransactions[1].setFileId(transactionReceipt.fileId));
+      await session.execute(fileTransactions[1].setFileId(transactionReceipt.fileId), TypeOfExecutionReturn.Result, true);
     }
 
     if (areOverridesProvided) {

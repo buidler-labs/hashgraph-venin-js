@@ -164,6 +164,7 @@ export class HederaNetwork {
     return {
       contract_creation_gas: parseInt(resolveSessionDefaultValueFor("contract_creation_gas")),
       contract_transaction_gas: parseInt(resolveSessionDefaultValueFor("contract_transaction_gas")),
+      emit_constructor_logs: (resolveSessionDefaultValueFor("emit_constructor_logs") ?? "true") === "true",
       payment_for_contract_query: parseInt(resolveSessionDefaultValueFor("payment_for_contract_query"))
     };
   }

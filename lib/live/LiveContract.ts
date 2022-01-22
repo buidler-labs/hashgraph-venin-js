@@ -19,10 +19,9 @@ import { Contract } from "../static/Contract";
 import { HContractFunctionParameters } from "../HContractFunctionParameters";
 import { LiveEntity } from "./LiveEntity";
 import { extractSolidityAddressFrom, SolidityAddressable } from "../SolidityAddressable";
-import { ApiSession } from "../ApiSession";
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveAddress } from "./LiveAddress";
 import Long from "long";
-import { QueryForTransactionRecord } from "../query/QueryForTransactionRecord";
 
 /**
  * Default gas allocated for executing contract method calls (both queries and transactions)
@@ -74,18 +73,29 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
     /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.
      */
-    public static async newFollowingUpload({ session, contract, transaction }: {
+    public static async newFollowingUpload({ session, contract, emitConstructorLogs, transaction }: {
         session: ApiSession,
         contract: Contract,
+        emitConstructorLogs: boolean,
         transaction: ContractCreateTransaction
     }): Promise<LiveContractWithLogs> {
-        const contractTransactionResponse = await session.execute(transaction);
-        const createdContractRecord = await session.execute(QueryForTransactionRecord.of(contractTransactionResponse));
-        const logs = parseLogs(contract.interface, createdContractRecord.contractFunctionResult.logs);
+        let id: ContractId;
+        let logs: ParsedEvent[];
 
+        if (emitConstructorLogs) {
+            const createdContractRecord = await session.execute(transaction, TypeOfExecutionReturn.Record, true);
+
+            id = createdContractRecord.receipt.contractId;
+            logs = parseLogs(contract.interface, createdContractRecord.contractFunctionResult.logs);
+        } else {
+            const transactionReceipt = await session.execute(transaction, TypeOfExecutionReturn.Receipt, true);
+    
+            id = transactionReceipt.contractId;
+            logs = [];
+        }
         return new LiveContractWithLogs({ 
             session, 
-            id: createdContractRecord.receipt.contractId,
+            id,
             cInterface: contract.interface,
             logs
         });
@@ -107,7 +117,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
                 enumerable: true,
                 value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {
                     const request = await this._createContractRequestFor({ fDescription, args });
-                    const callResponse = await this.session.execute(request);
+                    const callResponse = await this.session.execute(request, TypeOfExecutionReturn.Result, true);
 
                     this._tryToProcessForEvents(callResponse);
                     return await this._tryExtractingResponse(callResponse, fDescription);
