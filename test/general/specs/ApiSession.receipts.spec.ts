@@ -56,6 +56,7 @@ describe('ApiSession.Receipts', () => {
     it('executing a live-contract function in a default-session environment that does not emit receipts when calling such functions, should emit a receipt if one is requested', async () => {
         const session = await HederaNetwork.defaultApiSession({
             env: {
+                ...process.env,
                 HEDERA_DEFAULT_EMIT_LIVE_CONTRACTS_RECEIPTS: "false"
             }
         });
