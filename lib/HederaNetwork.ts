@@ -7,10 +7,19 @@ import {
   PrivateKey,
 } from "@hashgraph/sdk";
 import { NetworkName } from '@hashgraph/sdk/lib/client/Client';
+import { 
+  createLogger, 
+  format,
+  Logger,
+  transports
+} from 'winston';
 
 import { CredentialsInvalidError } from "./errors/CredentialsInvalidError";
 import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
 import { ApiSession, SessionDefaults } from "./ApiSession";
+
+// Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
+const DEFAULT_FILE_CHUNK_SIZE = 1024;
 
 /**
  * The Hedera Network label value used in library configurations (such as the {@link HederaNetwork.defaultApiSession} method) to signify 
@@ -34,9 +43,6 @@ import { ApiSession, SessionDefaults } from "./ApiSession";
  * [hedera-services](https://github.com/hashgraph/hedera-services) network.
  */
 export const HEDERA_CUSTOM_NET_NAME: string = "customnet";
-
-// Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
-const DEFAULT_FILE_CHUNK_SIZE = 1024;
 
 const AVAILABLE_NETWORK_NAMES = {
   CustomNet: HEDERA_CUSTOM_NET_NAME, 
@@ -77,6 +83,46 @@ const DefinedNetworkDefaults: { [k: string]: NetworkDefaults } = {
 };
 
 /**
+ * Internal class responsible for creating Hedera Operated Clients
+ */
+ class ClientBuilder {
+  public constructor(
+    private readonly networkName: string,
+    private readonly nodes: HederaNodesAddressBook) {
+    const acceptedNetworkNames = Object.values(AVAILABLE_NETWORK_NAMES);
+
+    if (!acceptedNetworkNames.includes(this.networkName)) {
+      throw new EnvironmentInvalidError(`There is no such '${this.networkName}' network available. In order to continue, please choose a valid name from: ${acceptedNetworkNames.join(', ')}`);
+    }
+    try {
+      Client.forName(this.networkName as NetworkName);
+    } catch(e) {
+      // This is a non-standard client. Maybe it's a local-net one?
+      if (HEDERA_CUSTOM_NET_NAME === this.networkName) {
+        if (!nodes || Object.keys(nodes).length === 0) {
+          throw new EnvironmentInvalidError(`Please provide a list of network nodes in order to use a ${this.networkName} network.`);
+        }
+      } else {
+        // Note: this should never happen, but still ... better play it safe
+        throw new EnvironmentInvalidError(`There is no such ${this.networkName} network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(', ')}`);
+      }
+    }
+  }
+  
+  public buildOperatedBy(accountId: AccountId, privateKey: PrivateKey): Client {
+    let client: Client;
+
+    if (HEDERA_CUSTOM_NET_NAME === this.networkName) {
+      client = Client.forNetwork(this.nodes);
+    } else {
+      client = Client.forName(this.networkName as NetworkName);
+    }
+    client.setOperator(accountId, privateKey);
+    return client;
+  }
+}
+
+/**
  * The main entry-class for the Hedera Strato library.
  * 
  * It starts out by referencing a Hedera Network (being it [official](https://docs.hedera.com/guides/mirrornet/hedera-mirror-node#mainnet) or {@link HEDERA_CUSTOM_NET_NAME | custom}) 
@@ -101,8 +147,11 @@ export class HederaNetwork {
    */
   public static defaultApiSession({ env = process.env, path = '.env' }: HederaDefaultApiSessionParamsSource = {}): Promise<ApiSession> {
     const eParams = HederaNetwork.resolveDefaultSessionParamsFrom({ env, path });
+    const logger = HederaNetwork.createLoggerFor(eParams);
 
+    logger.silly(`Creating a new default-api session starting from resoluted parameters object: ${JSON.stringify(eParams, null, 2)}`);
     return HederaNetwork.for({
+      logger,
       name: eParams.HEDERA_NETWORK,
       nodes: HederaNetwork.parseNetworkNodeFrom(eParams.HEDERA_NODES)
     }).login({
@@ -122,39 +171,27 @@ export class HederaNetwork {
    *                                 Required if {@param options.name} is customnet otherwise it's optional. 
    * @returns a {@link HederaNetwork} instance
    */
-  public static for({ name, nodes = {} }: { 
+  public static for({ logger, name, nodes = {} }: { 
+    logger: Logger,
     name: string, 
     nodes: HederaNodesAddressBook
   }): HederaNetwork {
-    let chosenClient = null;
-    const acceptedNetworkNames = Object.values(AVAILABLE_NETWORK_NAMES);
+    const clientBuilder = new ClientBuilder(name, nodes);
+    const log = new StratoLogger(logger);
 
-    if (!acceptedNetworkNames.includes(name)) {
-      throw new EnvironmentInvalidError(`There is no such '${name}' network available. In order to continue, please choose a valid name from: ${acceptedNetworkNames.join(', ')}`);
-    }
-
-    try {
-      chosenClient = Client.forName(name as NetworkName);
-    } catch(e) {
-      // This is a non-standard client. Maybe it's a local-net one?
-      if (HEDERA_CUSTOM_NET_NAME === name) {
-        if (!nodes || Object.keys(nodes).length === 0) {
-          throw new EnvironmentInvalidError(`Please provide a list of network nodes in order to use a ${name} network.`);
-        }
-        chosenClient = Client.forNetwork(nodes);
-      } else {
-        // Note: this should never happen, but still ... better play it safe
-        throw new EnvironmentInvalidError(`There is no such ${name} network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(', ')}`);
-      }
-    }
-    return new HederaNetwork(chosenClient, DefinedNetworkDefaults[name]);
+    return new HederaNetwork(clientBuilder, DefinedNetworkDefaults[name], log);
   }
 
   private static resolveDefaultSessionParamsFrom(source: HederaDefaultApiSessionParamsSource): { [key: string]: string } {
     const dEnv = dotenv.config({ path: source.path }).parsed;
     const pEnv = source.env;
+    const rawResolutedParams = Object.assign({}, dEnv, pEnv);
+    let params = {};
 
-    return Object.assign({}, dEnv, pEnv);
+    Object.keys(rawResolutedParams)
+      .filter(rrParamKey => rrParamKey.startsWith('HEDERA_') || rrParamKey.startsWith('LOGGER_'))
+      .forEach(acceptedParamKey => { params[acceptedParamKey] = rawResolutedParams[acceptedParamKey]; });
+    return params;
   }
 
   private static parseSessionDefaultsFrom(networkName: string, params: { [k: string]: string }): SessionDefaults {
@@ -168,6 +205,22 @@ export class HederaNetwork {
       emit_live_contract_receipts: (resolveSessionDefaultValueFor("emit_live_contracts_receipts") ?? "false") === "true",
       payment_for_contract_query: parseInt(resolveSessionDefaultValueFor("payment_for_contract_query"))
     };
+  }
+
+  private static createLoggerFor(params: any): Logger {
+    const level: string = params.LOGGER_LEVEL ?? 'info';
+    const isLoggingEnabled: boolean = (params.LOGGER_ENABLED ?? 'false') === 'true';
+
+    return createLogger({
+      format: format.combine(
+        format.timestamp(),
+        format.printf(({ level, message, timestamp }) => {
+          return `${timestamp} - ${level}: ${message}`;
+        })
+      ),
+      level,
+      transports: [ new transports.Console({ silent: !isLoggingEnabled })]
+    });
   }
 
   /**
@@ -231,8 +284,9 @@ export class HederaNetwork {
   }
 
   private constructor(
-    public readonly client: Client,
-    public readonly defaults: NetworkDefaults
+    private readonly clientBuilder: ClientBuilder,
+    public readonly defaults: NetworkDefaults,
+    public readonly log: StratoLogger
   ) { }
 
   /**
@@ -250,8 +304,38 @@ export class HederaNetwork {
       id: operatorId,
       key: operatorKey
     });
-    const client = this.client.setOperator(accountId, privateKey);
+    const client = this.clientBuilder.buildOperatedBy(accountId, privateKey);
 
-    return new ApiSession({ network: this, client, defaults });
+    this.log.silly(`Constructing the new ApiSession operated by account-id: ${accountId.toString()}`);
+    return new ApiSession({ log: this.log, network: this, client, defaults });
+  }
+}
+
+export class StratoLogger {
+  constructor(private readonly logger: Logger) {}
+
+  public debug(message: string, ...meta: any[]): StratoLogger {
+    this.logger.debug(message, meta);
+    return this;
+  }
+  public error(message: string, ...meta: any[]): StratoLogger {
+    this.logger.error(message, meta);
+    return this;
+  }
+  public info(message: string, ...meta: any[]): StratoLogger {
+    this.logger.info(message, meta);
+    return this;
+  }
+  public silly(message: string, ...meta: any[]): StratoLogger {
+    this.logger.silly(message, meta);
+    return this;
+  }
+  public verbose(message: string, ...meta: any[]): StratoLogger {
+    this.logger.verbose(message, meta);
+    return this;
+  }
+  public warn(message: string, ...meta: any[]): StratoLogger {
+    this.logger.warn(message, meta);
+    return this;
   }
 }

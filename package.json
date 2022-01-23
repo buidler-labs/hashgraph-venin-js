@@ -24,7 +24,8 @@
     "@hashgraph/sdk": "^2.6.0",
     "dotenv": "^10.0.0",
     "solc": "0.8.9",
-    "traverse": "^0.6.6"
+    "traverse": "^0.6.6",
+    "winston": "^3.4.0"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.4.2",

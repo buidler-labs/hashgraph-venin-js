@@ -22,7 +22,10 @@ import {
   TransactionResponse 
 } from '@hashgraph/sdk';
 import Duration from '@hashgraph/sdk/lib/Duration';
-import { HederaNetwork } from './HederaNetwork';
+import { 
+  HederaNetwork, 
+  StratoLogger 
+} from './HederaNetwork';
 
 import { ContractFunctionCall, LiveContract } from './live/LiveContract';
 import { LiveEntity } from './live/LiveEntity';
@@ -33,6 +36,7 @@ import { Json } from './static/Json';
 import { UploadableEntity } from './static/UploadableEntity';
 
 type ApiSessionConstructorArgs = {
+  log: StratoLogger,
   network: HederaNetwork,
   client: Client,
   defaults: SessionDefaults
@@ -101,6 +105,7 @@ const TRANSACTION_ON_RECEIPT_EVENT_NAME = "__TransactionOnReceiptAvailable_Event
  */
 export class ApiSession implements SolidityAddressable {
   private readonly events: EventEmitter;
+  public readonly log: StratoLogger;
   public readonly network: HederaNetwork;
   private readonly client: Client;
   public readonly defaults: SessionDefaults;
@@ -108,7 +113,8 @@ export class ApiSession implements SolidityAddressable {
   /**
    * @hidden
    */
-  constructor({ network, client, defaults }: ApiSessionConstructorArgs) {
+  constructor({ log, network, client, defaults }: ApiSessionConstructorArgs) {
+    this.log = log;
     this.network = network;
     this.client = client;
     this.defaults = defaults;
@@ -328,6 +334,7 @@ export class ApiSession implements SolidityAddressable {
   public async upload<T extends LiveEntity<R>, R>(what: UploadableEntity<T, R>|object, ...args: any[]): Promise<T|LiveJson> {
     let uploadableWhat: UploadableEntity<T, R>;
 
+    this.log.debug("Starting a new entity upload to the Hedera File Service.");
     if (what instanceof UploadableEntity === false) {
       // Try to go with a live-json upload
       if (Json.isInfoAcceptable(what)) {
