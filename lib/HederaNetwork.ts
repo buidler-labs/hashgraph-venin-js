@@ -172,12 +172,12 @@ export class HederaNetwork {
    * @returns a {@link HederaNetwork} instance
    */
   public static for({ logger, name, nodes = {} }: { 
-    logger: Logger,
+    logger?: Logger,
     name: string, 
     nodes: HederaNodesAddressBook
   }): HederaNetwork {
     const clientBuilder = new ClientBuilder(name, nodes);
-    const log = new StratoLogger(logger);
+    const log = new StratoLogger(logger ?? createLogger());
 
     return new HederaNetwork(clientBuilder, DefinedNetworkDefaults[name], log);
   }
