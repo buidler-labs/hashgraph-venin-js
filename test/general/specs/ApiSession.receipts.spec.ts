@@ -1,36 +1,25 @@
 import {
     describe, expect, it,
+    jest
 } from '@jest/globals';
 
 import { read } from '../../utils';
 import { Contract } from '../../../lib/static/Contract';
 import { HederaNetwork } from '../../../lib/HederaNetwork';
-import { ContractCreateTransaction, FileAppendTransaction, FileCreateTransaction, TransactionRecordQuery } from '@hashgraph/sdk';
+import { ContractCreateTransaction, ContractExecuteTransaction, FileAppendTransaction, FileCreateTransaction, TransactionRecordQuery } from '@hashgraph/sdk';
 
 async function verifyContractUploadEventFiringsFor(contract: string, emitConstructorLogs: boolean, ...expectedTransactions: any[]) {
     const session = await HederaNetwork.defaultApiSession();
     const solContract = await Contract.newFrom({ code: read({ contract }) });
+    const spiedReceiptCallback = jest.fn();
 
-    return new Promise<void>((accept, reject) => {
-        session.subscribeToReceiptsWith(({ transaction }) => {
-            if (expectedTransactions.length === 0) {
-                reject(`There are no more receipts expected, yet one was captured: ${JSON.stringify(transaction)}`);
-            }
+    session.subscribeToReceiptsWith(spiedReceiptCallback);
+    await session.upload(solContract, { _contract: { emitConstructorLogs } });
 
-            const transactionIsExpected = transaction instanceof expectedTransactions[0];
-
-            if (transactionIsExpected) {
-                expectedTransactions = expectedTransactions.slice(1);
-                if (expectedTransactions.length === 0) {
-                    accept();
-                }
-            } else {
-                reject(`Captured a receipt for un unexpected transaction: ${JSON.stringify(transaction)}`);
-            }
-        });
-        
-        // Upload the contract and and wait for the receipts
-        session.upload(solContract, { _contract: { emitConstructorLogs } });
+    expect(spiedReceiptCallback).toHaveBeenCalledTimes(expectedTransactions.length);
+    expectedTransactions.forEach((expectedTransaction, index) => {
+        expect(spiedReceiptCallback.mock.calls[index][0]).toBeInstanceOf(Object);
+        expect((spiedReceiptCallback.mock.calls[index][0] as any).transaction).toBeInstanceOf(expectedTransaction);
     });
 }
 
@@ -62,5 +51,23 @@ describe('ApiSession.Receipts', () => {
             FileAppendTransaction,
             ContractCreateTransaction
         );
+    });
+
+    it('executing a live-contract function in a default-session environment that does not emit receipts when calling such functions, should emit a receipt if one is requested', async () => {
+        const session = await HederaNetwork.defaultApiSession({
+            env: {
+                HEDERA_DEFAULT_EMIT_LIVE_CONTRACTS_RECEIPTS: "false"
+            }
+        });
+        const solContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/state_variables' }) });
+        const liveContract = await session.upload(solContract);
+        const spiedReceiptCallback = jest.fn();
+
+        session.subscribeToReceiptsWith(spiedReceiptCallback);
+        await liveContract.set({ emitReceipt: true }, 2);
+
+        expect(spiedReceiptCallback).toHaveBeenCalled();
+        expect(spiedReceiptCallback.mock.calls[0][0]).toBeInstanceOf(Object);
+        expect((spiedReceiptCallback.mock.calls[0][0] as any).transaction).toBeInstanceOf(ContractExecuteTransaction);
     });
 });

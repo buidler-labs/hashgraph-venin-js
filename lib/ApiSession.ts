@@ -24,7 +24,7 @@ import {
 import Duration from '@hashgraph/sdk/lib/Duration';
 import { HederaNetwork } from './HederaNetwork';
 
-import { LiveContract } from './live/LiveContract';
+import { ContractFunctionCall, LiveContract } from './live/LiveContract';
 import { LiveEntity } from './live/LiveEntity';
 import { LiveJson } from './live/LiveJson';
 import { LiveToken } from './live/LiveToken';
@@ -37,7 +37,6 @@ type ApiSessionConstructorArgs = {
   client: Client,
   defaults: SessionDefaults
 };
-type ContractFunctionCall = ContractCallQuery | ContractExecuteTransaction;
 type ExecutableTransaction = ContractFunctionCall|Transaction;
 type TransactionedReceipt = {
   transaction: ExecutableTransaction,
@@ -60,6 +59,7 @@ export type SessionDefaults = {
   contract_creation_gas?: number,
   contract_transaction_gas?: number,
   emit_constructor_logs?: boolean,
+  emit_live_contract_receipts?: boolean,
   payment_for_contract_query?: number
 };
 
@@ -214,6 +214,8 @@ export class ApiSession implements SolidityAddressable {
         // lock onto the contract-function-result of the record just in case a Result return-type is expected
         executionResult = txRecord.contractFunctionResult;
       }
+    } else {
+      // Note: ContractFunctionResult-s cannot emit receipts!
     }
 
     // Depending on the return-type resolution, fetch the typed-result

@@ -34,7 +34,11 @@ export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 169_000;
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
+export type ContractFunctionCall = ContractCallQuery | ContractExecuteTransaction;
 export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
+type CreateContractRequestMeta = { 
+    emitReceipt: boolean 
+};
 export type LiveContractConstructorArgs = {
     session: ApiSession,
     id: ContractId,
@@ -116,8 +120,8 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         Object.values(this.interface.functions).forEach(fDescription => Object.defineProperty(this, fDescription.name, {
                 enumerable: true,
                 value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {
-                    const request = await this._createContractRequestFor({ fDescription, args });
-                    const callResponse = await this.session.execute(request, TypeOfExecutionReturn.Result, true);
+                    const { request, meta } = await this._createContractRequestFor({ fDescription, args });
+                    const callResponse = await this.session.execute(request, TypeOfExecutionReturn.Result, meta.emitReceipt);
 
                     this._tryToProcessForEvents(callResponse);
                     return await this._tryExtractingResponse(callResponse, fDescription);
@@ -171,13 +175,17 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
      * actual request instance, discarding it in the process so that the remaining arguments can all be used as the actual values sent to 
      * the targeted function.
      */
-    private async _createContractRequestFor({ fDescription, args }: { fDescription: FunctionFragment, args: any[] }): Promise<ContractCallQuery | ContractExecuteTransaction> {
+    private async _createContractRequestFor({ fDescription, args }: { fDescription: FunctionFragment, args: any[] })
+        : Promise<{ meta: CreateContractRequestMeta, request: ContractFunctionCall }> {
         let requestOptionsPresentInArgs = false;
         let constructorArgs: any = { 
             contractId: this.id,
             gas: this.session.defaults.contract_transaction_gas || DEFAULT_GAS_PER_CONTRACT_TRANSACTION
         };
-        let contractRequest;
+        let meta: CreateContractRequestMeta = {
+            emitReceipt: this.session.defaults.emit_live_contract_receipts
+        };
+        let request;
         
         // Try to unpack common meta-args that can be passed in at query/transaction construction time
         if (args && args.length > 0) {
@@ -188,13 +196,13 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         }
 
         // Initialize the Hedera request-object itself passing in any additional constructor args (if provided)
-        contractRequest = fDescription.constant ? new ContractCallQuery(constructorArgs) : new ContractExecuteTransaction(constructorArgs);
+        request = fDescription.constant ? new ContractCallQuery(constructorArgs) : new ContractExecuteTransaction(constructorArgs);
         
         // Inject session-configurable defaults
         if (fDescription.constant) {
             const queryPaymentInHbar = new Hbar(this.session.defaults.payment_for_contract_query || 0);
 
-            contractRequest.setQueryPayment(queryPaymentInHbar);
+            request.setQueryPayment(queryPaymentInHbar);
         }
 
         // Try to inject setter-only options
@@ -202,58 +210,69 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
             if (fDescription.constant) {
                 // Try setting aditional Query properties
                 if (args[0].maxQueryPayment instanceof Hbar) {
-                    contractRequest.setMaxQueryPayment(args[0].maxQueryPayment);
+                    request.setMaxQueryPayment(args[0].maxQueryPayment);
                     requestOptionsPresentInArgs = true;
                 }
                 if (args[0].paymentTransactionId instanceof TransactionId) {
-                    contractRequest.setPaymentTransactionId(args[0].paymentTransactionId);
+                    request.setPaymentTransactionId(args[0].paymentTransactionId);
                     requestOptionsPresentInArgs = true;
                 }
                 if (args[0].queryPayment instanceof Hbar) {
-                    contractRequest.setQueryPayment(args[0].queryPayment);
+                    request.setQueryPayment(args[0].queryPayment);
                     requestOptionsPresentInArgs = true;
                 }
             } else {
                 // This is a state-changing Transaction. Try setting aditional properties as well
                 if (args[0].amount) {  // number | string | Long | BigNumber | Hbar
-                    contractRequest.setPayableAmount(args[0].amount);
+                    request.setPayableAmount(args[0].amount);
                     requestOptionsPresentInArgs = true;
                 }
                 if (args[0].maxTransactionFee) {  // number | string | Long | BigNumber | Hbar
-                    contractRequest.setMaxTransactionFee(args[0].maxTransactionFee);
+                    request.setMaxTransactionFee(args[0].maxTransactionFee);
                     requestOptionsPresentInArgs = true;
                 }
                 if (Array.isArray(args[0].nodeAccountIds)) {
-                    contractRequest.setNodeAccountIds(args[0].nodeAccountIds);
+                    request.setNodeAccountIds(args[0].nodeAccountIds);
                     requestOptionsPresentInArgs = true;
                 }
                 if (args[0].transactionId instanceof TransactionId) {
-                    contractRequest.setTransactionId(args[0].transactionId);
+                    request.setTransactionId(args[0].transactionId);
                     requestOptionsPresentInArgs = true;
                 }
                 if (args[0].transactionMemo) {  // string
-                    contractRequest.setTransactionMemo(args[0].transactionMemo);
+                    request.setTransactionMemo(args[0].transactionMemo);
                     requestOptionsPresentInArgs = true;
                 }
                 if (Number.isInteger(args[0].transactionValidDuration)) {
-                    contractRequest.setTransactionValidDuration(args[0].transactionValidDuration);
+                    request.setTransactionValidDuration(args[0].transactionValidDuration);
                     requestOptionsPresentInArgs = true;
                 }
             }
         }
         
+        // Try extracting meta-arguments (if any)
+        if (args && args.length > 0) {
+            if (args[0].emitReceipt === false || args[0].emitReceipt === true) {
+                meta.emitReceipt = args[0].emitReceipt;
+                requestOptionsPresentInArgs = true;
+            }
+        }
+
         // Try cleaning up arguments list if config object was provide
         if (requestOptionsPresentInArgs) {
             args = args.slice(1);
         }
         
         // Prepare the targeted function
-        contractRequest.setFunction(
+        request.setFunction(
             fDescription.name, 
             await HContractFunctionParameters.newFor(fDescription, args)
         );
 
-        return contractRequest;
+        return {
+            meta,
+            request
+        };
     }
 
     /**
