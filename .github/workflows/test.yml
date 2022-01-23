@@ -1,0 +1,39 @@
+name: Test
+
+on: 
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'The branch to run the tests against'
+        required: true
+        default: 'main'
+      environment:
+        description: 'Hedera network to run the tests on'
+        required: true
+        type: environment
+        default: hedera-previewnet
+
+env:
+  CONTRACTS_RELATIVE_PATH: test
+  CONTRACTS_INCLUDED_PREFIXES: general/contracts,general/contracts/import_resolution/node_modules,taskbar/contracts,hedera/contracts
+
+jobs:
+  tests:
+    runs-on: self-hosted
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - run: npm install
+
+      - run: npm test
