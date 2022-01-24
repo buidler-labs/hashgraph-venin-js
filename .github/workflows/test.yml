@@ -17,8 +17,8 @@ on:
         default: hedera-previewnet
 
 env:
-  CONTRACTS_RELATIVE_PATH: test
-  CONTRACTS_INCLUDED_PREFIXES: general/contracts,general/contracts/import_resolution/node_modules,taskbar/contracts,hedera/contracts
+  HEDERAS_CONTRACTS_RELATIVE_PATH: test
+  HEDERAS_CONTRACTS_INCLUDED_PREFIXES: general/contracts,general/contracts/import_resolution/node_modules,taskbar/contracts,hedera/contracts
 
 jobs:
   tests:

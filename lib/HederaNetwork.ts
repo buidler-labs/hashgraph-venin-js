@@ -26,18 +26,18 @@ const DEFAULT_FILE_CHUNK_SIZE = 1024;
  * that the library is targeting a custom network implementation with its own nodes apart from [the official ones](https://docs.hedera.com/guides/mirrornet/hedera-mirror-node#mainnet). 
  * 
  * `Note:` When this type of network is selected, its node addressbook must also be provided and that is usually done through something like the
- *         `HEDERA_NODES` env-parameter (when using {@link HederaNetwork.defaultApiSession})
+ *         `HEDERAS_NODES` env-parameter (when using {@link HederaNetwork.defaultApiSession})
  * 
  * Example of a `.env` file that targets a `customnet`, [local hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) deployment:
  * ```
- * HEDERA_NETWORK=customnet
- * HEDERA_NODES=127.0.0.1:50211#3
+ * HEDERAS_NETWORK=customnet
+ * HEDERAS_NODES=127.0.0.1:50211#3
  * ```
  * 
  * `Note #2:` If you're planning to target a local `customnet` deployment, you might as well add the operator credentials to the mix:
  * ```
- * HEDERA_OPERATOR_ID=0.0.2
- * HEDERA_OPERATOR_KEY=91132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137
+ * HEDERAS_OPERATOR_ID=0.0.2
+ * HEDERAS_OPERATOR_KEY=91132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137
  * ```
  * Please see our [dockerized-hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) for more info as to how to run a local, [dockerized](https://hub.docker.com/r/buidlerlabs/hedera-services), 
  * [hedera-services](https://github.com/hashgraph/hedera-services) network.
@@ -137,11 +137,11 @@ export class HederaNetwork {
    * `Note:` At least one source must be properly wired and if both these parameter sources are set, the environment/runtime values overwrite the file-loaded ones.
    * 
    * In order for the default {@link ApiSession} to be generated, the resulting resolved parameters must have the following values present:
-   * - `HEDERA_NETWORK` : the targeted hedera-network cluster. Can be one of the following: `mainnet`, `testnet`, `previewnet` or {@link HEDERA_CUSTOM_NET_NAME | customnet}
-   * - `HEDERA_NODES` : (mandatory if `HEDERA_NETWORK={$link HEDERA_CUSTOM_NET_NAME}`) a comma separated list of addressbook nodes encoded in the following format
+   * - `HEDERAS_NETWORK` : the targeted hedera-network cluster. Can be one of the following: `mainnet`, `testnet`, `previewnet` or {@link HEDERA_CUSTOM_NET_NAME | customnet}
+   * - `HEDERAS_NODES` : (mandatory if `HEDERAS_NETWORK={$link HEDERA_CUSTOM_NET_NAME}`) a comma separated list of addressbook nodes encoded in the following format
    *                    `<node_ip>#<account_number>`. Eg. `127.0.0.1#3` would be parsed in an address book having a node with IP `127.0.0.1` associated with {@link AccountId} `3`                                                            
-   * - `HEDERA_OPERATOR_ID` : the string representation of the {@link AccountId} operating the resulting session (eg. `0.0.2`)
-   * - `HEDERA_OPERATOR_KEY` : the string representation of the private key of the `HEDERA_OPERATOR_ID` operator paying for the session 
+   * - `HEDERAS_OPERATOR_ID` : the string representation of the {@link AccountId} operating the resulting session (eg. `0.0.2`)
+   * - `HEDERAS_OPERATOR_KEY` : the string representation of the private key of the `HEDERAS_OPERATOR_ID` operator paying for the session 
    * 
    * @param {HederaDefaultApiSessionParamsSource} source
    */
@@ -152,12 +152,12 @@ export class HederaNetwork {
     logger.silly(`Creating a new default-api session starting from resoluted parameters object: ${JSON.stringify(eParams, null, 2)}`);
     return HederaNetwork.for({
       logger,
-      name: eParams.HEDERA_NETWORK,
-      nodes: HederaNetwork.parseNetworkNodeFrom(eParams.HEDERA_NODES)
+      name: eParams.HEDERAS_NETWORK,
+      nodes: HederaNetwork.parseNetworkNodeFrom(eParams.HEDERAS_NODES)
     }).login({
-      operatorId: eParams.HEDERA_OPERATOR_ID,
-      operatorKey: eParams.HEDERA_OPERATOR_KEY,
-      defaults: HederaNetwork.parseSessionDefaultsFrom(eParams.HEDERA_NETWORK, eParams)
+      operatorId: eParams.HEDERAS_OPERATOR_ID,
+      operatorKey: eParams.HEDERAS_OPERATOR_KEY,
+      defaults: HederaNetwork.parseSessionDefaultsFrom(eParams.HEDERAS_NETWORK, eParams)
     });
   }
 
@@ -189,14 +189,14 @@ export class HederaNetwork {
     let params = {};
 
     Object.keys(rawResolutedParams)
-      .filter(rrParamKey => rrParamKey.startsWith('HEDERA_') || rrParamKey.startsWith('LOGGER_'))
+      .filter(rrParamKey => rrParamKey.startsWith('HEDERAS_'))
       .forEach(acceptedParamKey => { params[acceptedParamKey] = rawResolutedParams[acceptedParamKey]; });
     return params;
   }
 
   private static parseSessionDefaultsFrom(networkName: string, params: { [k: string]: string }): SessionDefaults {
     const resolveSessionDefaultValueFor = (particle: string) => 
-      params[`HEDERA_${networkName.toUpperCase()}_DEFAULT_${particle.toUpperCase()}`] || params[`HEDERA_DEFAULT_${particle.toUpperCase()}`];
+      params[`HEDERAS_${networkName.toUpperCase()}_DEFAULT_${particle.toUpperCase()}`] || params[`HEDERAS_DEFAULT_${particle.toUpperCase()}`];
 
     return {
       contract_creation_gas: parseInt(resolveSessionDefaultValueFor("contract_creation_gas")),
@@ -208,8 +208,8 @@ export class HederaNetwork {
   }
 
   private static createLoggerFor(params: any): Logger {
-    const level: string = params.LOGGER_LEVEL ?? 'info';
-    const isLoggingEnabled: boolean = (params.LOGGER_ENABLED ?? 'false') === 'true';
+    const level: string = params.HEDERAS_LOGGER_LEVEL ?? 'info';
+    const isLoggingEnabled: boolean = (params.HEDERAS_LOGGER_ENABLED ?? 'false') === 'true';
 
     return createLogger({
       format: format.combine(

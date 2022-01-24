@@ -21,11 +21,11 @@ describe('HederaNetwork', () => {
   beforeAll(() => {
     try {
       HederaNetwork.validateOperator({
-        id: ORIGINAL_ENV.HEDERA_OPERATOR_ID,
-        key: ORIGINAL_ENV.HEDERA_OPERATOR_KEY
+        id: ORIGINAL_ENV.HEDERAS_OPERATOR_ID,
+        key: ORIGINAL_ENV.HEDERAS_OPERATOR_KEY
       });
     } catch (e) {
-      throw new Error(`Please make sure to provide both a HEDERA_OPERATOR_ID and a HEDERA_OPERATOR_KEY in order to run the tests: ${e.message}`);
+      throw new Error(`Please make sure to provide both a HEDERAS_OPERATOR_ID and a HEDERAS_OPERATOR_KEY in order to run the tests: ${e.message}`);
     }
   });
 
@@ -38,23 +38,23 @@ describe('HederaNetwork', () => {
   });
 
   it('if environment is not sane, it should error out when trying to instantiate the default api-session instance', async () => {
-    // HEDERA_NETWORK part
-    await expectDefaultApiSessionToThrowFor(undefined, ORIGINAL_ENV.HEDERA_NODES, ORIGINAL_ENV.HEDERA_OPERATOR_ID, ORIGINAL_ENV.HEDERA_OPERATOR_KEY, EnvironmentInvalidError);
-    await expectDefaultApiSessionToThrowFor("some non-existing network", ORIGINAL_ENV.HEDERA_NODES, ORIGINAL_ENV.HEDERA_OPERATOR_ID, ORIGINAL_ENV.HEDERA_OPERATOR_KEY, EnvironmentInvalidError);
+    // HEDERAS_NETWORK part
+    await expectDefaultApiSessionToThrowFor(undefined, ORIGINAL_ENV.HEDERAS_NODES, ORIGINAL_ENV.HEDERAS_OPERATOR_ID, ORIGINAL_ENV.HEDERAS_OPERATOR_KEY, EnvironmentInvalidError);
+    await expectDefaultApiSessionToThrowFor("some non-existing network", ORIGINAL_ENV.HEDERAS_NODES, ORIGINAL_ENV.HEDERAS_OPERATOR_ID, ORIGINAL_ENV.HEDERAS_OPERATOR_KEY, EnvironmentInvalidError);
 
-    // HEDERA_NODES part (if applicable)
-    if (ORIGINAL_ENV.HEDERA_NETWORK === HEDERA_CUSTOM_NET_NAME) {
-      await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERA_NETWORK, "some totally bad node def", ORIGINAL_ENV.HEDERA_OPERATOR_ID, ORIGINAL_ENV.HEDERA_OPERATOR_KEY, EnvironmentInvalidError);
-      await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERA_NETWORK, "127.0.0.1:50211", ORIGINAL_ENV.HEDERA_OPERATOR_ID, ORIGINAL_ENV.HEDERA_OPERATOR_KEY, EnvironmentInvalidError);
+    // HEDERAS_NODES part (if applicable)
+    if (ORIGINAL_ENV.HEDERAS_NETWORK === HEDERA_CUSTOM_NET_NAME) {
+      await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERAS_NETWORK, "some totally bad node def", ORIGINAL_ENV.HEDERAS_OPERATOR_ID, ORIGINAL_ENV.HEDERAS_OPERATOR_KEY, EnvironmentInvalidError);
+      await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERAS_NETWORK, "127.0.0.1:50211", ORIGINAL_ENV.HEDERAS_OPERATOR_ID, ORIGINAL_ENV.HEDERAS_OPERATOR_KEY, EnvironmentInvalidError);
     }
 
     // OPERATOR_ID part
-    await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERA_NETWORK, ORIGINAL_ENV.HEDERA_NODES, undefined, ORIGINAL_ENV.HEDERA_OPERATOR_KEY, CredentialsInvalidError);
-    await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERA_NETWORK, ORIGINAL_ENV.HEDERA_NODES, "some invalid id", ORIGINAL_ENV.HEDERA_OPERATOR_KEY, CredentialsInvalidError);
+    await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERAS_NETWORK, ORIGINAL_ENV.HEDERAS_NODES, undefined, ORIGINAL_ENV.HEDERAS_OPERATOR_KEY, CredentialsInvalidError);
+    await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERAS_NETWORK, ORIGINAL_ENV.HEDERAS_NODES, "some invalid id", ORIGINAL_ENV.HEDERAS_OPERATOR_KEY, CredentialsInvalidError);
 
     // OPERATOR_KEY part
-    await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERA_NETWORK, ORIGINAL_ENV.HEDERA_NODES, ORIGINAL_ENV.HEDERA_OPERATOR_ID, undefined, CredentialsInvalidError);
-    await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERA_NETWORK, ORIGINAL_ENV.HEDERA_NODES, ORIGINAL_ENV.HEDERA_OPERATOR_ID, "some invalid key", CredentialsInvalidError);
+    await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERAS_NETWORK, ORIGINAL_ENV.HEDERAS_NODES, ORIGINAL_ENV.HEDERAS_OPERATOR_ID, undefined, CredentialsInvalidError);
+    await expectDefaultApiSessionToThrowFor(ORIGINAL_ENV.HEDERAS_NETWORK, ORIGINAL_ENV.HEDERAS_NODES, ORIGINAL_ENV.HEDERAS_OPERATOR_ID, "some invalid key", CredentialsInvalidError);
   });
 
   it('if environment targets a local-net, it should permit instantiating a HederaNetwork provided that a valid address-book can be parsed', async () => {
@@ -73,10 +73,10 @@ describe('HederaNetwork', () => {
   it('if environment params are not provided yet a dot-env file is present, dot-env properties should be used for default-session instantiation', async () => {
     const tmpDotEnvFileName = `.env_testTemp`;
     const tmpDotEnvFileContent = {
-      HEDERA_NETWORK: HEDERA_CUSTOM_NET_NAME,
-      HEDERA_NODES: "A#69",
-      HEDERA_OPERATOR_ID: "B",
-      HEDERA_OPERATOR_KEY: "C"
+      HEDERAS_NETWORK: HEDERA_CUSTOM_NET_NAME,
+      HEDERAS_NODES: "A#69",
+      HEDERAS_OPERATOR_ID: "B",
+      HEDERAS_OPERATOR_KEY: "C"
     };
     const spyHederaNetworkLogin = jest.fn();
     const spyHederaNetworkFor = jest.spyOn(HederaNetwork, "for").mockReturnValue(<any>{ login: spyHederaNetworkLogin });
@@ -87,13 +87,13 @@ describe('HederaNetwork', () => {
 
       expect(spyHederaNetworkFor.mock.calls.length === 1).toBeTruthy();
       expect(spyHederaNetworkFor.mock.calls[0][0]).toMatchObject({
-        name: tmpDotEnvFileContent.HEDERA_NETWORK,
+        name: tmpDotEnvFileContent.HEDERAS_NETWORK,
         nodes: { "A": new AccountId(69) }
       });
       expect(spyHederaNetworkLogin.mock.calls.length === 1).toBeTruthy();
       expect(spyHederaNetworkLogin.mock.calls[0][0]).toMatchObject({
-        operatorId: tmpDotEnvFileContent.HEDERA_OPERATOR_ID,
-        operatorKey: tmpDotEnvFileContent.HEDERA_OPERATOR_KEY
+        operatorId: tmpDotEnvFileContent.HEDERAS_OPERATOR_ID,
+        operatorKey: tmpDotEnvFileContent.HEDERAS_OPERATOR_KEY
       });
     } finally {
       await fs.rm(tmpDotEnvFileName);
@@ -104,10 +104,10 @@ describe('HederaNetwork', () => {
     try {
       jest.resetModules();
       process.env = { 
-        HEDERA_NETWORK: networkName,
-        HEDERA_NODES: nodes,
-        HEDERA_OPERATOR_ID: operatorId,
-        HEDERA_OPERATOR_KEY: operatorKey
+        HEDERAS_NETWORK: networkName,
+        HEDERAS_NODES: nodes,
+        HEDERAS_OPERATOR_ID: operatorId,
+        HEDERAS_OPERATOR_KEY: operatorKey
       };
       const localisedHederaNetwork = require('../../../lib/HederaNetwork');
 

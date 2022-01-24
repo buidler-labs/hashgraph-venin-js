@@ -7,7 +7,7 @@ export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = '__contract__.sol';
 
 export class SolidityCompiler {
   public static async compile({ code, path }: { code?: string, path?: string }) {
-    const basePath = sdkPath.resolve(process.env.CONTRACTS_RELATIVE_PATH || 'contracts');
+    const basePath = sdkPath.resolve(process.env.HEDERAS_CONTRACTS_RELATIVE_PATH || 'contracts');
     const content = (code ? code : fs.readFileSync(sdkPath.join(basePath, path), 'utf8'));
     // Note: Further options and info is available 
     //       here https://docs.soliditylang.org/en/v0.8.10/using-the-compiler.html#input-description and
@@ -30,12 +30,12 @@ export class SolidityCompiler {
     };
     const stringifiedSolInput = JSON.stringify(solInput);
     const importPrefixes = [
-      // prioritize the root contract folder followed by the base-path one (usually 'contracts' if CONTRACTS_RELATIVE_PATH is not provided)
+      // prioritize the root contract folder followed by the base-path one (usually 'contracts' if HEDERAS_CONTRACTS_RELATIVE_PATH is not provided)
       ...(path ? [sdkPath.join(basePath, sdkPath.dirname(path)), ""] : [""]), 
       // then look at the project's node_modules
       sdkPath.join(process.cwd(), "node_modules"),
       // then expand all the environment provided prefixes (if any)
-      ...(process.env.CONTRACTS_INCLUDED_PREFIXES ? process.env.CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/) : [])
+      ...(process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES ? process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/) : [])
     ];
     const importsResolver = (sourcePath) => {
       for (const prefix of importPrefixes) {

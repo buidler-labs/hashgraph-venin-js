@@ -57,7 +57,7 @@ describe('ApiSession.Receipts', () => {
         const session = await HederaNetwork.defaultApiSession({
             env: {
                 ...process.env,
-                HEDERA_DEFAULT_EMIT_LIVE_CONTRACTS_RECEIPTS: "false"
+                HEDERAS_DEFAULT_EMIT_LIVE_CONTRACTS_RECEIPTS: "false"
             }
         });
         const solContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/state_variables' }) });

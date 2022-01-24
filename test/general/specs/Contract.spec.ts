@@ -99,7 +99,7 @@ describe('Contract', () => {
     });
 
     it("given a valid contract that is inter-linked via chain-import-ing with others and its path-prefix not set in env, compiling it should not fail", async () => {
-        expect(process.env.CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/)).not.toContain('import_resolution');
+        expect(process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/)).not.toContain('import_resolution');
 
         await expect(Contract.allFrom({ path: './general/contracts/import_resolution/hello_imports.sol' })).resolves.not.toThrow();
     });
