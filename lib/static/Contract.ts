@@ -9,15 +9,6 @@ import { HContractFunctionParameters } from '../HContractFunctionParameters';
 import { Interface } from '@ethersproject/abi';
 import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../SolidityCompiler';
 
-/**
- * Default gas allocated for creating contracts.
- * 
- * Changelog (tailored against the 'hedera-services' version):
- *  - <= v0.21.0: 75_000
- *  - >= v0.22.0: 150_000
- */
-const DEFAULT_GAS_FOR_CONTRACT_CREATION = 150_000;
-
 type AllContractOptions = {
   /**
    * The Solidity full, human-readable, contract code
@@ -215,7 +206,7 @@ export class Contract extends UploadableEntity<LiveContractWithLogs> {
     const contractFileId = receipt.fileId;
     const constructorDefinition = this.interface.deploy;
     let contractCreationOverrides: any = {};
-    let emitConstructorLogs = session.defaults.emit_constructor_logs ?? true;
+    let emitConstructorLogs = session.defaults.emitConstructorLogs;
 
     if (args.length > 0 && Object.keys(args[0]).length !== 0 && Object.keys(args[0])[0] === '_contract') {
       const contractCreationArgs = args[0]._contract;
@@ -235,7 +226,7 @@ export class Contract extends UploadableEntity<LiveContractWithLogs> {
         adminKey: session.publicKey,
         bytecodeFileId: contractFileId,
         constructorParameters: await HContractFunctionParameters.newFor(constructorDefinition, args),
-        gas: session.defaults.contract_creation_gas || DEFAULT_GAS_FOR_CONTRACT_CREATION,
+        gas: session.defaults.contractCreationGas,
         ...contractCreationOverrides
       })
     }

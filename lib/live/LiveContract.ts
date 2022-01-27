@@ -23,15 +23,6 @@ import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveAddress } from "./LiveAddress";
 import Long from "long";
 
-/**
- * Default gas allocated for executing contract method calls (both queries and transactions)
- * 
- * Changelog (tailored against the 'hedera-services' version):
- *  - <= v0.21.0: 69_000
- *  - >= v0.22.0: 169_000
- */
-export const DEFAULT_GAS_PER_CONTRACT_TRANSACTION = 169_000;
-
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
 export type ContractFunctionCall = ContractCallQuery | ContractExecuteTransaction;
@@ -180,10 +171,10 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         let requestOptionsPresentInArgs = false;
         let constructorArgs: any = { 
             contractId: this.id,
-            gas: this.session.defaults.contract_transaction_gas || DEFAULT_GAS_PER_CONTRACT_TRANSACTION
+            gas: this.session.defaults.contractTransactionGas
         };
         let meta: CreateContractRequestMeta = {
-            emitReceipt: this.session.defaults.emit_live_contract_receipts
+            emitReceipt: this.session.defaults.emitLiveContractReceipts
         };
         let request;
         
@@ -200,7 +191,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         
         // Inject session-configurable defaults
         if (fDescription.constant) {
-            const queryPaymentInHbar = new Hbar(this.session.defaults.payment_for_contract_query || 0);
+            const queryPaymentInHbar = new Hbar(this.session.defaults.paymentForContractQuery);
 
             request.setQueryPayment(queryPaymentInHbar);
         }

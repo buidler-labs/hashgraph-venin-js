@@ -57,7 +57,7 @@ export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
   }
 
   private async _getFileTransactionsFor({ content, session, args = [] }: ArgumentsToGetFileTransaction) {
-    const fileChunkSize: number = session.network.defaults.file_chunk_size;
+    const fileChunkSize: number = session.network.defaults.fileChunkSize;
     const fileTransactions: Array<FileCreateTransaction|FileAppendTransaction> = [];
     let fileCreationOverrides = {};
 

@@ -1,17 +1,20 @@
 // Jest Test Environment (JTE) for the hedera-api library
 import NodeEnvironment from 'jest-environment-node';
-import { HederaNetwork } from '../lib/HederaNetwork';
+import { ApiSession } from '../lib/ApiSession';
 
 export default class JestTestEnvironment extends NodeEnvironment {
-    constructor(config) {
-        super(config);
-    }
-    
     async setup() {
         await super.setup();
 
         try {
-            await HederaNetwork.defaultApiSession();
+            // Test out if we can create a default api-session required to run the tests with
+            // Also make sure to turn off logging so as to not over-polute the console
+            await ApiSession.default({
+                env: {
+                    ...process.env,
+                    HEDERAS_LOGGER_ENABLED: 'false'
+                }
+            });
         } catch (e) {
             throw new Error (
                 "Could not retrieve a default-api-session instance! Make sure you have either a .env file present in top-level repo folder. " + 

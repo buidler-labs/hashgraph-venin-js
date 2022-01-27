@@ -6,10 +6,10 @@ import { AccountId } from "@hashgraph/sdk";
 
 import { load, read } from "../../utils";
 import { Contract } from "../../../lib/static/Contract";
-import { HederaNetwork } from "../../../lib/HederaNetwork";
 import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { LiveAddress } from "../../../lib/live/LiveAddress";
 import { LiveContract } from "../../../lib/live/LiveContract";
+import { ApiSession } from "../../../lib/ApiSession";
 
 describe('LiveContract', () => {
   it("emitting an event during contract construction time should be returned following a successfull upload", async () => {
@@ -26,7 +26,7 @@ describe('LiveContract', () => {
   });
 
   it("using the solidity-by-example > Contract that Creates other Contracts example, creating a contract should allow its live-address to be convertable to the underlying model", async () => {
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const hapiSessionOwnerAddress = await hapiSession.getSolidityAddress();
     const carContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/new_contract' }), name: 'Car', ignoreWarnings: true });
     const carFactoryContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/new_contract' }), name: 'CarFactory', ignoreWarnings: true });
@@ -48,7 +48,7 @@ describe('LiveContract', () => {
 
   it("using the solidity-by-example > Immutable example, deploying a contract with constructor arguments should work", async () => {
     const uintArgForConstructor = new BigNumber(42);
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const immutableContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/immutable' }) });
     const liveContract = await hapiSession.upload(immutableContract, uintArgForConstructor);
     const returnedMyAddress = await liveContract.MY_ADDRESS();
@@ -66,7 +66,7 @@ describe('LiveContract', () => {
 
   it("using the solidity-by-example > Hello World code, uploading it followed by a cold retrieval should be permitted provided it is deployed ID and ABI interface are available", async () => {
     // prepare the session and the solidity contract
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const helloWorldContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/hello_world' }) });
     
     // upload it but don't get a hold on the actual resulting live contract instance. We only take note of its deployed id and,
@@ -79,7 +79,7 @@ describe('LiveContract', () => {
   });
 
   it("given a contract which has methods that make use of the Hedera supported bytes type, calling them should work as expected", async () => {
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const bytesContract = await Contract.newFrom({ code: read({ contract: 'bytes' }) });
     const liveContract = await hapiSession.upload(bytesContract);
     const sentBytes = Buffer.from('Hello World!', 'utf8');
@@ -166,7 +166,7 @@ describe('LiveContract', () => {
   it.skip("given the solidity-by-example > Signature code, interacting doing the signature verification flow should work", async () => {
     // TODO: activate this once secp is working on Hedera (and available through SDK ?)
     const liveContract = await load('solidity-by-example/signature');
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const signer = hapiSession.accountId.toSolidityAddress();
     const to = AccountId.fromString('0.0.3').toSolidityAddress();
     const amount = 123;
@@ -183,7 +183,7 @@ describe('LiveContract', () => {
   });
 
   it.skip("using the solidity-by-example > Library code, uploading a public library-dependent contract should succede", async () => {
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const testArrayContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/library' }), name: 'TestArray' });
 
     await expect(hapiSession.upload(testArrayContract)).resolves.not.toThrow();
@@ -268,7 +268,7 @@ describe('LiveContract', () => {
   });
 
   it ("given a method that requires an address, passing it a solidity-addressable instance should resolve to the expected address type", async() => {
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const naiveOwnerCheckContract = await Contract.newFrom({ code: read({ contract: 'naive_owner_check' }) });
     const liveContract = await hapiSession.upload(naiveOwnerCheckContract);
 

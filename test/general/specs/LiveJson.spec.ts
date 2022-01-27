@@ -1,13 +1,13 @@
 import {
     expect, describe, it,
 } from '@jest/globals';
-import { HederaNetwork } from '../../../lib/HederaNetwork';
+import { ApiSession } from '../../../lib/ApiSession';
 
 import { Json } from '../../../lib/static/Json';
 
 describe('LiveJson', () => {
     it("given a valid Json instance, uploading it should succede", async () => {
-        const hapiSession = await HederaNetwork.defaultApiSession();
+        const hapiSession = await ApiSession.default();
         const jsonToUpload = new Json({ a: 'abc', b: { c: 2 } });
         const liveJson = await hapiSession.upload(jsonToUpload);
 
@@ -16,7 +16,7 @@ describe('LiveJson', () => {
     });
 
     it("given a valid Json-convertable upload argument, uploading it should succede", async () => {
-        const hapiSession = await HederaNetwork.defaultApiSession();
+        const hapiSession = await ApiSession.default();
         const liveJson = await hapiSession.upload({ a: 1, b: { c: 42 } });
 
         expect(liveJson.a).toEqual(1);
@@ -24,14 +24,14 @@ describe('LiveJson', () => {
     });
 
     it("given an invalild Json-convertable upload argument, uploading it should fail", async () => {
-        const hapiSession = await HederaNetwork.defaultApiSession();
+        const hapiSession = await ApiSession.default();
         
         await expect(hapiSession.upload({ _a: 3 })).rejects.toThrow();
         await expect(hapiSession.upload({ id: 420 })).rejects.toThrow();
     });
 
     it("uploading a Json data-structure should allow subsequent retrievals of it", async () => {
-        const hapiSession = await HederaNetwork.defaultApiSession();
+        const hapiSession = await ApiSession.default();
         const uploadedLiveJson = await hapiSession.upload({ a: "some text", b: { c: 42.0 } });
         const retrievedLiveJson = await hapiSession.getLiveJson({ id: uploadedLiveJson.id });
 

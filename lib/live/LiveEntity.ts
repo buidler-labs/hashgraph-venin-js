@@ -9,6 +9,10 @@ export class LiveEntity<T> {
         public readonly id: T
     ) {}
 
+    protected get log() {
+        return this.session.log;
+    }
+
     public equals<R>(what: R|LiveEntity<T>): boolean {
         if (what instanceof LiveEntity) {
             return what.id === this.id;

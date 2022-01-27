@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { HederaNetwork } from '../lib/HederaNetwork';
+import { ApiSession } from '../lib/ApiSession';
 import { LiveContract } from '../lib/live/LiveContract';
 import { Contract } from '../lib/static/Contract';
 
@@ -15,7 +15,7 @@ export function read({ relativeTo = 'general', contract, solo }: ResouorceReadOp
 }
 
 export async function load(liveContractPath: string, relativeTo: string = 'general'): Promise<LiveContract> {
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const sbeContract = await Contract.newFrom({ code: read({ contract: liveContractPath, relativeTo }) });
     
     return await hapiSession.upload(sbeContract);

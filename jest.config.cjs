@@ -6,13 +6,11 @@ module.exports = {
     setupFiles: [
         'dotenv/config'
     ],
-    testEnvironment: "./test/jte.ts",
     testMatch: [
         "**/?(*.)+(spec|test).ts"
     ],
     testTimeout: 180000,
     transform: {
-        "\\.m?js$": ["rollup-jest", {"output": {"sourcemap": true}}],
         "^.+\\.ts?$": "ts-jest"
     },
 };

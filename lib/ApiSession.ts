@@ -3,7 +3,6 @@ import { EventEmitter } from "events";
 import { Interface } from '@ethersproject/abi';
 import { 
   AccountId,
-  Client, 
   ContractCallQuery, 
   ContractExecuteTransaction,
   ContractFunctionResult, 
@@ -11,6 +10,7 @@ import {
   FileContentsQuery, 
   FileId, 
   Key, 
+  Query, 
   Timestamp, 
   TokenCreateTransaction, 
   TokenSupplyType, 
@@ -23,8 +23,7 @@ import {
 } from '@hashgraph/sdk';
 import Duration from '@hashgraph/sdk/lib/Duration';
 import { 
-  HederaNetwork, 
-  StratoLogger 
+  HederaNetwork
 } from './HederaNetwork';
 
 import { ContractFunctionCall, LiveContract } from './live/LiveContract';
@@ -34,11 +33,21 @@ import { LiveToken } from './live/LiveToken';
 import { SolidityAddressable } from './SolidityAddressable';
 import { Json } from './static/Json';
 import { UploadableEntity } from './static/UploadableEntity';
+import { StratoClient } from "./client/StratoClient";
+import { StratoLogger } from "./StratoLogger";
+import { 
+  ClientColdStartData, 
+  ClientType, 
+  StratoParametersSource, 
+  StratoRuntimeParameters 
+} from "./StratoRuntimeParameters";
+import { HederaClientProvider } from "./client/HederaClient";
+import { HashConnectClientProvider as HashConnectClientProvider } from "./client/HashConnectClient";
 
 type ApiSessionConstructorArgs = {
   log: StratoLogger,
   network: HederaNetwork,
-  client: Client,
+  client: StratoClient,
   defaults: SessionDefaults
 };
 type ExecutableTransaction = ContractFunctionCall|Transaction;
@@ -59,12 +68,17 @@ type ExecutionReturnTypes<T> = {
   [TypeOfExecutionReturn.Result]: T
 };
 
+export type PublicAccountInfo = {
+  id: AccountId;
+  publicKey: Key;
+}
+
 export type SessionDefaults = { 
-  contract_creation_gas?: number,
-  contract_transaction_gas?: number,
-  emit_constructor_logs?: boolean,
-  emit_live_contract_receipts?: boolean,
-  payment_for_contract_query?: number
+  contractCreationGas: number,
+  contractTransactionGas: number,
+  emitConstructorLogs: boolean,
+  emitLiveContractReceipts: boolean,
+  paymentForContractQuery: number
 };
 
 type TokenKeys = {
@@ -95,6 +109,8 @@ type TokenFeatures = {
   maxSupply?: number | Long.Long
 };
 
+const SESSION_CONSTRUCTOR_GUARD = {};
+
 // The inner-name for the receipt pub-sub event slot
 const TRANSACTION_ON_RECEIPT_EVENT_NAME = "__TransactionOnReceiptAvailable_EventName__";
 
@@ -104,16 +120,53 @@ const TRANSACTION_ON_RECEIPT_EVENT_NAME = "__TransactionOnReceiptAvailable_Event
  * Should only be instantiable through a {@link HederaNetwork} method such as the {@link HederaNetwork.defaultApiSession} one.
  */
 export class ApiSession implements SolidityAddressable {
+  /**
+   * Builds and retrieves the default {@link ApiSession} associated with this runtime. There are currently 2 ways of providing the parameters requried for the api-session to be built:
+   * - either pass them through the {@param source.env} parameter property (defaults to the `process.env` for node environments) or 
+   * - give the path to a [dotenv](https://www.npmjs.com/package/dotenv) like file (defaults to `.env`) from which they are loaded by the library (the {@link source.path} parameter)
+   * 
+   * `Note:` At least one source must be properly wired and if both these parameter sources are set, the environment/runtime values overwrite the file-loaded ones.
+   * 
+   * In order for the default {@link ApiSession} to be generated, the resulting resolved parameters must have the following values present:
+   * - `HEDERAS_NETWORK` : the targeted hedera-network cluster. Can be one of the following: `mainnet`, `testnet`, `previewnet` or {@link HEDERA_CUSTOM_NET_NAME | customnet}
+   * - `HEDERAS_NODES` : (mandatory if `HEDERAS_NETWORK={$link HEDERA_CUSTOM_NET_NAME}`) a comma separated list of addressbook nodes encoded in the following format
+   *                    `<node_ip>#<account_number>`. Eg. `127.0.0.1#3` would be parsed in an address book having a node with IP `127.0.0.1` associated with {@link AccountId} `3`                                                            
+   * - `HEDERAS_OPERATOR_ID` : the string representation of the {@link AccountId} operating the resulting session (eg. `0.0.2`)
+   * - `HEDERAS_OPERATOR_KEY` : the string representation of the private key of the `HEDERAS_OPERATOR_ID` operator paying for the session 
+   * 
+   * @param {HederaDefaultApiSessionParamsSource} source
+   */
+  public static async default({ env = process.env, path = process.env.HEDERAS_ENV_PATH || '.env' }: StratoParametersSource = {}): Promise<ApiSession> {
+    const params = new StratoRuntimeParameters({ env, path });
+    
+    return this.buildFrom(params);
+  }
+
+  public static async buildFrom(params: StratoRuntimeParameters): Promise<ApiSession> {
+    const log = new StratoLogger(params);
+
+    return new SessionBuilder(log, params.network)
+      .setClientProviderType(params.client.type)
+      .setClientColdStartData(params.client.coldStartData)
+      .setClientSavedState(params.client.savedState)  
+      .setDefaults(params.session.defaults)
+      .build();
+  }
+
   private readonly events: EventEmitter;
   public readonly log: StratoLogger;
   public readonly network: HederaNetwork;
-  private readonly client: Client;
+  private readonly client: StratoClient;
   public readonly defaults: SessionDefaults;
 
   /**
    * @hidden
    */
-  constructor({ log, network, client, defaults }: ApiSessionConstructorArgs) {
+  constructor(constructorGuard: any, { log, network, client, defaults }: ApiSessionConstructorArgs) {
+    if (constructorGuard !== SESSION_CONSTRUCTOR_GUARD) {
+      throw new Error("API sessions can only be constructed through a SessionBuilder instance!");
+    }
+
     this.log = log;
     this.network = network;
     this.client = client;
@@ -125,14 +178,14 @@ export class ApiSession implements SolidityAddressable {
    * Retrieves the operator {@link AccountId} for this {@link ApiSession}.
    */
   public get accountId() {
-    return this.client.operatorAccountId;
+    return this.client.account.id;
   }
 
   /**
    * Retrieves the operator's public-key.
    */
   public get publicKey() {
-    return this.client.operatorPublicKey;
+    return this.client.account.publicKey;
   }
 
   /**
@@ -144,17 +197,17 @@ export class ApiSession implements SolidityAddressable {
   public async createToken(features: TokenFeatures): Promise<any> {
     const constructorArgs = {
       // First map to expected properties
-      adminKey: this.client.operatorPublicKey,
-      feeScheduleKey: this.client.operatorPublicKey,
-      freezeKey: this.client.operatorPublicKey,
-      kycKey: this.client.operatorPublicKey,
-      pauseKey: this.client.operatorPublicKey,
-      supplyKey: this.client.operatorPublicKey,
+      adminKey: this.publicKey,
+      feeScheduleKey: this.publicKey,
+      freezeKey: this.publicKey,
+      kycKey: this.publicKey,
+      pauseKey: this.publicKey,
+      supplyKey: this.publicKey,
       tokenName: features.name,
       tokenType: features.type,
       tokenSymbol: features.symbol,
       treasuryAccountId: this.accountId,
-      wipeKey: this.client.operatorPublicKey,
+      wipeKey: this.publicKey,
 
       // Merge everything with what's provided
       ...features
@@ -177,17 +230,23 @@ export class ApiSession implements SolidityAddressable {
   public async execute<T extends TypeOfExecutionReturn>(transaction: Transaction, returnType?: T, getReceipt?: boolean)
     : Promise<ExecutionReturnTypes<TransactionResponse>[T]>;
 
+  /**
+    * A catch-all/generic {@link Query<R>} execution operation yeilding, upon success, of the underlying generic-bounded response type, R.
+    */
+  public async execute<T extends TypeOfExecutionReturn, R>(transaction: Query<R>, returnType?: T, getReceipt?: boolean)
+   : Promise<ExecutionReturnTypes<R>[T]>;
+
    // Overload implementation
-  public async execute<T extends TypeOfExecutionReturn>(
-      transaction: ExecutableTransaction, 
+  public async execute<T extends TypeOfExecutionReturn, R>(
+      transaction: ExecutableTransaction|Query<R>, 
       returnType: T, 
       getReceipt: boolean = false)
-    : Promise<ExecutionReturnTypes<ContractFunctionResult|TransactionResponse>[T]> {
+    : Promise<ExecutionReturnTypes<ContractFunctionResult|TransactionResponse|R>[T]> {
     const isContractTransaction = transaction instanceof ContractCallQuery || transaction instanceof ContractExecuteTransaction;
-    let executionResult: ContractFunctionResult|TransactionResponse;
+    let executionResult: ContractFunctionResult|TransactionResponse|R;
     let txReceipt: TransactionReceipt;
     let txRecord: TransactionRecord;
-    const txResponse = await transaction.execute(this.client);
+    const txResponse = await this.client.execute(transaction);
 
     // start with the assumption that either the execution is not a contract-transaction or that the transaction-response is not a TransactionResponse
     executionResult = txResponse;
@@ -196,7 +255,7 @@ export class ApiSession implements SolidityAddressable {
     if (txResponse instanceof TransactionResponse) {
       // start out by emiting the receipt for the original transaction, if required, and someone is interested in it
       if (this.canReceiptBeEmitted(getReceipt) || returnType === TypeOfExecutionReturn.Receipt) {
-        txReceipt = await txResponse.getReceipt(this.client);
+        txReceipt = await this.client.getReceipt(txResponse);
         if (this.canReceiptBeEmitted(getReceipt)) {
           this.events.emit(TRANSACTION_ON_RECEIPT_EVENT_NAME, { transaction, receipt: txReceipt });
         }
@@ -204,13 +263,12 @@ export class ApiSession implements SolidityAddressable {
       
       if (returnType === TypeOfExecutionReturn.Record || (isContractTransaction && returnType === TypeOfExecutionReturn.Result)) {
         if (!txReceipt) {
-          txReceipt = await txResponse.getReceipt(this.client);
+          txReceipt = await this.client.getReceipt(txResponse);
         }
 
-        const txRecordQuery = new TransactionRecordQuery()
-            .setTransactionId(txResponse.transactionId);
+        const txRecordQuery = new TransactionRecordQuery().setTransactionId(txResponse.transactionId);
 
-        txRecord = await txRecordQuery.execute(this.client);
+        txRecord = await this.client.execute(txRecordQuery);
 
         // try sending the receipt for the underlying TransactionRecordQuery
         if (this.canReceiptBeEmitted(getReceipt)) {
@@ -277,9 +335,8 @@ export class ApiSession implements SolidityAddressable {
     } catch(e) {
       throw new Error("Please provide a valid Hedera file id in order try to lock onto an already-deployed Json object.");
     }
-    const fileContentsBuffer = await new FileContentsQuery()
-      .setFileId(targetedFileId)
-      .execute(this.client);
+    const fileContentsQuery = await new FileContentsQuery().setFileId(targetedFileId);
+    const fileContentsBuffer = await this.execute(fileContentsQuery, TypeOfExecutionReturn.Result, false);
     const fileContents = new TextDecoder('utf8').decode(fileContentsBuffer);
     
     // TODO: use file Memo to store hash of file-contents and only return LiveJson instance if the 2 values match
@@ -364,5 +421,74 @@ class ReceiptSubscription {
   
   public unsubscribe() {
     this.events.off(TRANSACTION_ON_RECEIPT_EVENT_NAME, this.clb);
+  }
+}
+
+export class SessionBuilder {
+  private clientColdStartData: ClientColdStartData;
+  private clientSavedState: string;
+  private clientType: ClientType;
+  private defaults: SessionDefaults;
+  
+  public constructor (
+    private readonly log: StratoLogger,
+    private readonly network: HederaNetwork
+  ) {}
+
+  public async build(): Promise<ApiSession> {
+    const settledDefaults: SessionDefaults = {
+      contractCreationGas: (this.defaults && this.defaults.contractCreationGas) || 150_000,
+      contractTransactionGas: (this.defaults && this.defaults.contractTransactionGas) || 169_000,
+      emitConstructorLogs: this.defaults ? this.defaults.emitConstructorLogs : true,
+      emitLiveContractReceipts: this.defaults ? this.defaults.emitLiveContractReceipts : false,
+      paymentForContractQuery: (this.defaults && this.defaults.paymentForContractQuery) || 0
+    };
+    let client: StratoClient;
+    let clientProvider;
+
+    switch(this.clientType) {
+      case ClientType.Hedera:
+        clientProvider = new HederaClientProvider(this.log);
+        break;
+      case ClientType.HashConnect:
+        clientProvider = new HashConnectClientProvider(this.log);
+        break;
+      default:
+        throw new Error("Please provide a valid ClientType so that a known, sane, client-provider can be created from.");
+    }
+    clientProvider.setNetwork(this.network);
+    if (this.clientSavedState) {
+      client = await clientProvider.buildRestoring(this.clientSavedState);
+    } else if (this.clientColdStartData) {
+      client = await clientProvider.buildColdFor(this.clientColdStartData);
+    } else {
+      throw new Error("Please provide either the cold-start data or a saved-state from where to create the bounded underlying Client with.");
+    }
+
+    return new ApiSession(SESSION_CONSTRUCTOR_GUARD, {
+      log: this.log, 
+      network: this.network, 
+      client, 
+      defaults: settledDefaults
+    });
+  }
+
+  public setClientProviderType(type: ClientType): this {
+    this.clientType = type;
+    return this;
+  }
+  public setClientColdStartData(data: ClientColdStartData): this {
+    this.clientColdStartData = data;
+    return this;
+  }
+
+  public setClientSavedState(serializedState: string): this {
+    this.clientSavedState = serializedState;
+    return this;
+  }
+
+  public setDefaults(defaults: SessionDefaults): this {
+    this.defaults = defaults;
+    return this;
   }
 }

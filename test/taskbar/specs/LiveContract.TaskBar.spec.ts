@@ -10,8 +10,8 @@ import {
     read as readResource
 } from "../../utils";
 import { Contract } from "../../../lib/static/Contract";
-import { HederaNetwork } from "../../../lib/HederaNetwork";
 import { LiveEntity } from "../../../lib/live/LiveEntity";
+import { ApiSession } from "../../../lib/ApiSession";
 
 function read(what: ResouorceReadOptions) {
     return readResource({ relativeTo: 'taskbar', ...what });
@@ -22,7 +22,7 @@ describe('LiveContract.TaskBar', () => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
     const taskId = new BigNumber(1);
 
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
     const taskRegistryContract = await Contract.newFrom({ code: read({ contract: 'TaskRegistry' }), ignoreWarnings: true });
     const cappedRegistryHelperContract = await Contract.newFrom({ code: read({ contract: 'CappedRegistryHelper' }) });
     const cappedRegistryLiveContract = await hapiSession.upload(cappedRegistryHelperContract, maxNrOfTasksPerRegistry);
@@ -63,7 +63,7 @@ describe('LiveContract.TaskBar', () => {
 
   it.skip("given the taskbar contracts, do stuff", async () => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
-    const hapiSession = await HederaNetwork.defaultApiSession();
+    const hapiSession = await ApiSession.default();
 
     // Contracts
     const taskRegistryContract = await Contract.newFrom({ code: read({ contract: 'TaskRegistry' }), ignoreWarnings: true });

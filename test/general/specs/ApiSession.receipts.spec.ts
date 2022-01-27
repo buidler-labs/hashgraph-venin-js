@@ -2,14 +2,20 @@ import {
     describe, expect, it,
     jest
 } from '@jest/globals';
+import { 
+    ContractCreateTransaction, 
+    ContractExecuteTransaction, 
+    FileAppendTransaction, 
+    FileCreateTransaction, 
+    TransactionRecordQuery 
+} from '@hashgraph/sdk';
 
 import { read } from '../../utils';
 import { Contract } from '../../../lib/static/Contract';
-import { HederaNetwork } from '../../../lib/HederaNetwork';
-import { ContractCreateTransaction, ContractExecuteTransaction, FileAppendTransaction, FileCreateTransaction, TransactionRecordQuery } from '@hashgraph/sdk';
+import { ApiSession } from '../../..';
 
 async function verifyContractUploadEventFiringsFor(contract: string, emitConstructorLogs: boolean, ...expectedTransactions: any[]) {
-    const session = await HederaNetwork.defaultApiSession();
+    const session = await ApiSession.default();
     const solContract = await Contract.newFrom({ code: read({ contract }) });
     const spiedReceiptCallback = jest.fn();
 
@@ -25,7 +31,7 @@ async function verifyContractUploadEventFiringsFor(contract: string, emitConstru
 
 describe('ApiSession.Receipts', () => {
     it('uploading a json should generate appropriate receipts', async () => {
-        const session = await HederaNetwork.defaultApiSession();
+        const session = await ApiSession.default();
         
         return new Promise<void>((accept) => {
             session.subscribeToReceiptsWith(({ receipt }) => {
@@ -54,7 +60,7 @@ describe('ApiSession.Receipts', () => {
     });
 
     it('executing a live-contract function in a default-session environment that does not emit receipts when calling such functions, should emit a receipt if one is requested', async () => {
-        const session = await HederaNetwork.defaultApiSession({
+        const session = await ApiSession.default({
             env: {
                 ...process.env,
                 HEDERAS_DEFAULT_EMIT_LIVE_CONTRACTS_RECEIPTS: "false"
