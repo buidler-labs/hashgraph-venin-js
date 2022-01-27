@@ -3,15 +3,23 @@ import Executable from "@hashgraph/sdk/lib/Executable";
 import { PublicAccountInfo } from "../ApiSession";
 import { StratoLogger } from "../StratoLogger";
 import { StratoClientState } from "./ClientProvider";
+import { ClientType } from "./ClientType";
 import { StratoClient } from "./StratoClient";
 
 export abstract class StatedStratoClient<T extends StratoClientState> implements StratoClient {
     public constructor(
-        public readonly name: string,
+        public readonly type: ClientType,
         protected readonly log: StratoLogger,
         protected readonly state: T
     ) {
-        log.debug(`Created a new stated strato-client of type '${name}' serializable to: ${this.serialize()}`);
+        log.debug(`Created a new stated strato-client of type '${type}' serializable to: ${this.save()}`);
+    }
+
+    public async save(): Promise<string> {
+        const simpleState = await this.state.save();
+        const encodedState = Buffer.from(simpleState).toString('base64');
+
+        return encodedState;
     }
 
     public abstract get account(): PublicAccountInfo;
@@ -21,8 +29,4 @@ export abstract class StatedStratoClient<T extends StratoClientState> implements
         never
     > ;
     public abstract getReceipt(response: TransactionResponse): Promise<TransactionReceipt>;
-
-    public serialize(): string {
-        return Buffer.from(this.state.serialize()).toString('base64');
-    }
 }

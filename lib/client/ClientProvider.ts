@@ -1,18 +1,18 @@
 import { HederaNetwork } from "../HederaNetwork";
 import { StratoLogger } from "../StratoLogger";
-import { StringDeserializer } from "../StringDeserializer";
+import { Restorer, Saver } from "../Persistance";
 import { StratoClient } from "./StratoClient";
 
-export interface StratoClientState {
-    serialize(): string;
+export interface StratoClientState extends Saver<string> {
+    // no-op
 }
 
-export abstract class ClientProvider<T extends StratoClient, R extends StratoClientState, S = any> {
+export abstract class ClientProvider<T extends StratoClient = any, R extends StratoClientState = any, S = any> {
     protected network: HederaNetwork
 
     protected constructor(
         protected readonly log: StratoLogger,
-        private readonly stateDeserializer: StringDeserializer<R>,
+        private readonly restorer: Restorer<string, R>,
         network?: HederaNetwork
     ) {
         this.setNetwork(network);    
@@ -28,7 +28,7 @@ export abstract class ClientProvider<T extends StratoClient, R extends StratoCli
 
         return this._buildCold(data);
     }
-    public buildRestoring(state: string | R): Promise<T> {
+    public async buildRestoring(state: string | R): Promise<T> {
         this.sanityCheck();
         
         let stateInstance: R;
@@ -36,7 +36,7 @@ export abstract class ClientProvider<T extends StratoClient, R extends StratoCli
         if (typeof state === 'string') {
             const decodedState = Buffer.from(state, 'base64').toString('ascii');
             
-            stateInstance = this.stateDeserializer.deserialize(decodedState);
+            stateInstance = await this.restorer.restore(decodedState);
         } else {
             stateInstance = state;
         }

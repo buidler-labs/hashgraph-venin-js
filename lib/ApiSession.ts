@@ -37,12 +37,11 @@ import { StratoClient } from "./client/StratoClient";
 import { StratoLogger } from "./StratoLogger";
 import { 
   ClientColdStartData, 
-  ClientType, 
   StratoParametersSource, 
   StratoRuntimeParameters 
 } from "./StratoRuntimeParameters";
-import { HederaClientProvider } from "./client/HederaClient";
-import { HashConnectClientProvider as HashConnectClientProvider } from "./client/HashConnectClient";
+import { Saver } from "./Persistance";
+import { ClientType } from "./client/ClientType";
 
 type ApiSessionConstructorArgs = {
   log: StratoLogger,
@@ -119,7 +118,7 @@ const TRANSACTION_ON_RECEIPT_EVENT_NAME = "__TransactionOnReceiptAvailable_Event
  * 
  * Should only be instantiable through a {@link HederaNetwork} method such as the {@link HederaNetwork.defaultApiSession} one.
  */
-export class ApiSession implements SolidityAddressable {
+export class ApiSession implements SolidityAddressable, Saver<string> {
   /**
    * Builds and retrieves the default {@link ApiSession} associated with this runtime. There are currently 2 ways of providing the parameters requried for the api-session to be built:
    * - either pass them through the {@param source.env} parameter property (defaults to the `process.env` for node environments) or 
@@ -172,6 +171,10 @@ export class ApiSession implements SolidityAddressable {
     this.client = client;
     this.defaults = defaults;
     this.events = new EventEmitter();
+  }
+
+  public save(): Promise<string> {
+    return this.client.save();
   }
 
   /**
@@ -428,7 +431,7 @@ export class SessionBuilder {
   private clientColdStartData: ClientColdStartData;
   private clientSavedState: string;
   private clientType: ClientType;
-  private defaults: SessionDefaults;
+  private providedDefaults: SessionDefaults;
   
   public constructor (
     private readonly log: StratoLogger,
@@ -436,26 +439,9 @@ export class SessionBuilder {
   ) {}
 
   public async build(): Promise<ApiSession> {
-    const settledDefaults: SessionDefaults = {
-      contractCreationGas: (this.defaults && this.defaults.contractCreationGas) || 150_000,
-      contractTransactionGas: (this.defaults && this.defaults.contractTransactionGas) || 169_000,
-      emitConstructorLogs: this.defaults ? this.defaults.emitConstructorLogs : true,
-      emitLiveContractReceipts: this.defaults ? this.defaults.emitLiveContractReceipts : false,
-      paymentForContractQuery: (this.defaults && this.defaults.paymentForContractQuery) || 0
-    };
     let client: StratoClient;
-    let clientProvider;
+    const clientProvider = this.clientType.newProviderHaving(this.log);
 
-    switch(this.clientType) {
-      case ClientType.Hedera:
-        clientProvider = new HederaClientProvider(this.log);
-        break;
-      case ClientType.HashConnect:
-        clientProvider = new HashConnectClientProvider(this.log);
-        break;
-      default:
-        throw new Error("Please provide a valid ClientType so that a known, sane, client-provider can be created from.");
-    }
     clientProvider.setNetwork(this.network);
     if (this.clientSavedState) {
       client = await clientProvider.buildRestoring(this.clientSavedState);
@@ -469,7 +455,7 @@ export class SessionBuilder {
       log: this.log, 
       network: this.network, 
       client, 
-      defaults: settledDefaults
+      defaults: this.defaults
     });
   }
 
@@ -488,7 +474,17 @@ export class SessionBuilder {
   }
 
   public setDefaults(defaults: SessionDefaults): this {
-    this.defaults = defaults;
+    this.providedDefaults = defaults;
     return this;
+  }
+
+  private get defaults(): SessionDefaults {
+    return {
+      contractCreationGas: (this.providedDefaults && this.providedDefaults.contractCreationGas) || 150_000,
+      contractTransactionGas: (this.providedDefaults && this.providedDefaults.contractTransactionGas) || 169_000,
+      emitConstructorLogs: this.providedDefaults ? this.providedDefaults.emitConstructorLogs : true,
+      emitLiveContractReceipts: this.providedDefaults ? this.providedDefaults.emitLiveContractReceipts : false,
+      paymentForContractQuery: (this.providedDefaults && this.providedDefaults.paymentForContractQuery) || 0
+    };
   }
 }

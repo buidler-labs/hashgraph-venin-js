@@ -7,17 +7,13 @@ import {
 import { SessionDefaults } from './ApiSession';
 import { AVAILABLE_NETWORK_NAMES, NetworkDefaults } from './HederaNetwork';
 import { HederaNetwork } from '..';
-import { CredentialsInvalidError } from './errors/CredentialsInvalidError';
+import { ClientType, ClientTypes } from './client/ClientType';
 
 export type ClientColdStartData = HashConnectTypes.AppMetadata | { accountId: AccountId, privateKey: PrivateKey };
 type ClientRuntimeParameters = {
     coldStartData: ClientColdStartData,
     savedState: string,
     type: ClientType
-};
-export const enum ClientType {
-    Hedera = 0,
-    HashConnect = 1
 };
 export type HederaNodesAddressBook = { [key: string]: string | AccountId };
 export type LoggerRuntimeParameters = { 
@@ -91,41 +87,16 @@ export class StratoRuntimeParameters {
     }
 
     private parseClientSpecsFrom(params: { [k: string]: string }): ClientRuntimeParameters {
-        const typeName = this.params.HEDERAS_CLIENT_TYPE ?? 'hedera';
+        const clientType = ClientTypes.find(cType => cType.name === (this.params.HEDERAS_CLIENT_TYPE ?? ClientTypes.Hedera.name));
         const savedState = this.params.HEDERAS_CLIENT_SAVED_STATE ?? null;
-        let coldStartData: ClientColdStartData;
 
-        if (typeName !== 'hedera' && typeName !== 'hashconnect') {
+        if (ClientTypes.Unknwon.equals(clientType)) {
             throw new Error("Only 'hedera' or 'hashconnect' client types are currently supported.");
-        }
-
-        const type = typeName === 'hedera' ? ClientType.Hedera : ClientType.HashConnect;
-
-        switch(type) {
-            case ClientType.Hedera:
-                try {
-                    coldStartData = {
-                        accountId: AccountId.fromString(params.HEDERAS_OPERATOR_ID),
-                        privateKey: PrivateKey.fromStringED25519(params.HEDERAS_OPERATOR_KEY)
-                    };
-                } catch(e) {
-                    throw new CredentialsInvalidError(e.message);
-                }
-                break;
-            case ClientType.HashConnect:
-                coldStartData = {
-                    name: params.HEDERAS_HASHCONNECT_APP_NAME ?? 'unknwon',
-                    description: params.HEDERAS_HASHCONNECT_APP_DESCRIPTION ?? 'not-specified',
-                    url: params.HEDERAS_HASHCONNECT_APP_URL,
-                    // TODO: default to strato logo.svg url?
-                    icon: params.HEDERAS_HASHCONNECT_APP_ICON ?? 'not-given'
-                };
-                break;
         }
         return { 
             savedState,
-            type,
-            coldStartData 
+            type: clientType,
+            coldStartData: clientType.parseColdStartOptions(params)
         };
     }
 

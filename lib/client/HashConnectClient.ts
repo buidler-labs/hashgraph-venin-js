@@ -17,9 +17,10 @@ import Executable from "@hashgraph/sdk/lib/Executable";
 import { HederaNetwork } from "../HederaNetwork";
 import { StratoLogger } from "../StratoLogger";
 import { ClientProvider, StratoClientState } from "./ClientProvider";
-import { StringDeserializer } from "../StringDeserializer";
+import { Restorer } from "../Persistance";
 import { StatedStratoClient } from "./StatedStratoClient";
 import { PublicAccountInfo } from "../ApiSession";
+import { ClientTypes } from "./ClientType";
 
 export type HederaClientColdStartData = HashConnectTypes.AppMetadata;
 
@@ -83,7 +84,7 @@ class HashConnectClient extends StatedStratoClient<HashConnectState> {
         private readonly hc: HashConnect,
         state: HashConnectState
     ) { 
-        super('HashConnect', log, state);
+        super(ClientTypes.HashConnect, log, state);
         this.account = state.pairedAccount;
     }
 
@@ -116,7 +117,6 @@ class HashConnectClient extends StatedStratoClient<HashConnectState> {
                 this.log.debug("Transaction response received:", data);
 
                 // TODO: accept
-                // accept(null);
                 reject("To be implemented once hashconnect is stable enough");
             })
         });
@@ -139,7 +139,7 @@ class HashConnectState implements StratoClientState {
         public readonly pairedWalletData?: HashConnectTypes.WalletMetadata
     ) { }
 
-    public serialize(): string {
+    public async save(): Promise<string> {
         return `${JSON.stringify(this.appMetaData)}${HashConnectState.FIELD_SERIALIZATION_SEPARATOR}` +
             `${this.topic}${HashConnectState.FIELD_SERIALIZATION_SEPARATOR}` +
             `${this.pairingString}${HashConnectState.FIELD_SERIALIZATION_SEPARATOR}` +
@@ -150,8 +150,8 @@ class HashConnectState implements StratoClientState {
     }
 }
 
-class HashConnectClientStateDeserializer implements StringDeserializer<HashConnectState> {
-    public deserialize(state: string): HashConnectState {
+class HashConnectClientStateDeserializer implements Restorer<string, HashConnectState> {
+    public async restore(state: string): Promise<HashConnectState> {
         const [ 
             rawAppMetaData,
             topic, pairingString,

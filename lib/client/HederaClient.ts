@@ -1,13 +1,23 @@
-import { TransactionResponse, TransactionReceipt, Client, PrivateKey, AccountId, Transaction, Query } from "@hashgraph/sdk";
+import { 
+    TransactionResponse, 
+    TransactionReceipt, 
+    Client, 
+    PrivateKey, 
+    AccountId, 
+    Transaction, 
+    Query 
+} from "@hashgraph/sdk";
 import { NetworkName } from "@hashgraph/sdk/lib/client/Client";
 import Executable from "@hashgraph/sdk/lib/Executable";
+
 import { PublicAccountInfo } from "../ApiSession";
 import { HederaNetwork, HEDERA_CUSTOM_NET_NAME } from "../HederaNetwork";
 
 import { StratoLogger } from "../StratoLogger";
-import { StringDeserializer } from "../StringDeserializer";
+import { Restorer } from "../Persistance";
 import { ClientProvider, StratoClientState } from "./ClientProvider";
 import { StatedStratoClient } from "./StatedStratoClient";
+import { ClientTypes } from "./ClientType";
 
 export type HederaClientColdStartData = { 
     accountId: string, privateKey: string 
@@ -55,7 +65,7 @@ class HederaClient extends StatedStratoClient<HederaClientState> {
         private readonly client: Client, 
         state: HederaClientState
     ) {
-        super('Hedera', log, state);
+        super(ClientTypes.Hedera, log, state);
         this.client.setOperator(state.operatorId, state.operatorKey);
         this.account = {
             id: client.operatorAccountId,
@@ -90,13 +100,13 @@ class HederaClientState implements StratoClientState {
         public readonly operatorKey: string
     ) { }
 
-    public serialize(): string {
+    public async save(): Promise<string> {
         return `${this.operatorId}${HederaClientState.FIELD_SERIALIZATION_SEPARATOR}${this.operatorKey}`;
     };
 }
 
-class HederaClientStateDeserializer implements StringDeserializer<HederaClientState> {
-    public deserialize(state: string): HederaClientState {
+class HederaClientStateDeserializer implements Restorer<string, HederaClientState> {
+    public async restore(state: string): Promise<HederaClientState> {
         const [ operatorId, operatorKey ] = state.split(HederaClientState.FIELD_SERIALIZATION_SEPARATOR);
 
         return new HederaClientState(operatorId, operatorKey);

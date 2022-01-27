@@ -13,8 +13,9 @@ import { LiveToken } from '../../../lib/live/LiveToken';
 import { ApiSession } from '../../../lib/ApiSession';
 import { HEDERA_CUSTOM_NET_NAME } from '../../../lib/HederaNetwork';
 import { EnvironmentInvalidError } from '../../../lib/errors/EnvironmentInvalidError';
-import { ClientType, StratoRuntimeParameters } from '../../../lib/StratoRuntimeParameters';
+import { StratoRuntimeParameters } from '../../../lib/StratoRuntimeParameters';
 import { CredentialsInvalidError } from '../../../lib/errors/CredentialsInvalidError';
+import { ClientTypes } from '../../../lib/client/ClientType';
 
 describe('ApiSession', () => {
   const ORIGINAL_ENV = process.env;
@@ -68,7 +69,7 @@ describe('ApiSession', () => {
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.name).toEqual(tmpDotEnvFileContent.HEDERAS_NETWORK);
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.nodes).not.toBeUndefined();
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.nodes['127.0.0.1:123']).toEqual(new AccountId(69));
-      expect(spyApiSessionBuildFrom.mock.calls[0][0].client.type).toEqual(ClientType.Hedera);
+      expect(spyApiSessionBuildFrom.mock.calls[0][0].client.type).toEqual(ClientTypes.Hedera);
       expect(spyApiSessionBuildFrom.mock.calls[0][0].client.coldStartData).toMatchObject({
         accountId: AccountId.fromString(tmpDotEnvFileContent.HEDERAS_OPERATOR_ID),
         privateKey: PrivateKey.fromStringED25519(tmpDotEnvFileContent.HEDERAS_OPERATOR_KEY)
