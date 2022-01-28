@@ -90,7 +90,7 @@ export class StratoRuntimeParameters {
         const clientType = ClientTypes.find(cType => cType.name === (this.params.HEDERAS_CLIENT_TYPE ?? ClientTypes.Hedera.name));
         const savedState = this.params.HEDERAS_CLIENT_SAVED_STATE ?? null;
 
-        if (ClientTypes.Unknwon.equals(clientType)) {
+        if (ClientTypes.Unknown.equals(clientType)) {
             throw new Error("Only 'hedera' or 'hashconnect' client types are currently supported.");
         }
         return { 

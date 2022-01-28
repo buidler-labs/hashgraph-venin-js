@@ -32,7 +32,7 @@ export class ClientType {
 }
 
 export class ClientTypes {
-    public static readonly Unknwon = new ClientType(CLIENTTYPE_CONSTRUCTOR_GUARD, -1, "Unknown");
+    public static readonly Unknown = new ClientType(CLIENTTYPE_CONSTRUCTOR_GUARD, -1, "Unknown");
     public static readonly Hedera = new ClientType(CLIENTTYPE_CONSTRUCTOR_GUARD, 0, "Hedera", HederaClientProvider, (env => {
         try {
             return {
@@ -54,6 +54,6 @@ export class ClientTypes {
     public static find(predicate: (type: ClientType) => boolean): ClientType {
         const candidateClientTypes = Object.values(ClientTypes).filter(predicate);
     
-        return candidateClientTypes.length === 0 ? ClientTypes.Unknwon : candidateClientTypes[0];
+        return candidateClientTypes.length === 0 ? ClientTypes.Unknown : candidateClientTypes[0];
     }
 };
