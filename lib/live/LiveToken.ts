@@ -1,6 +1,11 @@
-import { TokenId } from "@hashgraph/sdk";
-import { ApiSession } from "../ApiSession";
-import { SolidityAddressable } from "../SolidityAddressable";
+import { 
+    Key, 
+    TokenId, 
+    TokenUpdateTransaction 
+} from "@hashgraph/sdk";
+
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { SolidityAddressable } from "../core/SolidityAddressable";
 import { LiveEntity } from "./LiveEntity";
 
 type LiveTokenConstructorArgs = {
@@ -9,11 +14,18 @@ type LiveTokenConstructorArgs = {
 };
 
 export class LiveToken extends LiveEntity<TokenId> implements SolidityAddressable {
-    constructor({ session, id }: LiveTokenConstructorArgs) {
+    public constructor({ session, id }: LiveTokenConstructorArgs) {
         super(session, id);
     }
 
     public async getSolidityAddress(): Promise<string> {
         return this.id.toSolidityAddress();
+    }
+
+    public async assignSupplyControlTo<T extends Key>(key: Key|LiveEntity<T>): Promise<void> {
+        const tokenUpdateTx = new TokenUpdateTransaction()
+            .setTokenId(this.id)
+            .setSupplyKey(key instanceof Key ? key : key.id);
+        await this.session.execute(tokenUpdateTx, TypeOfExecutionReturn.Receipt, true);
     }
 }

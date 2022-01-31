@@ -11,7 +11,7 @@ import {
 } from '@hashgraph/sdk';
 
 import { read } from '../../utils';
-import { Contract } from '../../../lib/static/Contract';
+import { Contract } from '../../../lib/static/upload/Contract';
 import { ApiSession } from '../../..';
 
 async function verifyContractUploadEventFiringsFor(contract: string, emitConstructorLogs: boolean, ...expectedTransactions: any[]) {

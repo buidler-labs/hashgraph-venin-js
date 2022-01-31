@@ -6,7 +6,7 @@ import {
 } from "@hashgraph/sdk";
 import Executable from "@hashgraph/sdk/lib/Executable";
 import { PublicAccountInfo } from "../ApiSession";
-import { Saver } from "../Persistance";
+import { Saver } from "../core/Persistance";
 
 export interface StratoClient extends Saver<string> {
     get account(): PublicAccountInfo;

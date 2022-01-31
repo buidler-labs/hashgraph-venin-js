@@ -1,6 +1,6 @@
 import { HederaNetwork } from "../HederaNetwork";
 import { StratoLogger } from "../StratoLogger";
-import { Restorer, Saver } from "../Persistance";
+import { Restorer, Saver } from "../core/Persistance";
 import { StratoClient } from "./StratoClient";
 
 export interface StratoClientState extends Saver<string> {

@@ -3,8 +3,8 @@ import {
 } from '@jest/globals';
 
 import { read } from '../../utils';
-import { Contract } from '../../../lib/static/Contract';
 import { CompileIssues } from '../../../lib/errors/CompileIssues';
+import { Contract } from '../../../lib/static/upload/Contract';
 
 const CALL_CALLER_BYTECODE = read({ solo: 'call_caller' }).evm.bytecode.object;
 const CALL_RECEIVER_BYTECODE = read({ solo: 'call_receiver' }).evm.bytecode.object;

@@ -14,7 +14,7 @@ import { PublicAccountInfo } from "../ApiSession";
 import { HederaNetwork, HEDERA_CUSTOM_NET_NAME } from "../HederaNetwork";
 
 import { StratoLogger } from "../StratoLogger";
-import { Restorer } from "../Persistance";
+import { Restorer } from "../core/Persistance";
 import { ClientProvider, StratoClientState } from "./ClientProvider";
 import { StatedStratoClient } from "./StatedStratoClient";
 import { ClientTypes } from "./ClientType";

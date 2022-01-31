@@ -1,10 +1,10 @@
-import { LiveJson } from "../live/LiveJson";
-import { ArgumentsOnFileUploaded, UploadableEntity } from "./UploadableEntity";
+import { LiveJson } from "../../live/LiveJson";
+import { ArgumentsOnFileUploaded, BasicUploadableEntity } from "./BasicUploadableEntity";
 
 /**
  * A data-holder class that can source the creation of a {@link LiveJson} persisted on the [Hedera File Service (HFS)](https://docs.hedera.com/guides/docs/sdks/file-storage)
  */
-export class Json extends UploadableEntity<LiveJson> {
+export class Json extends BasicUploadableEntity<LiveJson> {
     /**
      * Checks to see if a piece of data can be referenced by a {@link Json} object or not.
      * 
@@ -41,15 +41,15 @@ export class Json extends UploadableEntity<LiveJson> {
      * @param info - the payload to reference
      */
     public constructor(private readonly info: object) {
-        super();
+        super('Json');
         Json._guardForInvalid(info);
     }
 
-    protected override async _getContent() {
+    protected override async getContent() {
         return JSON.stringify(this.info);
     }
 
-    protected override async _onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded) {
+    protected override async onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded) {
         return new LiveJson({
             session,
             id: receipt.fileId,

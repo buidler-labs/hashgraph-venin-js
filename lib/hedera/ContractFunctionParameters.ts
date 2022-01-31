@@ -1,11 +1,11 @@
 import { ConstructorFragment, FunctionFragment } from "@ethersproject/abi";
-import { ContractFunctionParameters } from "@hashgraph/sdk";
+import { ContractFunctionParameters as HederaContractFunctionParameters } from "@hashgraph/sdk";
 import BigNumber from "bignumber.js";
 
-import { ParamTypeToFunctionNameMapper } from "./ParamTypeToFunctionNameMapper";
-import { isSolidityAddressable } from "./SolidityAddressable";
+import { ParamTypeToFunctionNameMapper } from "../ParamTypeToFunctionNameMapper";
+import { isSolidityAddressable } from "../core/SolidityAddressable";
 
-export class HContractFunctionParameters extends ContractFunctionParameters {
+export class ContractFunctionParameters extends HederaContractFunctionParameters {
     /**
      * Given a set of user-defined arguments and starting from the provided function/constructor interface definition, 
      * facilitates the construction of a {@see ContractFunctionParameters} ready to be embedded in a Contract transaction/query.
@@ -20,7 +20,7 @@ export class HContractFunctionParameters extends ContractFunctionParameters {
             throw new ContractFunctionParametersParser(`The contract expects ${fDescription.inputs.length} arguments yet ${args.length} were provided.`);
         }
 
-        const toReturn = new HContractFunctionParameters();
+        const toReturn = new ContractFunctionParameters();
 
         for (const id in args) {
             const fInputDescription = fDescription.inputs[id];
@@ -30,6 +30,7 @@ export class HContractFunctionParameters extends ContractFunctionParameters {
 
             if (fInputDescription.type === 'address') {
                 if (isSolidityAddressable(argToAdd)) {
+                    // Colapse argument to its solidity-referenced address
                     argToAdd = await argToAdd.getSolidityAddress();
                 }
             } else if (shouldUseBigNumbers) {

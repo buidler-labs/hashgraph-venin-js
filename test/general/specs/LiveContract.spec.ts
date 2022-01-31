@@ -5,11 +5,11 @@ import {
 import { AccountId } from "@hashgraph/sdk";
 
 import { load, read } from "../../utils";
-import { Contract } from "../../../lib/static/Contract";
 import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { LiveAddress } from "../../../lib/live/LiveAddress";
 import { LiveContract } from "../../../lib/live/LiveContract";
 import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
 
 describe('LiveContract', () => {
   it("emitting an event during contract construction time should be returned following a successfull upload", async () => {

@@ -12,7 +12,7 @@ export abstract class StatedStratoClient<T extends StratoClientState> implements
         protected readonly log: StratoLogger,
         protected readonly state: T
     ) {
-        log.debug(`Created a new stated strato-client of type '${type}' serializable to: ${this.save()}`);
+        log.debug(`Created a new stated strato-client of type '${type.name}'`);
     }
 
     public async save(): Promise<string> {

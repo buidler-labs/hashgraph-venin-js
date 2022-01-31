@@ -7,7 +7,6 @@ import {
 } from '@jest/globals';
 
 import { read } from '../../utils';
-import { Contract } from '../../../lib/static/Contract';
 import { AccountId, PrivateKey, TokenType } from '@hashgraph/sdk';
 import { LiveToken } from '../../../lib/live/LiveToken';
 import { ApiSession } from '../../../lib/ApiSession';
@@ -16,6 +15,8 @@ import { EnvironmentInvalidError } from '../../../lib/errors/EnvironmentInvalidE
 import { StratoRuntimeParameters } from '../../../lib/StratoRuntimeParameters';
 import { CredentialsInvalidError } from '../../../lib/errors/CredentialsInvalidError';
 import { ClientTypes } from '../../../lib/client/ClientType';
+import { Token } from '../../../lib/static/create/Token';
+import { Contract } from '../../../lib/static/upload/Contract';
 
 describe('ApiSession', () => {
   const ORIGINAL_ENV = process.env;
@@ -106,11 +107,12 @@ describe('ApiSession', () => {
 
   it('given sufficient, yet minimal, information, creating a fungible token should succede', async () => {
     const session = await ApiSession.default();
-
-    await expect(session.createToken({ 
+    const token = new Token({ 
       name: "PLM", 
       symbol: "$",
       type: TokenType.FungibleCommon
-    })).resolves.toBeInstanceOf(LiveToken);
+    });
+
+    await expect(session.create(token)).resolves.toBeInstanceOf(LiveToken);
   });
 });

@@ -9,9 +9,9 @@ import {
     ResouorceReadOptions, 
     read as readResource
 } from "../../utils";
-import { Contract } from "../../../lib/static/Contract";
 import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
 
 function read(what: ResouorceReadOptions) {
     return readResource({ relativeTo: 'taskbar', ...what });

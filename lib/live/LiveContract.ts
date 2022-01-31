@@ -15,10 +15,10 @@ import {
 import { FunctionFragment, Interface } from "@ethersproject/abi";
 import { arrayify } from '@ethersproject/bytes';
 
-import { Contract } from "../static/Contract";
-import { HContractFunctionParameters } from "../HContractFunctionParameters";
+import { Contract } from "../static/upload/Contract";
+import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
 import { LiveEntity } from "./LiveEntity";
-import { extractSolidityAddressFrom, SolidityAddressable } from "../SolidityAddressable";
+import { extractSolidityAddressFrom, SolidityAddressable } from "../core/SolidityAddressable";
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveAddress } from "./LiveAddress";
 import Long from "long";
@@ -39,6 +39,10 @@ type ParsedEvent = {
     name: string,
     payload: any
 };
+
+function isContractQueryRequest(request: ContractFunctionCall): request is ContractCallQuery {
+    return request instanceof ContractCallQuery;
+}
 
 function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[] {
     return logs.map(recordLog => {
@@ -111,11 +115,11 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         Object.values(this.interface.functions).forEach(fDescription => Object.defineProperty(this, fDescription.name, {
                 enumerable: true,
                 value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {
-                    const { request, meta } = await this._createContractRequestFor({ fDescription, args });
+                    const { request, meta } = await this.createContractRequestFor({ fDescription, args });
                     const callResponse = await this.session.execute(request, TypeOfExecutionReturn.Result, meta.emitReceipt);
 
-                    this._tryToProcessForEvents(callResponse);
-                    return await this._tryExtractingResponse(callResponse, fDescription);
+                    this.tryToProcessForEvents(callResponse);
+                    return await this.tryExtractingResponse(callResponse, fDescription);
                 }).bind(this, fDescription),
                 writable: false,
             }));
@@ -166,7 +170,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
      * actual request instance, discarding it in the process so that the remaining arguments can all be used as the actual values sent to 
      * the targeted function.
      */
-    private async _createContractRequestFor({ fDescription, args }: { fDescription: FunctionFragment, args: any[] })
+    private async createContractRequestFor({ fDescription, args }: { fDescription: FunctionFragment, args: any[] })
         : Promise<{ meta: CreateContractRequestMeta, request: ContractFunctionCall }> {
         let requestOptionsPresentInArgs = false;
         let constructorArgs: any = { 
@@ -176,7 +180,6 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         let meta: CreateContractRequestMeta = {
             emitReceipt: this.session.defaults.emitLiveContractReceipts
         };
-        let request;
         
         // Try to unpack common meta-args that can be passed in at query/transaction construction time
         if (args && args.length > 0) {
@@ -187,10 +190,10 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         }
 
         // Initialize the Hedera request-object itself passing in any additional constructor args (if provided)
-        request = fDescription.constant ? new ContractCallQuery(constructorArgs) : new ContractExecuteTransaction(constructorArgs);
+        const request = fDescription.constant ? new ContractCallQuery(constructorArgs) : new ContractExecuteTransaction(constructorArgs);
         
         // Inject session-configurable defaults
-        if (fDescription.constant) {
+        if (isContractQueryRequest(request)) {
             const queryPaymentInHbar = new Hbar(this.session.defaults.paymentForContractQuery);
 
             request.setQueryPayment(queryPaymentInHbar);
@@ -198,7 +201,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
 
         // Try to inject setter-only options
         if (args && args.length > 0) {
-            if (fDescription.constant) {
+            if (isContractQueryRequest(request)) {
                 // Try setting aditional Query properties
                 if (args[0].maxQueryPayment instanceof Hbar) {
                     request.setMaxQueryPayment(args[0].maxQueryPayment);
@@ -257,7 +260,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         // Prepare the targeted function
         request.setFunction(
             fDescription.name, 
-            await HContractFunctionParameters.newFor(fDescription, args)
+            await ContractFunctionParameters.newFor(fDescription, args)
         );
 
         return {
@@ -270,7 +273,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
      * Given a contract-request response (txResponse) and a targeted function-description, it tries to extract and prepare the caller response based on
      * the contract's output function ABI specs.
      */
-    private _tryExtractingResponse(txResponse: ContractFunctionResult, fDescription: FunctionFragment) {
+    private tryExtractingResponse(txResponse: ContractFunctionResult, fDescription: FunctionFragment) {
         const EthersBigNumber = require('@ethersproject/bignumber').BigNumber;
         let fResponse;
         const fResult = this.interface.decodeFunctionResult(fDescription, txResponse.asBytes());
@@ -325,7 +328,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
      * Note: even if there is an event triggered, if there are no handlers registered, the first thing we do is try to dump it on the {@link UNHANDLED_EVENT_NAME} channel. 
      *       if there are no handlers registered there either, we skipp the event all-together.
      */
-    private _tryToProcessForEvents(callResponse: ContractFunctionResult): void {
+    private tryToProcessForEvents(callResponse: ContractFunctionResult): void {
         const loggedEvents = parseLogs(this.interface, callResponse.logs);
 
         loggedEvents.forEach(({ name, payload }) => {

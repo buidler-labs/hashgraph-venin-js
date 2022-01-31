@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ApiSession } from '../lib/ApiSession';
 import { LiveContract } from '../lib/live/LiveContract';
-import { Contract } from '../lib/static/Contract';
+import { Contract } from '../lib/static/upload/Contract';
 
 export type ResouorceReadOptions = { relativeTo?: string, contract?: string, solo?: string };
 

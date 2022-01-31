@@ -11,7 +11,7 @@ export class StratoLogger {
   private readonly logger: Logger;
 
   public constructor(params: StratoRuntimeParameters) {
-      const level: string = params.logger.level;
+      const level = params.logger.level;
       
       this.isLoggingEnabled = params.logger.enabled;
       this.logger = createLogger({

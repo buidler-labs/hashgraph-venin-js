@@ -1,9 +1,10 @@
-import { ApiSession } from "../ApiSession";
-import { LiveEntity } from "./LiveEntity";
-import { extractSolidityAddressFrom, SolidityAddressable } from "../SolidityAddressable";
-import { LiveContract } from "./LiveContract";
 import { Interface } from "@ethersproject/abi";
 import { ContractId } from "@hashgraph/sdk";
+
+import { ApiSession } from "../ApiSession";
+import { LiveEntity } from "./LiveEntity";
+import { extractSolidityAddressFrom, SolidityAddressable } from "../core/SolidityAddressable";
+import { LiveContract } from "./LiveContract";
 
 export class LiveAddress extends LiveEntity<string> implements SolidityAddressable {
     private static getSolidityAddressMatchOrDieTryingFrom(addr: string): string {

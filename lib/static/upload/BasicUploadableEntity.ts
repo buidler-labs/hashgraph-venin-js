@@ -4,13 +4,9 @@ import {
   Status,
   TransactionReceipt,
 } from "@hashgraph/sdk";
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { LiveEntity } from "../live/LiveEntity";
-
-type ArgumentsForUpload = {
-  session: ApiSession,
-  args: any[]
-};
+import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
+import { ArgumentsForUpload, UploadableEntity } from "../../core/UploadableEntity";
+import { LiveEntity } from "../../live/LiveEntity";
 
 export type ArgumentsOnFileUploaded = { 
   session: ApiSession, 
@@ -24,7 +20,9 @@ type ArgumentsToGetFileTransaction = {
   args: any[]
 };
 
-export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
+export abstract class BasicUploadableEntity<T extends LiveEntity<R>, R = any> implements UploadableEntity<T, R> {
+  public constructor(public readonly nameOfUpload: string) {}
+
   /**
    * Uploads this Uploadable to the desired session passing in arguments if provided.
    * 
@@ -35,21 +33,25 @@ export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async uploadTo({ session, args = [] }: ArgumentsForUpload): Promise<T> {
-    const whatToUpload = await this._getContent();
+    const whatToUpload = await this.getContent();
     const { areOverridesProvided, fileTransactions } = await this._getFileTransactionsFor({ content: whatToUpload, session, args });
     const transactionReceipt = await session.execute(fileTransactions[0], TypeOfExecutionReturn.Receipt, true);
 
     if (transactionReceipt.status !== Status.Success) {
       throw new Error(`There was an issue while creating the file (status ${transactionReceipt.status}). Aborting file upload.`);
-    } else if (fileTransactions.length > 1 && fileTransactions[1] instanceof FileAppendTransaction) {
-      // We update the upcoming file-append transaction request to reference the fileId
-      await session.execute(fileTransactions[1].setFileId(transactionReceipt.fileId), TypeOfExecutionReturn.Result, true);
+    } else {
+      session.log.debug(`Uploaded content to HFS resulting in file id ${transactionReceipt.fileId}`);
+      if (fileTransactions.length > 1 && fileTransactions[1] instanceof FileAppendTransaction) {
+        session.log.debug(`Appending the remaining content with a total of ${fileTransactions.length - 1} file-append transactions.`);
+        await session.execute(fileTransactions[1].setFileId(transactionReceipt.fileId), TypeOfExecutionReturn.Result, true);
+        session.log.verbose(`Done appending. Content has been successfully uploaded and is available at HFS id ${transactionReceipt.fileId}`);
+      }
     }
 
     if (areOverridesProvided) {
       args = args.slice(1);
     }
-    return this._onFileUploaded({ 
+    return this.onFileUploaded({ 
       session,  
       receipt: transactionReceipt,
       args
@@ -89,6 +91,6 @@ export abstract class UploadableEntity<T extends LiveEntity<R>, R = any> {
     };
   }
 
-  protected abstract _getContent(): Promise<Uint8Array|string>;
-  protected abstract _onFileUploaded({ session, receipt, args }: ArgumentsOnFileUploaded): Promise<T>;
+  protected abstract getContent(): Promise<Uint8Array|string>;
+  protected abstract onFileUploaded({ session, receipt, args }: ArgumentsOnFileUploaded): Promise<T>;
 }

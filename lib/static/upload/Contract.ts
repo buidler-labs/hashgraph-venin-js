@@ -1,13 +1,13 @@
 import {
   ContractCreateTransaction,
 } from "@hashgraph/sdk";
-
-import { ArgumentsOnFileUploaded, UploadableEntity } from "./UploadableEntity";
-import { CompileIssues } from '../errors/CompileIssues';
-import { LiveContract, LiveContractWithLogs } from '../live/LiveContract';
-import { HContractFunctionParameters } from '../HContractFunctionParameters';
 import { Interface } from '@ethersproject/abi';
-import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../SolidityCompiler';
+
+import { ArgumentsOnFileUploaded, BasicUploadableEntity } from "./BasicUploadableEntity";
+import { CompileIssues } from '../../errors/CompileIssues';
+import { LiveContract, LiveContractWithLogs } from '../../live/LiveContract';
+import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
+import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../../SolidityCompiler';
 
 type AllContractOptions = {
   /**
@@ -38,7 +38,7 @@ type NewContractOptions = {
 /**
  * The Solidity-backed, non-deployed, data-holder for a Smart Contract logic.
  */
-export class Contract extends UploadableEntity<LiveContractWithLogs> {
+export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   /**
    * Given an index or a name, this returns a specific {@link Contract} following the successfull compilation of 
    * either the contract code itself ({@link options.code}) or the solidity file located at the provided {@link options.path}
@@ -148,7 +148,7 @@ export class Contract extends UploadableEntity<LiveContractWithLogs> {
       throw new Error("Please provide the valid formatted byte-code definition for the Contract in order to instantiate it.");
     }
 
-    super();
+    super(`${name}-Contract`);
     this.name = name;
     this.byteCode = byteCode;
     this.interface = new Interface(abi);
@@ -179,7 +179,7 @@ export class Contract extends UploadableEntity<LiveContractWithLogs> {
     });
   }
 
-  protected override async _getContent() {
+  protected override async getContent() {
     return this.byteCode;
   }
 
@@ -190,7 +190,7 @@ export class Contract extends UploadableEntity<LiveContractWithLogs> {
    * If there is a constructor config object present (first args from list if it has the '_contract' property) this is consumed and the remainder of the arguments 
    * are passed to the Contract constructor.
    */
-  protected override async _onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
+  protected override async onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
     const { createContractOptions, emitConstructorLogs } = await this._getContractCreateOptionsFor({ session, receipt, args });
     const createContractTransaction = new ContractCreateTransaction(createContractOptions);
 
@@ -225,7 +225,7 @@ export class Contract extends UploadableEntity<LiveContractWithLogs> {
       createContractOptions: Object.assign({}, {
         adminKey: session.publicKey,
         bytecodeFileId: contractFileId,
-        constructorParameters: await HContractFunctionParameters.newFor(constructorDefinition, args),
+        constructorParameters: await ContractFunctionParameters.newFor(constructorDefinition, args),
         gas: session.defaults.contractCreationGas,
         ...contractCreationOverrides
       })

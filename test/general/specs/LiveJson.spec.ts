@@ -3,7 +3,7 @@ import {
 } from '@jest/globals';
 import { ApiSession } from '../../../lib/ApiSession';
 
-import { Json } from '../../../lib/static/Json';
+import { Json } from '../../../lib/static/upload/Json';
 
 describe('LiveJson', () => {
     it("given a valid Json instance, uploading it should succede", async () => {

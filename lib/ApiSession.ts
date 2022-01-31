@@ -12,17 +12,12 @@ import {
   FileId, 
   Key, 
   Query, 
-  Timestamp, 
-  TokenCreateTransaction, 
-  TokenSupplyType, 
-  TokenType, 
   Transaction,
   TransactionReceipt,
   TransactionRecord,
   TransactionRecordQuery,
   TransactionResponse 
 } from '@hashgraph/sdk';
-import Duration from '@hashgraph/sdk/lib/Duration';
 import { 
   HederaNetwork
 } from './HederaNetwork';
@@ -30,10 +25,9 @@ import {
 import { ContractFunctionCall, LiveContract } from './live/LiveContract';
 import { LiveEntity } from './live/LiveEntity';
 import { LiveJson } from './live/LiveJson';
-import { LiveToken } from './live/LiveToken';
-import { SolidityAddressable } from './SolidityAddressable';
-import { Json } from './static/Json';
-import { UploadableEntity } from './static/UploadableEntity';
+import { SolidityAddressable } from './core/SolidityAddressable';
+import { Json } from './static/upload/Json';
+import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
 import { StratoClient } from "./client/StratoClient";
 import { StratoLogger } from "./StratoLogger";
 import { 
@@ -42,8 +36,11 @@ import {
   StratoParametersSource, 
   StratoRuntimeParameters 
 } from "./StratoRuntimeParameters";
-import { Saver } from "./Persistance";
+import { Saver } from "./core/Persistance";
 import { ClientType } from "./client/ClientType";
+import { Builder } from "./core/Builder";
+import { CreatableEntity } from "./core/CreatableEntity";
+import { UploadableEntity } from "./core/UploadableEntity";
 
 type ApiSessionConstructorArgs = {
   log: StratoLogger,
@@ -80,34 +77,6 @@ export type SessionDefaults = {
   emitConstructorLogs: boolean,
   emitLiveContractReceipts: boolean,
   paymentForContractQuery: number
-};
-
-type TokenKeys = {
-  admin?: Key,
-  feeSchedule?: Key,
-  freeze?: Key,
-  kyc?: Key,
-  pause?: Key,
-  supply?: Key,
-  wipe?: Key
-};
-
-type TokenFeatures = {
-  name: string,
-  symbol: string,
-  decimals?: number | Long.Long,
-  initialSupply?: number | Long.Long,
-  treasuryAccountId?: string | AccountId,
-  keys?: TokenKeys,
-  freezeDefault?: boolean,
-  autoRenewAccountId?: string | AccountId,
-  expirationTime?: Date | Timestamp,
-  autoRenewPeriod?: number | Long.Long | Duration,
-  tokenMemo?: string,
-  customFees?: { feeCollectorAccountId?: string | AccountId | undefined }[],
-  type: TokenType,
-  supplyType?: TokenSupplyType,
-  maxSupply?: number | Long.Long
 };
 
 const SESSION_CONSTRUCTOR_GUARD = {};
@@ -162,6 +131,12 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     return this.buildFrom(params);
   }
 
+  /**
+   * Another, more parametrisable, way to build an {@link ApiSession} besides the {@link ApiSession.default}
+   * 
+   * @param params {StratoRuntimeParameters}
+   * @returns {Promise<ApiSession>}
+   */
   public static async buildFrom(params: StratoRuntimeParameters): Promise<ApiSession> {
     const log = new StratoLogger(params);
 
@@ -195,16 +170,6 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 
   /**
-   * Marshals the current session {@link Client} allowing for it to be restored in the future via the {@link SessionBuilder} if provided back alongside the 
-   * {@link HederaNetwork} and the {@link ClientType}.
-   * 
-   * @returns {string} - a serialized represetantion of the underlying client
-   */
-  public save(): Promise<string> {
-    return this.client.save();
-  }
-
-  /**
    * Retrieves the operator {@link AccountId} for this {@link ApiSession}.
    */
   public get accountId() {
@@ -219,33 +184,18 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 
   /**
-   * Creates a new Token on the network returning a {@link LiveToken} in the process.
+   * Creates a new {@link LiveEntity} such as an {@link LiveAccount} or a {@link LiveToken}.
    * 
-   * @param features - The token's feature as accepted by the {@link TokenCreateTransaction} constructor
-   * @returns - an interactive {@link LiveToken} instance
+   * @param what {@link CreatableEntity} - the prototype of the entity of interest 
+   * @returns - an interactive {@link LiveEntity} instance which resides on the chain
    */
-  public async createToken(features: TokenFeatures): Promise<any> {
-    const constructorArgs = {
-      // First map to expected properties
-      adminKey: this.publicKey,
-      feeScheduleKey: this.publicKey,
-      freezeKey: this.publicKey,
-      kycKey: this.publicKey,
-      pauseKey: this.publicKey,
-      supplyKey: this.publicKey,
-      tokenName: features.name,
-      tokenType: features.type,
-      tokenSymbol: features.symbol,
-      treasuryAccountId: this.accountId,
-      wipeKey: this.publicKey,
+  public async create<T extends LiveEntity<R>, R>(what: CreatableEntity<T>): Promise<T> {
+    this.log.info(`Creating a new Hedera ${what.name}`);
 
-      // Merge everything with what's provided
-      ...features
-    };
-    const createTokenTransaction = new TokenCreateTransaction(constructorArgs as any);
-    const creationReceipt = await this.execute(createTokenTransaction, TypeOfExecutionReturn.Receipt, true);
+    const createdLiveEntity = await what.createVia({ session: this });
 
-    return new LiveToken({ session: this, id: creationReceipt.tokenId });
+    this.log.info(`Successfully created ${what.name} id ${createdLiveEntity.id}`);
+    return createdLiveEntity;
   }
 
    /**
@@ -389,6 +339,18 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 
   /**
+   * Marshals the current session {@link Client} allowing for it to be restored in the future via the {@link SessionBuilder} if provided back alongside the 
+   * {@link HederaNetwork} and the {@link ClientType}.
+   * 
+   * Note: This API might change in the following, subsequent, releases
+   * 
+   * @returns {string} - a serialized represetantion of the underlying client
+   */
+  public save(): Promise<string> {
+    return this.client.save();
+  }
+
+  /**
    * Given an {@link UploadableEntity}, it triest ot upload it using the currently configured {@link ApiSession} passing in-it any provided {@link args}.
    * 
    * @param {Uploadable} what - The {@link UploadableEntity} to push through this {@link ApiSession}
@@ -397,7 +359,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    *                         eg. "_file" ({@link UploadableEntity}) or "_contract" ({@link Contract})
    * @returns - An instance of the {@link UploadableEntity} concrete result-type which is a subtype of {@link LiveEntity}.
    */
-  public async upload<T extends LiveEntity<R>, R>(what: UploadableEntity<T, R>, ...args: any[]): Promise<T>;
+  public async upload<T extends LiveEntity<R>, R>(what: BasicUploadableEntity<T, R>, ...args: any[]): Promise<T>;
 
   /**
   * Given a raw JSON {@link object}, it triest ot upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
@@ -419,22 +381,27 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
 
   // Overload implementation
   public async upload<T extends LiveEntity<R>, R>(what: UploadableEntity<T, R>|object, ...args: any[]): Promise<T|LiveJson> {
-    let uploadableWhat: UploadableEntity<T, R>;
+    let uploadableWhat: BasicUploadableEntity<T, R>;
 
-    this.log.debug("Starting a new entity upload to the Hedera File Service.");
-    if (what instanceof UploadableEntity === false) {
+    if (what instanceof BasicUploadableEntity === false) {
       // Try to go with a live-json upload
       if (Json.isInfoAcceptable(what)) {
-        uploadableWhat = (new Json(what) as unknown) as UploadableEntity<T, R>;
+        uploadableWhat = (new Json(what) as unknown) as BasicUploadableEntity<T, R>;
       } else {
         // There's nothing we can do
         throw new Error("Can only upload UploadableFile-s or Json-file acceptable content.");
       }
     } else {
       // upload what was given as is since it's an UploadableEntity type already
-      uploadableWhat = (what as unknown) as UploadableEntity<T, R>;
+      uploadableWhat = (what as unknown) as BasicUploadableEntity<T, R>;
     }
-    return uploadableWhat.uploadTo({ session: this, args });
+
+    this.log.info(`Uploading a new ${uploadableWhat.nameOfUpload} to Hedera File Service (HFS).`);
+
+    const createdLiveEntity = await uploadableWhat.uploadTo({ session: this, args });
+
+    this.log.info(`Successfully created a ${uploadableWhat.nameOfUpload} id ${createdLiveEntity.id}.`);
+    return createdLiveEntity;
   }
 
   private canReceiptBeEmitted(isEmitReceiptRequested: boolean): boolean {
@@ -442,6 +409,10 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 }
 
+/**
+ * A subscription holder for {@link ApiSession} originating {@link TransactionReceipt} payloads that 
+ * allow for {@link ReceiptSubscription.unsubscribe}-ing.
+ */
 class ReceiptSubscription {
   constructor(
     private readonly events: EventEmitter, 
@@ -454,7 +425,10 @@ class ReceiptSubscription {
   }
 }
 
-export class SessionBuilder {
+/**
+ * A helper class reponsible for constructing {@link ApiSession}. Possibly the only one there is
+ */
+export class SessionBuilder implements Builder<ApiSession> {
   private clientColdStartData: ClientColdStartData;
   private clientSavedState: string;
   private clientType: ClientType;

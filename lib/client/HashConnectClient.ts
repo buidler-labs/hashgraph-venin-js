@@ -17,7 +17,7 @@ import Executable from "@hashgraph/sdk/lib/Executable";
 import { HederaNetwork } from "../HederaNetwork";
 import { StratoLogger } from "../StratoLogger";
 import { ClientProvider, StratoClientState } from "./ClientProvider";
-import { Restorer } from "../Persistance";
+import { Restorer } from "../core/Persistance";
 import { StatedStratoClient } from "./StatedStratoClient";
 import { PublicAccountInfo } from "../ApiSession";
 import { ClientTypes } from "./ClientType";
