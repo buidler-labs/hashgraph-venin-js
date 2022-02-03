@@ -3,7 +3,6 @@ import { CredentialsInvalidError } from "../errors/CredentialsInvalidError";
 import { HederaNetwork } from "../HederaNetwork";
 import { StratoLogger } from "../StratoLogger";
 import { ClientProvider } from "./ClientProvider";
-import { HashConnectClientProvider } from "./HashConnectClient";
 import { HederaClientProvider } from "./HederaClient";
 import { NotSupportedClientProvider } from "./NotSupportedClient";
 
@@ -43,13 +42,6 @@ export class ClientTypes {
             throw new CredentialsInvalidError(e.message);
         }
     }));
-    public static readonly HashConnect = new ClientType(CLIENTTYPE_CONSTRUCTOR_GUARD, 1, "HashConnect", HashConnectClientProvider, (env => ({
-        name: env.HEDERAS_HASHCONNECT_APP_NAME ?? 'unknwon',
-        description: env.HEDERAS_HASHCONNECT_APP_DESCRIPTION ?? 'not-specified',
-        url: env.HEDERAS_HASHCONNECT_APP_URL,
-        // TODO: default to strato logo.svg url?
-        icon: env.HEDERAS_HASHCONNECT_APP_ICON ?? 'not-given'
-    })));
 
     public static find(predicate: (type: ClientType) => boolean): ClientType {
         const candidateClientTypes = Object.values(ClientTypes).filter(predicate);

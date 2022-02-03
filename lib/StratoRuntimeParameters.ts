@@ -1,15 +1,12 @@
 import * as dotenv from 'dotenv';
 
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
-import { 
-    HashConnectTypes 
-} from 'hashconnect';
 import { SessionDefaults } from './ApiSession';
 import { AVAILABLE_NETWORK_NAMES, NetworkDefaults } from './HederaNetwork';
 import { HederaNetwork } from '..';
 import { ClientType, ClientTypes } from './client/ClientType';
 
-export type ClientColdStartData = HashConnectTypes.AppMetadata | { accountId: AccountId, privateKey: PrivateKey };
+export type ClientColdStartData = { accountId: AccountId, privateKey: PrivateKey };
 type ClientRuntimeParameters = {
     coldStartData: ClientColdStartData,
     savedState: string,
@@ -91,7 +88,7 @@ export class StratoRuntimeParameters {
         const savedState = this.params.HEDERAS_CLIENT_SAVED_STATE ?? null;
 
         if (ClientTypes.Unknown.equals(clientType)) {
-            throw new Error("Only 'hedera' or 'hashconnect' client types are currently supported.");
+            throw new Error("Only 'hedera' client types is currently supported.");
         }
         return { 
             savedState,

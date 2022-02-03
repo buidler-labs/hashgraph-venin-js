@@ -105,7 +105,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    *                     the following format `<node_ip>:<node_port>#<account_number>`. Eg. `127.0.0.1:502111#3` would be parsed in an address book having a node with IP `127.0.0.1`
    *                     and port 502111 associated with {@link AccountId} `3`
    * - `HEDERAS_CLIENT_TYPE` : the network {@link StratoClient} to use. Possible Values are staticall defined in the {@link ClientTypes} props. If not provided, it defaults to `Hedera` which
-   *                           is the native {@link Client} provided by the Hedera SDK. Other values include `HashConnect` to target the `HashPack` wallet (work in progress)
+   *                           is the native {@link Client} provided by the Hedera SDK.
    * 
    * Continuing and depending on the nature of the session (cold-start or restored) as well as the choosen {@link ClientType}, there are four scenarios:
    * 
@@ -113,10 +113,6 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    * If `HEDERAS_CLIENT_TYPE` is `Hedera`, you will need to provide the client-operator credentials:
    * - `HEDERAS_OPERATOR_ID` : the string representation of the {@link AccountId} operating the resulting session (eg. `0.0.2`)
    * - `HEDERAS_OPERATOR_KEY` : the string representation of the private key of the `HEDERAS_OPERATOR_ID` operator paying for the session 
-   * If `HEDERAS_CLIENT_TYPE` is `HashConnect`, the following properties will be required (might change in the future depending on how the `hashconnect` stabilises its API):
-   * - `HEDERAS_HASHCONNECT_APP_NAME` : the name of the dApp to be displayed in the user's wallet for confirmation
-   * - `HEDERAS_HASHCONNECT_APP_DESCRIPTION` : a short text describing the dApp that helps the user understand a bit better the context of the dApp that wants to connect
-   * - `HEDERAS_HASHCONNECT_APP_ICON` : a link to the dApp's representative icon to be displayed in the wallet confirmation dialog
    * 
    * Restored client-states have the following variables expectations irrespective of the choosen `HEDERAS_CLIENT_TYPE`:
    * - `HEDERAS_CLIENT_SAVED_STATE` : the base64 encoded string which got outputted at some point via a call to {@link ApiSession.save}

@@ -25,7 +25,6 @@
     "@hashgraph/sdk": "^2.6.0",
     "axios": "^0.25.0",
     "dotenv": "^10.0.0",
-    "hashconnect": "^0.0.12",
     "solc": "0.8.9",
     "traverse": "^0.6.6",
     "tslib": "^2.3.1",
