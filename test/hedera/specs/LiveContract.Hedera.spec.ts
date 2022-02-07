@@ -14,7 +14,7 @@ describe('LiveContract.Hedera', () => {
     const contract = await Contract.newFrom({ code: read({ contract: 'HelloWorldMint', relativeTo: 'hedera' }), ignoreWarnings: true });
     const token = new Token({ name: "PLM", symbol: "$", type: TokenType.FungibleCommon, initialSupply: 1000 });
 
-    const session = await ApiSession.default();
+    const { session } = await ApiSession.default();
     const liveToken = await session.create(token);
     const liveContract = await session.upload(contract, { _contract: { gas: 200_000 } }, liveToken);
 
@@ -33,7 +33,7 @@ describe('LiveContract.Hedera', () => {
     const contract = await Contract.newFrom({ code: read({ contract: 'HederaTokenService', relativeTo: 'hedera' }), ignoreWarnings: true });
 
     // Make everything live
-    const session = await ApiSession.default();
+    const { session } = await ApiSession.default();
     const aliceLiveAccount = await session.create(new Account());
     const liveToken = await session.create(token);
     const liveContract = await session.upload(contract, { _contract: { gas: 200_000 } }, liveToken);

@@ -6,17 +6,14 @@ import {
   jest
 } from '@jest/globals';
 
-import { read } from '../../utils';
 import { AccountId, PrivateKey, TokenType } from '@hashgraph/sdk';
 import { LiveToken } from '../../../lib/live/LiveToken';
 import { ApiSession } from '../../../lib/ApiSession';
 import { HEDERA_CUSTOM_NET_NAME } from '../../../lib/HederaNetwork';
 import { EnvironmentInvalidError } from '../../../lib/errors/EnvironmentInvalidError';
-import { StratoRuntimeParameters } from '../../../lib/StratoRuntimeParameters';
+import { StratoContext } from '../../../lib/StratoContext';
 import { CredentialsInvalidError } from '../../../lib/errors/CredentialsInvalidError';
-import { ClientTypes } from '../../../lib/client/ClientType';
 import { Token } from '../../../lib/static/create/Token';
-import { Contract } from '../../../lib/static/upload/Contract';
 
 describe('ApiSession', () => {
   const ORIGINAL_ENV = process.env;
@@ -63,15 +60,15 @@ describe('ApiSession', () => {
 
     await fs.writeFile(tmpDotEnvFileName, Object.keys(tmpDotEnvFileContent).map(key => `${key}=${tmpDotEnvFileContent[key]}`).join('\n'));
     try {
-      await ApiSession.default({ env: {}, path: tmpDotEnvFileName });
+      await ApiSession.default({ params: {}, path: tmpDotEnvFileName });
 
       expect(spyApiSessionBuildFrom.mock.calls.length === 1).toBeTruthy();
-      expect(spyApiSessionBuildFrom.mock.calls[0][0]).toBeInstanceOf(StratoRuntimeParameters);
+      expect(spyApiSessionBuildFrom.mock.calls[0][0]).toBeInstanceOf(StratoContext);
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.name).toEqual(tmpDotEnvFileContent.HEDERAS_NETWORK);
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.nodes).not.toBeUndefined();
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.nodes['127.0.0.1:123']).toEqual(new AccountId(69));
-      expect(spyApiSessionBuildFrom.mock.calls[0][0].client.type).toEqual(ClientTypes.Hedera);
-      expect(spyApiSessionBuildFrom.mock.calls[0][0].client.coldStartData).toMatchObject({
+      expect(spyApiSessionBuildFrom.mock.calls[0][0].params.client.type.name).toEqual("Hedera");
+      expect(spyApiSessionBuildFrom.mock.calls[0][0].params.client.coldStartData).toMatchObject({
         accountId: AccountId.fromString(tmpDotEnvFileContent.HEDERAS_OPERATOR_ID),
         privateKey: PrivateKey.fromStringED25519(tmpDotEnvFileContent.HEDERAS_OPERATOR_KEY)
       });
@@ -83,7 +80,12 @@ describe('ApiSession', () => {
   async function expectDefaultApiSessionToThrowFor(networkName, nodes, operatorId, operatorKey, expectedErrorType) {
     try {
       jest.resetModules();
-      process.env = { 
+      process.env = {
+        // We need to configure this so that the library does not pick some existing, pre-defined, .env variables that might
+        // mess up with our setup
+        HEDERAS_ENV_PATH: '.env-non-existing',
+
+        // Configure the environment
         HEDERAS_NETWORK: networkName,
         HEDERAS_NODES: nodes,
         HEDERAS_OPERATOR_ID: operatorId,
@@ -98,15 +100,8 @@ describe('ApiSession', () => {
     }
   }
 
-  it('given enough hbar, uploading a simple solidity contract should succede', async () => {
-    const session = await ApiSession.default();
-    const helloWorldContract = await Contract.newFrom({ code: read({ contract: 'solidity-by-example/hello_world' }) });
-    
-    await expect(session.upload(helloWorldContract)).resolves.not.toThrow();
-  });
-
   it('given sufficient, yet minimal, information, creating a fungible token should succede', async () => {
-    const session = await ApiSession.default();
+    const { session } = await ApiSession.default();
     const token = new Token({ 
       name: "PLM", 
       symbol: "$",

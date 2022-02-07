@@ -3,16 +3,15 @@ import Executable from "@hashgraph/sdk/lib/Executable";
 import { PublicAccountInfo } from "../ApiSession";
 import { StratoLogger } from "../StratoLogger";
 import { StratoClientState } from "./ClientProvider";
-import { ClientType } from "./ClientType";
 import { StratoClient } from "./StratoClient";
 
 export abstract class StatedStratoClient<T extends StratoClientState> implements StratoClient {
     public constructor(
-        public readonly type: ClientType,
+        public readonly name: string,
         protected readonly log: StratoLogger,
-        protected readonly state: T
+        protected state: T
     ) {
-        log.debug(`Created a new stated strato-client of type '${type.name}'`);
+        log.debug(`Created a new stated strato-client of type '${name}'`);
     }
 
     public async save(): Promise<string> {

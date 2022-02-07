@@ -7,13 +7,14 @@ module.exports = function(config) {
     browsers: ['ChromeHeadless'],
     files: [
       { pattern: './lib.esm/*.js', type: 'module' },
+      { pattern: './lib.esm/*.js.map', included: false, served: true, watched: false, nocache: true },
       { pattern: './smoke.spec.js', type: 'module' },
     ],
     frameworks: ['jasmine'],
     logLevel: config.LOG_DEBUG,
     plugins: [
-      require('karma-jasmine'),
-      require('karma-chrome-launcher'),
+      'karma-jasmine',
+      'karma-chrome-launcher'
     ],
     reporters: ['progress'],
     singleRun: true

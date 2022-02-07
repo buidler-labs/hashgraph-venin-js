@@ -33,20 +33,22 @@ import { StratoLogger } from "./StratoLogger";
 import { 
   ClientColdStartData, 
   HederaNodesAddressBook,
-  StratoParametersSource, 
-  StratoRuntimeParameters 
-} from "./StratoRuntimeParameters";
+  StratoContextSource, 
+  StratoContext 
+} from "./StratoContext";
 import { Saver } from "./core/Persistance";
-import { ClientType } from "./client/ClientType";
-import { Builder } from "./core/Builder";
 import { CreatableEntity } from "./core/CreatableEntity";
 import { UploadableEntity } from "./core/UploadableEntity";
+import { ClientController } from "./client/controller/ClientController";
+import { Subscription } from "./core/Subscription";
 
 type ApiSessionConstructorArgs = {
-  log: StratoLogger,
-  network: HederaNetwork,
-  client: StratoClient,
-  defaults: SessionDefaults
+  ctx: StratoContext,
+  client: StratoClient
+};
+type ControlledSession = {
+  controller: ClientController,
+  session: ApiSession
 };
 type ExecutableTransaction = ContractFunctionCall|Transaction;
 type TransactionedReceipt = {
@@ -121,27 +123,25 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    * 
    * @param {HederaDefaultApiSessionParamsSource} source
    */
-  public static async default({ env = process.env, path = process.env.HEDERAS_ENV_PATH || '.env' }: StratoParametersSource = {}): Promise<ApiSession> {
-    const params = new StratoRuntimeParameters({ env, path });
+  public static async default({ params = {}, path = process.env.HEDERAS_ENV_PATH || '.env' }: StratoContextSource = {}): Promise<ControlledSession> {
+    const ctx = new StratoContext({ params, path });
     
-    return this.buildFrom(params);
+    return this.buildFrom(ctx);
   }
 
   /**
    * Another, more parametrisable, way to build an {@link ApiSession} besides the {@link ApiSession.default}
    * 
-   * @param params {StratoRuntimeParameters}
+   * @param params {StratoContext}
    * @returns {Promise<ApiSession>}
    */
-  public static async buildFrom(params: StratoRuntimeParameters): Promise<ApiSession> {
-    const log = new StratoLogger(params);
+  public static async buildFrom(ctx: StratoContext): Promise<ControlledSession> {
+    const { client, controller } = await ctx.getClient();
 
-    return new SessionBuilder(log, params.network)
-      .setClientProviderType(params.client.type)
-      .setClientColdStartData(params.client.coldStartData)
-      .setClientSavedState(params.client.savedState)  
-      .setDefaults(params.session.defaults)
-      .build();
+    return {
+      controller,
+      session: new ApiSession(SESSION_CONSTRUCTOR_GUARD, { client, ctx })
+    };
   }
 
   private readonly events: EventEmitter;
@@ -153,15 +153,15 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   /**
    * @hidden
    */
-  constructor(constructorGuard: any, { log, network, client, defaults }: ApiSessionConstructorArgs) {
+  constructor(constructorGuard: any, { ctx, client }: ApiSessionConstructorArgs) {
     if (constructorGuard !== SESSION_CONSTRUCTOR_GUARD) {
       throw new Error("API sessions can only be constructed through a SessionBuilder instance!");
     }
 
-    this.log = log;
-    this.network = network;
+    this.log = ctx.log;
+    this.network = ctx.network;
     this.client = client;
-    this.defaults = defaults;
+    this.defaults = ctx.params.session.defaults;
     this.events = new EventEmitter();
   }
 
@@ -330,8 +330,8 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    *              a reference to both the actual transaction being executed and the resulting receipt.
    * @returns {ReceiptSubscription} - A subscription object that exposes a 'unsubscribe' method to cancel a subscription.
    */
-  public subscribeToReceiptsWith(clb: {(receipt: TransactionedReceipt): any}): ReceiptSubscription {
-    return new ReceiptSubscription(this.events, clb);
+  public subscribeToReceiptsWith(clb: {(receipt: TransactionedReceipt): any}): Subscription<TransactionedReceipt> {
+    return new Subscription(this.events, TRANSACTION_ON_RECEIPT_EVENT_NAME, clb);
   }
 
   /**
@@ -402,86 +402,5 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
 
   private canReceiptBeEmitted(isEmitReceiptRequested: boolean): boolean {
     return (isEmitReceiptRequested && this.events.listenerCount(TRANSACTION_ON_RECEIPT_EVENT_NAME) !== 0);
-  }
-}
-
-/**
- * A subscription holder for {@link ApiSession} originating {@link TransactionReceipt} payloads that 
- * allow for {@link ReceiptSubscription.unsubscribe}-ing.
- */
-class ReceiptSubscription {
-  constructor(
-    private readonly events: EventEmitter, 
-    private readonly clb: {(receipt: TransactionedReceipt): any}) {
-      events.on(TRANSACTION_ON_RECEIPT_EVENT_NAME, clb);
-    }
-  
-  public unsubscribe() {
-    this.events.off(TRANSACTION_ON_RECEIPT_EVENT_NAME, this.clb);
-  }
-}
-
-/**
- * A helper class reponsible for constructing {@link ApiSession}. Possibly the only one there is
- */
-export class SessionBuilder implements Builder<ApiSession> {
-  private clientColdStartData: ClientColdStartData;
-  private clientSavedState: string;
-  private clientType: ClientType;
-  private providedDefaults: SessionDefaults;
-  
-  public constructor (
-    private readonly log: StratoLogger,
-    private readonly network: HederaNetwork
-  ) {}
-
-  public async build(): Promise<ApiSession> {
-    let client: StratoClient;
-    const clientProvider = this.clientType.newProviderHaving(this.log);
-
-    clientProvider.setNetwork(this.network);
-    if (this.clientSavedState) {
-      client = await clientProvider.buildRestoring(this.clientSavedState);
-    } else if (this.clientColdStartData) {
-      client = await clientProvider.buildColdFor(this.clientColdStartData);
-    } else {
-      throw new Error("Please provide either the cold-start data or a saved-state from where to create the bounded underlying Client with.");
-    }
-
-    return new ApiSession(SESSION_CONSTRUCTOR_GUARD, {
-      log: this.log, 
-      network: this.network, 
-      client, 
-      defaults: this.defaults
-    });
-  }
-
-  public setClientProviderType(type: ClientType): this {
-    this.clientType = type;
-    return this;
-  }
-  public setClientColdStartData(data: ClientColdStartData): this {
-    this.clientColdStartData = data;
-    return this;
-  }
-
-  public setClientSavedState(serializedState: string): this {
-    this.clientSavedState = serializedState;
-    return this;
-  }
-
-  public setDefaults(defaults: SessionDefaults): this {
-    this.providedDefaults = defaults;
-    return this;
-  }
-
-  private get defaults(): SessionDefaults {
-    return {
-      contractCreationGas: (this.providedDefaults && this.providedDefaults.contractCreationGas) || 150_000,
-      contractTransactionGas: (this.providedDefaults && this.providedDefaults.contractTransactionGas) || 169_000,
-      emitConstructorLogs: this.providedDefaults ? this.providedDefaults.emitConstructorLogs : true,
-      emitLiveContractReceipts: this.providedDefaults ? this.providedDefaults.emitLiveContractReceipts : false,
-      paymentForContractQuery: (this.providedDefaults && this.providedDefaults.paymentForContractQuery) || 0
-    };
   }
 }

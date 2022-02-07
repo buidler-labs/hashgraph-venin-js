@@ -183,7 +183,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
         
         // Try to unpack common meta-args that can be passed in at query/transaction construction time
         if (args && args.length > 0) {
-            if (Number.isInteger(args[0].gas) || args[0].gas instanceof Long) {
+            if (Number.isInteger(args[0].gas)) {
                 constructorArgs.gas = args[0].gas;
                 requestOptionsPresentInArgs = true;
             }

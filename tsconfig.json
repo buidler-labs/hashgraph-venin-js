@@ -2,10 +2,11 @@
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
     "target": "es2016",
-    "moduleResolution": "node",
+    "module": "commonjs",
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
+    "esModuleInterop": true,
     "outDir": "./build/types",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true

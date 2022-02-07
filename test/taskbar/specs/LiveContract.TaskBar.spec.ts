@@ -6,15 +6,15 @@ import { Hbar } from "@hashgraph/sdk";
 import { arrayify } from '@ethersproject/bytes';
 
 import { 
-    ResouorceReadOptions, 
-    read as readResource
+  ResouorceReadOptions, 
+  read as readResource
 } from "../../utils";
 import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 
 function read(what: ResouorceReadOptions) {
-    return readResource({ relativeTo: 'taskbar', ...what });
+  return readResource({ relativeTo: 'taskbar', ...what });
 }
 
 describe('LiveContract.TaskBar', () => {
@@ -22,14 +22,14 @@ describe('LiveContract.TaskBar', () => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
     const taskId = new BigNumber(1);
 
-    const hapiSession = await ApiSession.default();
+    const { session } = await ApiSession.default();
     const taskRegistryContract = await Contract.newFrom({ code: read({ contract: 'TaskRegistry' }), ignoreWarnings: true });
     const cappedRegistryHelperContract = await Contract.newFrom({ code: read({ contract: 'CappedRegistryHelper' }) });
-    const cappedRegistryLiveContract = await hapiSession.upload(cappedRegistryHelperContract, maxNrOfTasksPerRegistry);
-    const taskRegistryLiveContract = await hapiSession.upload(taskRegistryContract);
+    const cappedRegistryLiveContract = await session.upload(cappedRegistryHelperContract, maxNrOfTasksPerRegistry);
+    const taskRegistryLiveContract = await session.upload(taskRegistryContract);
 
     await expect(taskRegistryLiveContract.initialize({ gas: 100000 }, 
-      hapiSession,
+      session,
       cappedRegistryLiveContract
     )).resolves.toBeUndefined();
     await expect(taskRegistryLiveContract.initializeTask({ gas: 200000 },
@@ -46,7 +46,7 @@ describe('LiveContract.TaskBar', () => {
     );
     expect(gottenTask.disputionTime).not.toBeUndefined();
     expect(gottenTask.needer).toBeInstanceOf(LiveEntity);
-    expect(gottenTask.needer.equals(hapiSession.accountId.toSolidityAddress())).toBeTruthy();
+    expect(gottenTask.needer.equals(session.accountId.toSolidityAddress())).toBeTruthy();
     expect(gottenTask.tasker).toBeInstanceOf(LiveEntity);
     expect(gottenTask.tasker.equals("0x0000000000000000000000000000000000000000")).toBeTruthy();
     expect(gottenTask).toMatchObject({
@@ -63,7 +63,7 @@ describe('LiveContract.TaskBar', () => {
 
   it.skip("given the taskbar contracts, do stuff", async () => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
-    const hapiSession = await ApiSession.default();
+    const { session } = await ApiSession.default();
 
     // Contracts
     const taskRegistryContract = await Contract.newFrom({ code: read({ contract: 'TaskRegistry' }), ignoreWarnings: true });
@@ -71,9 +71,9 @@ describe('LiveContract.TaskBar', () => {
     const taskRegistryManagerContract = await Contract.newFrom({ code: read({ contract: 'WRegistryManager' }) });
 
     // Live Contracts
-    const cappedRegistryLiveContract = await hapiSession.upload(cappedRegistryHelperContract, maxNrOfTasksPerRegistry);
-    const taskRegistryLiveContract = await hapiSession.upload(taskRegistryContract);
-    const taskRegistryManagerLiveContract = await hapiSession.upload(
+    const cappedRegistryLiveContract = await session.upload(cappedRegistryHelperContract, maxNrOfTasksPerRegistry);
+    const taskRegistryLiveContract = await session.upload(taskRegistryContract);
+    const taskRegistryManagerLiveContract = await session.upload(
       taskRegistryManagerContract, 
       taskRegistryLiveContract, 
       cappedRegistryLiveContract
@@ -81,7 +81,7 @@ describe('LiveContract.TaskBar', () => {
 
     // Register events of interest
     taskRegistryLiveContract.onEvent("OwnershipTransferred", async ({ previousOwner, newOwner }) => {
-      const hapAccountSolidityAddress = `0x${await hapiSession.getSolidityAddress()}`; 
+      const hapAccountSolidityAddress = `0x${await session.getSolidityAddress()}`; 
       
       expect(previousOwner).toEqual('0x0000000000000000000000000000000000000002');
       expect(newOwner).toEqual(hapAccountSolidityAddress);
@@ -93,11 +93,11 @@ describe('LiveContract.TaskBar', () => {
     // Play around with the live-contracts testing ocasionally
     await expect(cappedRegistryLiveContract.getRegistrySize()).resolves.toEqual(maxNrOfTasksPerRegistry);
     await expect(taskRegistryLiveContract.initialize({ gas: 100000 }, 
-      hapiSession,
+      session,
       cappedRegistryLiveContract)
     ).resolves.toBeUndefined();
     await expect(taskRegistryLiveContract.initialize({ gas: 100000 }, 
-      hapiSession,
+      session,
       cappedRegistryLiveContract)
     ).rejects.toThrow();
 

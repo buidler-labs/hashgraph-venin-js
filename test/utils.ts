@@ -15,8 +15,8 @@ export function read({ relativeTo = 'general', contract, solo }: ResouorceReadOp
 }
 
 export async function load(liveContractPath: string, relativeTo: string = 'general'): Promise<LiveContract> {
-    const hapiSession = await ApiSession.default();
+    const { session } = await ApiSession.default();
     const sbeContract = await Contract.newFrom({ code: read({ contract: liveContractPath, relativeTo }) });
     
-    return await hapiSession.upload(sbeContract);
+    return await session.upload(sbeContract);
 }

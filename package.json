@@ -9,8 +9,7 @@
     "import": "./lib.esm/index.js"
   },
   "files": [
-    "lib",
-    "output"
+    "lib"
   ],
   "main": "./lib.cjs/index.js",
   "module": "./lib.esm/index.js",
@@ -29,6 +28,8 @@
     "test:ci": "run-s test test:browser",
     "test:browser": "run-s build:bundle-test-browser test:smoke-browser",
     "test:node": "jest --env=./test/jte.node.ts",
+    "test:node-previewnet": "PORTAL_NETWORK=previewnet node ./script/test-online.mjs",
+    "test:node-testnet": "PORTAL_NETWORK=testnet node ./script/test-online.mjs",
     "test:jsdom": "jest --env=./test/jte.web.ts --setupFilesAfterEnv core-js",
     "test:smoke-browser": "karma start ./test/browser/karma.smoke.conf.js"
   },
@@ -40,7 +41,7 @@
   "license": "MIT",
   "dependencies": {
     "@ethersproject/abi": "^5.5.0",
-    "@hashgraph/sdk": "^2.6.0",
+    "@hashgraph/sdk": "2.7.0",
     "axios": "^0.25.0",
     "dotenv": "^10.0.0",
     "solc": "0.8.9",

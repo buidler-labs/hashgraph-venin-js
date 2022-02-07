@@ -7,7 +7,7 @@ import {
 import { NetworkName } from "@hashgraph/sdk/lib/client/Client";
 
 import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
-import { HederaNodesAddressBook } from "./StratoRuntimeParameters";
+import { HederaNodesAddressBook, NetworkRuntimeParameters } from "./StratoContext";
 import { PublicAccountInfo } from './ApiSession';
 
 /**
@@ -95,6 +95,10 @@ class HederaAccountInfo {
  * client before allowing to generate an {@link ApiSession} through the {@link HederaNetwork.login} method call.
  */
 export class HederaNetwork {
+  public static newFrom(params: NetworkRuntimeParameters): HederaNetwork {
+    return new HederaNetwork(params.defaults, params.name, params.nodes);
+  }
+
   public readonly nodes: HederaNodesAddressBook;
 
   public constructor (
@@ -126,6 +130,13 @@ export class HederaNetwork {
           throw new EnvironmentInvalidError(`There is no such ${this.name} network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(', ')}`);
       }
     }
+  }
+
+  public getClient(): Client {
+    if (HEDERA_CUSTOM_NET_NAME === this.name) {
+      return Client.forNetwork(this.nodes);
+    }
+    return Client.forName(this.name as NetworkName);
   }
 
   public async getInfoFor(account: AccountId): Promise<HederaAccountInfo> {

@@ -4,16 +4,16 @@ import {
     Logger,
     transports
 } from "winston";
-import { StratoRuntimeParameters } from "./StratoRuntimeParameters";
+import { LoggerRuntimeParameters } from "./StratoContext";
 
 export class StratoLogger {
   private readonly isLoggingEnabled: boolean;
   private readonly logger: Logger;
 
-  public constructor(params: StratoRuntimeParameters) {
-      const level = params.logger.level;
+  public constructor(params: LoggerRuntimeParameters) {
+      const level = params.level;
       
-      this.isLoggingEnabled = params.logger.enabled;
+      this.isLoggingEnabled = params.enabled;
       this.logger = createLogger({
           format: format.combine(
               format.timestamp(),

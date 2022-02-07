@@ -24,13 +24,24 @@ function getShimContent(file) {
   return readFileSync(shimPath).toString('utf-8');
 }
 
+function getHederasSettingsFrom(obj) {
+  let toReturn = {};
+
+  Object.keys(obj).forEach(oKey => {
+    if (oKey.startsWith('HEDERAS_')) {
+      toReturn[oKey] = obj[oKey];
+    }
+  });
+  return toReturn;
+}
+
 export default {
   input: getPathOf('../../index.ts'),
   context: 'window',
   treeshake: true,
   output: [
     {
-      dir: getPathOf('./lib.esm'),
+      file: getPathOf('./lib.esm/hedera-strato.js'),
       format: 'esm',
       plugins: [terser()],
       sourcemap: true
@@ -58,8 +69,9 @@ export default {
     replace({
         preventAssignment: true,
         values: {
-            "process.env.HEDERAS_ENV_PATH": process.env.HEDERAS_ENV_PATH,
-            "process.env": JSON.stringify(process.env)
+          // don't take away the HEDERAS_ENV_PATH otherwise ApiSession.default definition will fail
+          "process.env.HEDERAS_ENV_PATH": process.env.HEDERAS_ENV_PATH,
+          "process.env": JSON.stringify(getHederasSettingsFrom(process.env))
         }
     }),
     json(),

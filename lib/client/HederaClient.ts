@@ -7,28 +7,30 @@ import {
     Transaction, 
     Query 
 } from "@hashgraph/sdk";
-import { NetworkName } from "@hashgraph/sdk/lib/client/Client";
 import Executable from "@hashgraph/sdk/lib/Executable";
 
 import { PublicAccountInfo } from "../ApiSession";
-import { HederaNetwork, HEDERA_CUSTOM_NET_NAME } from "../HederaNetwork";
-
-import { StratoLogger } from "../StratoLogger";
 import { Restorer } from "../core/Persistance";
 import { ClientProvider, StratoClientState } from "./ClientProvider";
 import { StatedStratoClient } from "./StatedStratoClient";
-import { ClientTypes } from "./ClientType";
+import { ClientControllerEvents } from "./controller/ClientController";
+import { StratoContext } from "../StratoContext";
 
 export type HederaClientColdStartData = { 
     accountId: string, privateKey: string 
 };
 
+export type HederaClientAccount = {
+    operatorId: string,
+    operatorKey: string
+};
+
 export class HederaClientProvider extends ClientProvider<HederaClient, HederaClientState, HederaClientColdStartData> {
 
     public constructor(
-        log: StratoLogger,
-        network?: HederaNetwork) {
-        super(log, new HederaClientStateDeserializer(), network);
+        ctx: StratoContext,
+        private readonly controller?: ClientControllerEvents<HederaClientAccount>) {
+        super(ctx, new HederaClientStateDeserializer());
     }
 
     public buildOperatedBy(operatorId: AccountId, operatorKey: PrivateKey): Promise<HederaClient>;
@@ -46,31 +48,35 @@ export class HederaClientProvider extends ClientProvider<HederaClient, HederaCli
     }
 
     protected override async _buildRestoring(state: HederaClientState): Promise<HederaClient> {
-        let client: Client;
+        const client = this.ctx.network.getClient();
 
-        if (HEDERA_CUSTOM_NET_NAME === this.network.name) {
-            client = Client.forNetwork(this.network.nodes);
-        } else {
-            client = Client.forName(this.network.name as NetworkName);
-        }
-        return new HederaClient(this.log, client, state);
+        return new HederaClient(this.ctx, this.controller, client, state);
     }
 }
 
 class HederaClient extends StatedStratoClient<HederaClientState> {
-    public readonly account: PublicAccountInfo;
+    public account: PublicAccountInfo;
 
     public constructor(
-        log: StratoLogger,
-        private readonly client: Client, 
+        ctx: StratoContext,
+        controller: ClientControllerEvents<HederaClientAccount>,
+        private client: Client, 
         state: HederaClientState
     ) {
-        super(ClientTypes.Hedera, log, state);
-        this.client.setOperator(state.operatorId, state.operatorKey);
-        this.account = {
-            id: client.operatorAccountId,
-            publicKey: client.operatorPublicKey
-        };
+        super("Hedera", ctx.log, state);
+
+        // Start out with what's provided
+        this.changeOperator(state.operatorId, state.operatorKey);
+
+        // Bind to controller events
+        controller.onAccountChanged(account => {
+            this.state = new HederaClientState(account.operatorId, account.operatorKey);
+            this.changeOperator(this.state.operatorId, this.state.operatorKey);
+        });
+        controller.onNetworkChanged(network => {
+            this.client = network.getClient();
+            this.client.setOperator(this.state.operatorId, this.state.operatorKey);
+        });
     }
 
     public async execute<T extends Transaction|Query<Q>, Q>(transaction: T): Promise<
@@ -89,6 +95,14 @@ class HederaClient extends StatedStratoClient<HederaClientState> {
 
     public getReceipt(response: TransactionResponse): Promise<TransactionReceipt> {
         return response.getReceipt(this.client);
+    }
+
+    private changeOperator(operatorId: string, operatorKey: string) {
+        this.client.setOperator(operatorId, operatorKey);
+        this.account = {
+            id: this.client.operatorAccountId,
+            publicKey: this.client.operatorPublicKey
+        };
     }
 }
 

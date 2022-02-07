@@ -9,9 +9,9 @@ const LEVELS = {
 };
 
 export class StratoLogger {
-    constructor(params) {
-        this._level = LEVELS[params.logger.level];
-        this._isLoggingEnabled = params.logger.enabled;
+    constructor(params /*: LoggerRuntimeParameters */) {
+        this._level = LEVELS[params.level];
+        this._isLoggingEnabled = params.enabled;
     }
   
     get isSillyLoggingEnabled() {

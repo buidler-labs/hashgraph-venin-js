@@ -10,9 +10,10 @@ export default class JestTestEnvironment extends NodeEnvironment {
             // Test out if we can create a default api-session required to run the tests with
             // Also make sure to turn off logging so as to not over-polute the console
             await ApiSession.default({
-                env: {
-                    ...process.env,
-                    HEDERAS_LOGGER_ENABLED: 'false'
+                params: {
+                    logger: {
+                        enabled: false
+                    }
                 }
             });
         } catch (e) {

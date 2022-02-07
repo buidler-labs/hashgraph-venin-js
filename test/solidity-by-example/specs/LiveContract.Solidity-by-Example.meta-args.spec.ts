@@ -4,12 +4,16 @@ import {
 } from '@jest/globals';
 import { ContractCallQuery, ContractExecuteTransaction, Hbar, TransactionId } from "@hashgraph/sdk";
 
-import { load } from "../../utils";
+import { load as loadResource } from "../../utils";
 import Long from "long";
 
-describe('LiveContract.meta-arguments', () => {
+function load(contractPath: string) {
+  return loadResource(contractPath, 'solidity-by-example');
+}
+
+describe('LiveContract.Solidity-by-Example.meta-arguments', () => {
   it("when calling a non state-changing contract method (aka `a query`), passing in meta-arguments should get propagated to the actual transaction", async () => {
-    const liveContract = await load('solidity-by-example/hello_world');
+    const liveContract = await load('hello_world');
     const sessionExecuteSpy = jest.spyOn(liveContract.session, "execute");
     const metaArgs = {
       gas: 50_969,
@@ -34,7 +38,7 @@ describe('LiveContract.meta-arguments', () => {
   });
 
   it("when calling a state-changing contract method, passing in meta-arguments should get propagated to the actual transaction", async () => {
-    const liveContract = await load('solidity-by-example/payable');
+    const liveContract = await load('payable');
     const sessionExecuteSpy = jest.spyOn(liveContract.session, "execute");
     const metaArgs = {
         amount: new Hbar(42),
