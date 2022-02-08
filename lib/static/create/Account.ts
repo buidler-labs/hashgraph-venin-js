@@ -17,7 +17,7 @@ export const enum KeyType {
   ECSDA,
   ED25519,
   Unknown
-};
+}
 
 export type AccountFeatures = {
   key?: Key;

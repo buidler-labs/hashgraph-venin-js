@@ -86,7 +86,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     const rawCompileResult = await SolidityCompiler.compile({ code, path });
     const compileResult = Contract._tryParsingCompileResultFrom({ rawCompileResult, ignoreWarnings });
     const compiledContractsInfo = compileResult.contracts[VIRTUAL_SOURCE_CONTRACT_FILE_NAME];
-    let contracts = [];
+    const contracts = [];
 
     for (const contractName of Object.keys(compiledContractsInfo)) {
       const solo = compiledContractsInfo[contractName];

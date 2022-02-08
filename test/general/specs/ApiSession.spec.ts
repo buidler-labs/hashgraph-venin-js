@@ -1,4 +1,4 @@
-import * as fs from 'fs/promises';
+import fs from 'fs/promises';
 
 import {
   afterEach,
@@ -91,6 +91,7 @@ describe('ApiSession', () => {
         HEDERAS_OPERATOR_ID: operatorId,
         HEDERAS_OPERATOR_KEY: operatorKey
       };
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const localisedApiSession = require('../../../lib/ApiSession');
 
       await localisedApiSession.ApiSession.default();

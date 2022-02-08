@@ -116,7 +116,7 @@ class HederaClientState implements StratoClientState {
 
     public async save(): Promise<string> {
         return `${this.operatorId}${HederaClientState.FIELD_SERIALIZATION_SEPARATOR}${this.operatorKey}`;
-    };
+    }
 }
 
 class HederaClientStateDeserializer implements Restorer<string, HederaClientState> {

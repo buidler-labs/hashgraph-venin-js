@@ -60,7 +60,7 @@ export const enum TypeOfExecutionReturn {
   Receipt = "Receipt",
   Record = "Record",
   Result = "Result"
-};
+}
 
 type ExecutionReturnTypes<T> = {
   [TypeOfExecutionReturn.Receipt]: TransactionReceipt,
@@ -215,7 +215,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   public async execute<T extends TypeOfExecutionReturn, R>(
       transaction: ExecutableTransaction|Query<R>, 
       returnType: T, 
-      getReceipt: boolean = false)
+      getReceipt = false)
     : Promise<ExecutionReturnTypes<ContractFunctionResult|TransactionResponse|R>[T]> {
     const isContractTransaction = transaction instanceof ContractCallQuery || transaction instanceof ContractExecuteTransaction;
     let executionResult: ContractFunctionResult|TransactionResponse|R;

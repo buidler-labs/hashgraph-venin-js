@@ -4,9 +4,7 @@ import { StratoClient } from "./StratoClient";
 import { ClientControllerEvents } from "./controller/ClientController";
 import { StratoContext } from "../StratoContext";
 
-export interface StratoClientState extends Saver<string> {
-    // no-op
-}
+export type StratoClientState = Saver<string>;
 
 export abstract class ClientProvider<T extends StratoClient = any, R extends StratoClientState = any, S = any> {
     protected network: HederaNetwork

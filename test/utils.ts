@@ -24,7 +24,7 @@ export function read({ relativeTo = 'general', contract, solo }: ResouorceReadOp
   }
 }
 
-export async function load(liveContractPath: string, relativeTo: string = 'general'): Promise<LiveContract> {
+export async function load(liveContractPath: string, relativeTo = 'general'): Promise<LiveContract> {
   const { session } = await ApiSession.default();
   const sbeContract = await Contract.newFrom({ code: read({ contract: liveContractPath, relativeTo }) });
   
@@ -47,7 +47,9 @@ export function getKeyTypeFor(privateKey: PrivateKey): KeyType {
         keyTypeToReturn = KeyType.ED25519;
         break;
     }
-  } catch(e) {}
+  } catch(e) {
+    // No-op
+  }
 
   if (keyTypeToReturn === KeyType.Unknown) {
     // Does not look to be an ED25519 key

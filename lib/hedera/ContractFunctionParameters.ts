@@ -41,7 +41,7 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
                 }
             }
             toReturn[fctCallName](argToAdd);
-        };
+        }
         return toReturn;
     }
 
