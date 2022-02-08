@@ -8,8 +8,15 @@ import { Account } from '../../lib/static/create/Account';
 import { ApiSession } from '../../lib/ApiSession';
 import { HederaClientController } from '../../lib/client/controller/HederaClientController';
 import { DefaultPrivateKeyClientController } from '../../lib/client/controller/DefaultPrivateKeyClientController';
+import { ImpotentClientController } from '../../lib/client/controller/ImpotentClientController';
 
 describe('ApiSession.ClientController', () => {
+  it('the default session should always have valid controller assigned', async () => {
+    const { controller } = await ApiSession.default();
+
+    expect(controller).not.toBeInstanceOf(ImpotentClientController);
+  });
+
   it('a Hedera Client should allow full swapping of the underlying operator if a Hedera Client Controller is in charge of it', async () => {
     const { controller, session } = await ApiSession.default({
       client: {

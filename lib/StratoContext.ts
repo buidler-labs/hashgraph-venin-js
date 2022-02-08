@@ -151,7 +151,7 @@ export class StratoContext {
 
     private computeClientSpecsFrom(rParams: RecursivePartial<StratoParameters>, eParams: { [k: string]: string }): ClientRuntimeParameters {
         const clientControllerDefaultPrivateKey = rParams.client?.controller?.default?.operatorKey ?? eParams.HEDERAS_CLIENT_CONTROLLER_DEFAULT_PRIVATE_KEY;
-        const clientControllerType = rParams.client?.controller?.type ?? eParams.HEDERAS_CLIENT_CONTROLLER;
+        const clientControllerType = rParams.client?.controller?.type ?? eParams.HEDERAS_CLIENT_CONTROLLER ?? "Hedera";
         const clientType =  this.clientTypes.getBy({ name : 
             typeof rParams.client?.type === 'string' ? rParams.client?.type : 
             eParams.HEDERAS_CLIENT_TYPE ? eParams.HEDERAS_CLIENT_TYPE : "Hedera" 
