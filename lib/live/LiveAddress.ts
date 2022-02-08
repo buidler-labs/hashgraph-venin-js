@@ -6,7 +6,7 @@ import { LiveEntity } from "./LiveEntity";
 import { extractSolidityAddressFrom, SolidityAddressable } from "../core/SolidityAddressable";
 import { LiveContract } from "./LiveContract";
 
-export class LiveAddress extends LiveEntity<string> implements SolidityAddressable {
+export class LiveAddress extends LiveEntity<string, void> implements SolidityAddressable {
     private static getSolidityAddressMatchOrDieTryingFrom(addr: string): string {
         const matchedSolidityAddress = extractSolidityAddressFrom(addr);
     
@@ -32,5 +32,9 @@ export class LiveAddress extends LiveEntity<string> implements SolidityAddressab
 
     protected override _equals<R>(other: R): boolean {
         return typeof other === 'string' ? extractSolidityAddressFrom(other) === this.id : false;
+    }
+
+    public getInfo(): Promise<void> {
+        throw new Error("Method not implemented.");
     }
 }

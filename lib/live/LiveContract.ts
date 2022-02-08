@@ -8,6 +8,8 @@ import {
     ContractExecuteTransaction, 
     ContractFunctionResult, 
     ContractId, 
+    ContractInfo, 
+    ContractInfoQuery, 
     ContractLogInfo, 
     Hbar, 
     TransactionId
@@ -68,7 +70,8 @@ function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[
     }).filter(parsedLogCandidate => parsedLogCandidate !== null);
 }
 
-export class LiveContract extends LiveEntity<ContractId> implements SolidityAddressable {
+export class LiveContract extends LiveEntity<ContractId, ContractInfo> implements SolidityAddressable {
+
     /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.
      */
@@ -357,6 +360,11 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
                 // otherwise, it's a No-op
             }
         });
+    }
+
+    public getInfo(): Promise<ContractInfo> {
+        const contractInfoQuery = new ContractInfoQuery().setContractId(this.id);
+        return this.session.execute(contractInfoQuery, TypeOfExecutionReturn.Result, false);
     }
 }
 

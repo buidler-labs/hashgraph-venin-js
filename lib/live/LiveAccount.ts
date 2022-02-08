@@ -1,6 +1,6 @@
-import { AccountId, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
+import { AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
 
-import { ApiSession } from "../ApiSession";
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { SolidityAddressable } from "../core/SolidityAddressable";
 import { LiveEntity } from "./LiveEntity";
 
@@ -10,7 +10,8 @@ type LiveAccountConstructorArgs = {
   publicKey: PublicKey,
 };
 
-export class LiveAccount extends LiveEntity<AccountId> implements SolidityAddressable {
+export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements SolidityAddressable {
+  
   public readonly publicKey: PublicKey;
 
   constructor({ session, id, publicKey }: LiveAccountConstructorArgs) {
@@ -20,6 +21,11 @@ export class LiveAccount extends LiveEntity<AccountId> implements SolidityAddres
   
   public getSolidityAddress(): string {
     return this.id.toSolidityAddress();
+  }
+
+  public getInfo(): Promise<AccountInfo> {
+    const accountInfoQuery = new AccountInfoQuery().setAccountId(this.id);
+    return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
   }
 }
 

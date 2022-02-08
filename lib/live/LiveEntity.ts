@@ -3,7 +3,7 @@ import { ApiSession } from "../ApiSession";
 /**
  * Common functionality exhibited by session-bounded, id-entifiable LiveEntity instances.
  */
-export class LiveEntity<T> {
+export abstract class LiveEntity<T,I> {
     constructor(
         public readonly session: ApiSession,
         public readonly id: T
@@ -13,7 +13,7 @@ export class LiveEntity<T> {
         return this.session.log;
     }
 
-    public equals<R>(what: R|LiveEntity<T>): boolean {
+    public equals<R>(what: R|LiveEntity<T, I>): boolean {
         if (what instanceof LiveEntity) {
             return what.id === this.id;
         }
@@ -23,4 +23,6 @@ export class LiveEntity<T> {
     protected _equals<R>(what: R): boolean {
         return false;
     }
+
+    public abstract getInfo(): Promise<I>;
 }

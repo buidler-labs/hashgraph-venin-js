@@ -20,7 +20,7 @@ type ArgumentsToGetFileTransaction = {
   args: any[]
 };
 
-export abstract class BasicUploadableEntity<T extends LiveEntity<R>, R = any> implements UploadableEntity<T, R> {
+export abstract class BasicUploadableEntity<T extends LiveEntity<R, I>, R = any, I = any> implements UploadableEntity<T, R> {
   public constructor(public readonly nameOfUpload: string) {}
 
   /**

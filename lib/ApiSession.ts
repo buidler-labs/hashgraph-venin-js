@@ -184,7 +184,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    * @param what {@link CreatableEntity} - the prototype of the entity of interest 
    * @returns - an interactive {@link LiveEntity} instance which resides on the chain
    */
-  public async create<T extends LiveEntity<R>, R>(what: CreatableEntity<T>): Promise<T> {
+  public async create<T extends LiveEntity<R, I>, R, I>(what: CreatableEntity<T>): Promise<T> {
     this.log.info(`Creating a new Hedera ${what.name}`);
 
     const createdLiveEntity = await what.createVia({ session: this });
@@ -354,7 +354,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    *                         eg. "_file" ({@link UploadableEntity}) or "_contract" ({@link Contract})
    * @returns - An instance of the {@link UploadableEntity} concrete result-type which is a subtype of {@link LiveEntity}.
    */
-  public async upload<T extends LiveEntity<R>, R>(what: BasicUploadableEntity<T, R>, ...args: any[]): Promise<T>;
+  public async upload<T extends LiveEntity<R, I>, R, I>(what: BasicUploadableEntity<T, R, I>, ...args: any[]): Promise<T>;
 
   /**
   * Given a raw JSON {@link object}, it triest ot upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
@@ -375,20 +375,20 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   public async upload(what: object, ...args: any[]): Promise<LiveJson>;
 
   // Overload implementation
-  public async upload<T extends LiveEntity<R>, R>(what: UploadableEntity<T, R>|object, ...args: any[]): Promise<T|LiveJson> {
-    let uploadableWhat: BasicUploadableEntity<T, R>;
+  public async upload<T extends LiveEntity<R, I>, R, I>(what: UploadableEntity<T, R>|object, ...args: any[]): Promise<T|LiveJson> {
+    let uploadableWhat: BasicUploadableEntity<T, R, I>;
 
     if (what instanceof BasicUploadableEntity === false) {
       // Try to go with a live-json upload
       if (Json.isInfoAcceptable(what)) {
-        uploadableWhat = (new Json(what) as unknown) as BasicUploadableEntity<T, R>;
+        uploadableWhat = (new Json(what) as unknown) as BasicUploadableEntity<T, R, I>;
       } else {
         // There's nothing we can do
         throw new Error("Can only upload UploadableFile-s or Json-file acceptable content.");
       }
     } else {
       // upload what was given as is since it's an UploadableEntity type already
-      uploadableWhat = (what as unknown) as BasicUploadableEntity<T, R>;
+      uploadableWhat = (what as unknown) as BasicUploadableEntity<T, R, I>;
     }
 
     this.log.info(`Uploading a new ${uploadableWhat.nameOfUpload} to Hedera File Service (HFS).`);
