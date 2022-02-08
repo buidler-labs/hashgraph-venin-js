@@ -60,7 +60,7 @@ describe('ApiSession', () => {
 
     await fs.writeFile(tmpDotEnvFileName, Object.keys(tmpDotEnvFileContent).map(key => `${key}=${tmpDotEnvFileContent[key]}`).join('\n'));
     try {
-      await ApiSession.default({ params: {}, path: tmpDotEnvFileName });
+      await ApiSession.default(tmpDotEnvFileName);
 
       expect(spyApiSessionBuildFrom.mock.calls.length === 1).toBeTruthy();
       expect(spyApiSessionBuildFrom.mock.calls[0][0]).toBeInstanceOf(StratoContext);
@@ -68,7 +68,7 @@ describe('ApiSession', () => {
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.nodes).not.toBeUndefined();
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.nodes['127.0.0.1:123']).toEqual(new AccountId(69));
       expect(spyApiSessionBuildFrom.mock.calls[0][0].params.client.type.name).toEqual("Hedera");
-      expect(spyApiSessionBuildFrom.mock.calls[0][0].params.client.coldStartData).toMatchObject({
+      expect(spyApiSessionBuildFrom.mock.calls[0][0].params.client.type.computeColdStartOptionsFrom(spyApiSessionBuildFrom.mock.calls[0][0].params)).toMatchObject({
         accountId: AccountId.fromString(tmpDotEnvFileContent.HEDERAS_OPERATOR_ID),
         privateKey: PrivateKey.fromStringED25519(tmpDotEnvFileContent.HEDERAS_OPERATOR_KEY)
       });

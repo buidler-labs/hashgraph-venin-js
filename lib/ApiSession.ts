@@ -10,7 +10,7 @@ import {
   ContractId, 
   FileContentsQuery, 
   FileId, 
-  Key, 
+  PublicKey, 
   Query, 
   Transaction,
   TransactionReceipt,
@@ -31,16 +31,16 @@ import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
 import { StratoClient } from "./client/StratoClient";
 import { StratoLogger } from "./StratoLogger";
 import { 
-  ClientColdStartData, 
-  HederaNodesAddressBook,
+  StratoContext, 
   StratoContextSource, 
-  StratoContext 
+  StratoParameters
 } from "./StratoContext";
 import { Saver } from "./core/Persistance";
 import { CreatableEntity } from "./core/CreatableEntity";
 import { UploadableEntity } from "./core/UploadableEntity";
 import { ClientController } from "./client/controller/ClientController";
 import { Subscription } from "./core/Subscription";
+import { RecursivePartial } from "./core/UsefulTypes";
 
 type ApiSessionConstructorArgs = {
   ctx: StratoContext,
@@ -70,7 +70,7 @@ type ExecutionReturnTypes<T> = {
 
 export type PublicAccountInfo = {
   id: AccountId;
-  publicKey: Key;
+  publicKey: PublicKey;
 }
 
 export type SessionDefaults = { 
@@ -120,12 +120,11 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    * - `HEDERAS_CLIENT_SAVED_STATE` : the base64 encoded string which got outputted at some point via a call to {@link ApiSession.save}
    * 
    * For other possible config values, please see the `.env.sample` info file provided with the main repo code.
-   * 
-   * @param {HederaDefaultApiSessionParamsSource} source
    */
-  public static async default({ params = {}, path = process.env.HEDERAS_ENV_PATH || '.env' }: StratoContextSource = {}): Promise<ControlledSession> {
-    const ctx = new StratoContext({ params, path });
-    
+  public static async default(params: RecursivePartial<StratoParameters>|string = {}, path = process.env.HEDERAS_ENV_PATH || '.env'): Promise<ControlledSession> {
+    const ctxArgs: StratoContextSource = typeof params === 'string' ? { params: {}, path: params } : { params, path };
+    const ctx = new StratoContext(ctxArgs);
+
     return this.buildFrom(ctx);
   }
 

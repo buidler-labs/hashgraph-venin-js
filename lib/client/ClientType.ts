@@ -1,7 +1,7 @@
 import { AccountId, PrivateKey } from "@hashgraph/sdk";
 
 import { CredentialsInvalidError } from "../errors/CredentialsInvalidError";
-import { StratoContext } from "../StratoContext";
+import { StratoContext, StratoParameters } from "../StratoContext";
 import { ClientController, ClientControllerEvents } from "./controller/ClientController";
 import { ClientProvider, NotSupportedClientProvider } from "./ClientProvider";
 import { HederaClientProvider } from "./HederaClient";
@@ -16,7 +16,7 @@ export class ClientType {
         public readonly name?: string,
         public readonly defaultController: new (ctx: StratoContext) => ClientController = ImpotentClientController,
         public readonly providerHaving: new (ctx: StratoContext, controller: ClientControllerEvents) => ClientProvider = NotSupportedClientProvider,
-        public readonly getColdStartOptionsFromEnvironment?: (env: { [k: string]: string }) => any
+        public readonly computeColdStartOptionsFrom?: (params: StratoParameters) => any
     ) {
         if (constructorGuard !== CLIENT_TYPE_CONSTRUCTOR_GUARD) {
             throw new Error("Client types cannot be defined from outside this module!");
@@ -38,11 +38,11 @@ export class ClientTypes {
                 "Hedera",
                 HederaClientController,                 // Default ClientController
                 HederaClientProvider,                   // Associated ClientProvider
-                env => {                                // ColdStart options parser for Environment
+                params => {                             // ColdStart options parser for pre-configured runtime parameters
                     try {
                         return {
-                            accountId: AccountId.fromString(env.HEDERAS_OPERATOR_ID),
-                            privateKey: PrivateKey.fromStringED25519(env.HEDERAS_OPERATOR_KEY)
+                            accountId: AccountId.fromString(params.client.hedera.operatorId),
+                            privateKey: PrivateKey.fromString(params.client.hedera.operatorKey)
                         }
                     } catch(e) {
                         throw new CredentialsInvalidError(e.message);

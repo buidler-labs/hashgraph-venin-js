@@ -1,4 +1,4 @@
-import { PrivateKey } from "@hashgraph/cryptography";
+import { PrivateKey } from "@hashgraph/sdk";
 import { AccountId } from "@hashgraph/sdk";
 import { StratoContext } from "../../StratoContext";
 import { HederaClientAccount } from "../HederaClient";

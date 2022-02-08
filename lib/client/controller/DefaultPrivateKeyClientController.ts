@@ -11,6 +11,6 @@ export class DefaultPrivateKeyClientController extends HederaClientController {
     }
 
     protected getAccountPayload(account: string | AccountId): HederaClientAccount {
-        return super.getAccountPayload(account, this.ctx.params.client.controllers.default.operatorKey);
+        return super.getAccountPayload(account, this.ctx.params.client.controller.default.operatorKey);
     }
 }

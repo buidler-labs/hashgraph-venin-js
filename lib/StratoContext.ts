@@ -17,17 +17,20 @@ export type ControlledClient = {
     client: StratoClient
 };
 export type ClientColdStartData = { accountId: AccountId, privateKey: PrivateKey };
-export type ClientControllersParameters = {
+export type ClientControllerParameters = {
     type: string,
     default: {
         operatorKey: string
     }
 };
 type ClientRuntimeParameters = {
-    coldStartData: ClientColdStartData,
-    controllers: ClientControllersParameters,
+    controller: ClientControllerParameters,
     savedState: string,
-    type: ClientType
+    type: ClientType,
+    hedera: {
+        operatorId: string,
+        operatorKey: string
+    }
 };
 export type HederaNodesAddressBook = { [key: string]: string | AccountId };
 export type LoggerRuntimeParameters = { 
@@ -42,7 +45,7 @@ export type NetworkRuntimeParameters = {
     name: string,
     nodes: string
 };
-type StratoParameters = {
+export type StratoParameters = {
     client: ClientRuntimeParameters,
     logger: LoggerRuntimeParameters,
     network: NetworkRuntimeParameters,
@@ -89,7 +92,8 @@ export class StratoContext {
     public constructor(source: StratoContextSource) {
         let dEnv = dotenv.config({ path: source.path }).parsed;
         const eParams: {[k: string]: string} = {};
-        
+        const rParams = source?.params ?? {};
+
         // Filter and get a hold of the raw parameters of interest
         if (!dEnv) {
             // Default to whatever lies in the process.env
@@ -100,19 +104,19 @@ export class StratoContext {
             .forEach(acceptedParamKey => { eParams[acceptedParamKey] = dEnv[acceptedParamKey]; });
         
         // Parse and extract the managed values
-        const networkName = source?.params?.network?.name ?? eParams.HEDERAS_NETWORK ?? 'unspecified';
+        const networkName = rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? 'unspecified';
 
         this.clientTypes = new ClientTypes();
         this.params = {
-            client: this.parseClientSpecsFrom(eParams),
+            client: this.computeClientSpecsFrom(rParams, eParams),
             logger: {
-                level: source?.params?.logger?.level ?? eParams.HEDERAS_LOGGER_LEVEL ?? 'info',
-                enabled: (source?.params?.logger?.enabled ?? eParams.HEDERAS_LOGGER_ENABLED ?? 'false') === 'true'
+                level: rParams.logger?.level ?? eParams.HEDERAS_LOGGER_LEVEL ?? 'info',
+                enabled: (rParams.logger?.enabled ?? eParams.HEDERAS_LOGGER_ENABLED ?? 'false') === 'true'
             },
             network: {
-                defaults: DefinedNetworkDefaults[ source?.params?.network?.name ?? eParams.HEDERAS_NETWORK ?? 'unspecified' ],
+                defaults: DefinedNetworkDefaults[ rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? 'unspecified' ],
                 name: networkName,
-                nodes: source?.params?.network?.nodes ?? eParams.HEDERAS_NODES ?? ""
+                nodes: rParams.network?.nodes ?? eParams.HEDERAS_NODES ?? ""
             },
             session: {
                 defaults: this.parseSessionDefaultsFrom(networkName, eParams)
@@ -126,14 +130,15 @@ export class StratoContext {
     public async getClient(controller?: ClientController): Promise<ControlledClient> {
         let client: StratoClient;
         const resolvedController = controller ?? 
-            this.clientControllers.getBy({ name: this.params.client.controllers.type }) ?? 
+            this.clientControllers.getBy({ name: this.params.client.controller.type }) ?? 
             new this.params.client.type.defaultController(this);
         const provider = new this.params.client.type.providerHaving(this, resolvedController);
+        const coldStartData = this.params.client.type.computeColdStartOptionsFrom(this.params);
 
         if(this.params.client.savedState) {
             client = await provider.buildRestoring(this.params.client.savedState);
-        } else if (this.params.client.coldStartData) {
-            client = await provider.buildColdFor(this.params.client.coldStartData);
+        } else if (coldStartData) {
+            client = await provider.buildColdFor(coldStartData);
         } else {
             throw new Error("Please provide either the cold-start data or a saved-state from where to create the bounded underlying Client with.");
         }
@@ -144,25 +149,31 @@ export class StratoContext {
         }
     }
 
-    private parseClientSpecsFrom(params: { [k: string]: string }): ClientRuntimeParameters {
-        const clientControllerDefaultPrivateKey = params.HEDERAS_CLIENT_CONTROLLER_DEFAULT_PRIVATE_KEY;
-        const clientControllerType = params.HEDERAS_CLIENT_CONTROLLER;
-        const clientType =  this.clientTypes.getBy({ name : params.HEDERAS_CLIENT_TYPE ? params.HEDERAS_CLIENT_TYPE : "Hedera" });
-        const savedState = params.HEDERAS_CLIENT_SAVED_STATE ?? null;
+    private computeClientSpecsFrom(rParams: RecursivePartial<StratoParameters>, eParams: { [k: string]: string }): ClientRuntimeParameters {
+        const clientControllerDefaultPrivateKey = rParams.client?.controller?.default?.operatorKey ?? eParams.HEDERAS_CLIENT_CONTROLLER_DEFAULT_PRIVATE_KEY;
+        const clientControllerType = rParams.client?.controller?.type ?? eParams.HEDERAS_CLIENT_CONTROLLER;
+        const clientType =  this.clientTypes.getBy({ name : 
+            typeof rParams.client?.type === 'string' ? rParams.client?.type : 
+            eParams.HEDERAS_CLIENT_TYPE ? eParams.HEDERAS_CLIENT_TYPE : "Hedera" 
+        });
+        const savedState = rParams.client?.savedState ?? eParams.HEDERAS_CLIENT_SAVED_STATE ?? null;
 
         if (!this.clientTypes.isKnown(clientType)) {
             throw new Error("Only 'hedera' client type is currently supported. This is also the default value if not specified.");
         }
-        return { 
-            savedState,
-            controllers: {
+        return {
+            controller: {
                 type: clientControllerType,
                 default: {
                     operatorKey: clientControllerDefaultPrivateKey
                 }
             },
+            hedera: {
+                operatorId: rParams.client?.hedera?.operatorId ?? eParams.HEDERAS_OPERATOR_ID,
+                operatorKey: rParams.client?.hedera?.operatorKey ?? eParams.HEDERAS_OPERATOR_KEY
+            },
             type: clientType,
-            coldStartData: clientType.getColdStartOptionsFromEnvironment(params)
+            savedState,
         };
     }
 

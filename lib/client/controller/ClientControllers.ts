@@ -6,25 +6,25 @@ import { DefaultPrivateKeyClientController } from "./DefaultPrivateKeyClientCont
 import { NamedValue } from "../../core/UsefulTypes";
 
 export class ClientControllers {
-    private readonly impotentClientController: ImpotentClientController;
-    private readonly knownControllers: NamedValue<ClientController>[];
+  private readonly impotentClientController: ImpotentClientController;
+  private readonly knownControllers: NamedValue<ClientController>[];
 
-    public constructor(ctx: StratoContext) {
-        this.impotentClientController = new ImpotentClientController();
+  public constructor(ctx: StratoContext) {
+    this.impotentClientController = new ImpotentClientController();
 
-        this.knownControllers = [
-            { name: "Hedera", value: new HederaClientController(ctx) },
-            { name: "DefaultPrivateKey", value: new DefaultPrivateKeyClientController(ctx) }
-        ];
-    }
+    this.knownControllers = [
+      { name: "Hedera", value: new HederaClientController(ctx) },
+      { name: "DefaultPrivateKey", value: new DefaultPrivateKeyClientController(ctx) }
+    ];
+  }
 
-    public get Unknown(): ClientController {
-        return this.impotentClientController;
-    }
+  public get Unknown(): ClientController {
+    return this.impotentClientController;
+  }
 
-    public getBy({ name }: { name: string }): ClientController {
-        const candidateClientControllers = this.knownControllers.filter(controller => controller.name);
-    
-        return candidateClientControllers.length === 0 ? this.Unknown : candidateClientControllers[0].value;
-    }
+  public getBy({ name }: { name: string }): ClientController {
+    const candidateClientControllers = this.knownControllers.filter(controller => controller.name === name);
+
+    return candidateClientControllers.length === 0 ? this.Unknown : candidateClientControllers[0].value;
+  }
 };

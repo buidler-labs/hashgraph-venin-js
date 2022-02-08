@@ -3,7 +3,7 @@ import {
     jest
 } from '@jest/globals';
 
-import { ApiSession } from '../../..';
+import { ApiSession } from '../../../lib/ApiSession';
 
 describe('ApiSession.Receipts', () => {
     it('uploading a json should generate appropriate receipts', async () => {
