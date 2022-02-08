@@ -18,7 +18,7 @@ export class LiveAccount extends LiveEntity<AccountId> implements SolidityAddres
     this.publicKey = publicKey;
   }
   
-  public async getSolidityAddress(): Promise<string> {
+  public getSolidityAddress(): string {
     return this.id.toSolidityAddress();
   }
 }

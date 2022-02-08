@@ -20,7 +20,7 @@ export class LiveAddress extends LiveEntity<string> implements SolidityAddressab
         super(session, LiveAddress.getSolidityAddressMatchOrDieTryingFrom(address));
     }
     
-    public async getSolidityAddress(): Promise<string> {
+    public getSolidityAddress(): string {
         return this.id;
     }
 

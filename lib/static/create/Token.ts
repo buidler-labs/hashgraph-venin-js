@@ -53,7 +53,6 @@ export class Token extends BasicCreatableEntity<LiveToken> {
             adminKey: this.info.keys?.admin ?? session.publicKey,
             feeScheduleKey: this.info.keys?.feeSchedule ?? session.publicKey,
             freezeKey: this.info.keys?.freeze ?? session.publicKey,
-            kycKey: this.info.keys?.kyc ?? session.publicKey,
             pauseKey: this.info.keys?.pause ?? session.publicKey,
             supplyKey: this.info.keys?.supply ?? session.publicKey,
             tokenName: this.info.name,

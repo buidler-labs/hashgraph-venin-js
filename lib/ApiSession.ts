@@ -268,7 +268,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   /**
    * Retrieves the solidity-address of the underlying {@link AccountId} that's operating this session.
    */
-  async getSolidityAddress(): Promise<string> {
+  getSolidityAddress(): string {
     return this.accountId.toSolidityAddress();
   }
 

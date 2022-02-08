@@ -81,7 +81,7 @@ describe('LiveContract.TaskBar', () => {
 
     // Register events of interest
     taskRegistryLiveContract.onEvent("OwnershipTransferred", async ({ previousOwner, newOwner }) => {
-      const hapAccountSolidityAddress = `0x${await session.getSolidityAddress()}`; 
+      const hapAccountSolidityAddress = `0x${session.getSolidityAddress()}`; 
       
       expect(previousOwner).toEqual('0x0000000000000000000000000000000000000002');
       expect(newOwner).toEqual(hapAccountSolidityAddress);

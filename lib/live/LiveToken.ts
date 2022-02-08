@@ -18,7 +18,7 @@ export class LiveToken extends LiveEntity<TokenId> implements SolidityAddressabl
         super(session, id);
     }
 
-    public async getSolidityAddress(): Promise<string> {
+    public getSolidityAddress(): string {
         return this.id.toSolidityAddress();
     }
 

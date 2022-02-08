@@ -31,7 +31,7 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
             if (fInputDescription.type === 'address') {
                 if (isSolidityAddressable(argToAdd)) {
                     // Colapse argument to its solidity-referenced address
-                    argToAdd = await argToAdd.getSolidityAddress();
+                    argToAdd = argToAdd.getSolidityAddress();
                 }
             } else if (shouldUseBigNumbers) {
                 if (Array.isArray(argToAdd)) {

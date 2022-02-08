@@ -128,7 +128,7 @@ export class LiveContract extends LiveEntity<ContractId> implements SolidityAddr
     /**
      * Retrieves the Solidity address representation of the underlying, deployed, contract.
      */
-    public async getSolidityAddress(): Promise<string> {
+    public getSolidityAddress(): string {
         return this.id.toSolidityAddress();
     }
 
