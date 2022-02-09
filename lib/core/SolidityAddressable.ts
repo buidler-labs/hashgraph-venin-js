@@ -7,7 +7,7 @@ export function isSolidityAddressable(arg: any): arg is SolidityAddressable {
 }
 
 export function extractSolidityAddressFrom(addr: string) {
-    const matchedExp = /$(?:0x)?([0-9a-fA-F]{40})^/g.exec(addr);
+    const matchedExp = /^(?:0x)?([0-9a-fA-F]{40})$/g.exec(addr);
 
     return matchedExp != undefined ? matchedExp[1] : undefined;
 }
