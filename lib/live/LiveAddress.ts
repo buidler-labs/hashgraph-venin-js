@@ -35,6 +35,6 @@ export class LiveAddress extends LiveEntity<string, void> implements SolidityAdd
     }
 
     public getInfo(): Promise<void> {
-        throw new Error("Method not implemented.");
+        throw new Error("Method does not exist for type LiveAddress");
     }
 }

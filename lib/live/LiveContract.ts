@@ -23,7 +23,6 @@ import { LiveEntity } from "./LiveEntity";
 import { extractSolidityAddressFrom, SolidityAddressable } from "../core/SolidityAddressable";
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveAddress } from "./LiveAddress";
-import Long from "long";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 

@@ -15,7 +15,7 @@ export abstract class LiveEntity<T,I> {
 
     public equals<R>(what: R|LiveEntity<T, I>): boolean {
         if (what instanceof LiveEntity) {
-            return what.id === this.id;
+            return what.id.toString() === this.id.toString();
         }
         return this._equals(what);
     }

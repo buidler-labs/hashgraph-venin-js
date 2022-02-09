@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 import {
   describe, expect, it,
 } from '@jest/globals';
-
+import { ContractId } from "@hashgraph/sdk";
 import { load, read } from "../../utils";
 import { LiveContract } from "../../../lib/live/LiveContract";
 import { ApiSession } from "../../../lib/ApiSession";
@@ -51,5 +51,15 @@ describe('LiveContract', () => {
     const liveContract = await session.upload(naiveOwnerCheckContract);
 
     await expect(liveContract.isOwnedBy(session)).resolves.toBeTruthy();
+  });
+
+  it ("getting info for a contract, the information is correctly fetched", async() => {
+    const { session } = await ApiSession.default();
+    const naiveOwnerCheckContract = await Contract.newFrom({ code: read({ contract: 'naive_owner_check' }) });
+    const liveContract = await session.upload(naiveOwnerCheckContract);
+
+    const contractInfo = await liveContract.getInfo();
+    
+    await expect(contractInfo.contractId).toBeInstanceOf(ContractId);
   });
 });
