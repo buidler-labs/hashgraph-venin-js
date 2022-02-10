@@ -65,4 +65,4 @@ export class ClientTypes {
     
         return candidateClientTypes.length === 0 ? this.Unknown : candidateClientTypes[0];
     }
-};
+}

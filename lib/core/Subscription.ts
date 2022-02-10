@@ -16,7 +16,7 @@ export class Subscription<I, O = any> {
 
 class _NeverFiringSubscription extends Subscription<any, void> {
     constructor() {
-        super(new EventEmitter(), "NeverFiringSubscription", (_data) => {});
+        super(new EventEmitter(), "NeverFiringSubscription", (_data) => { /* No-op */ });
     }
 }
 

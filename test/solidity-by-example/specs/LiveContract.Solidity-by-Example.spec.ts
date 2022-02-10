@@ -167,6 +167,7 @@ describe('LiveContract.Solidity-by-Example', () => {
   it("trying to register a non-existing event should error out", async () => {
     const liveContract = await load('events');
 
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     expect(() => liveContract.onEvent("non-existing-event", () => {})).toThrow();
   });
 

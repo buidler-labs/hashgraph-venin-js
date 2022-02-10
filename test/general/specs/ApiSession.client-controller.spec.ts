@@ -4,11 +4,11 @@ import {
 } from '@jest/globals';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
-import { Account } from '../../lib/static/create/Account';
-import { ApiSession } from '../../lib/ApiSession';
-import { HederaClientController } from '../../lib/client/controller/HederaClientController';
-import { DefaultPrivateKeyClientController } from '../../lib/client/controller/DefaultPrivateKeyClientController';
-import { ImpotentClientController } from '../../lib/client/controller/ImpotentClientController';
+import { Account } from '../../../lib/static/create/Account';
+import { ApiSession } from '../../../lib/ApiSession';
+import { HederaClientController } from '../../../lib/client/controller/HederaClientController';
+import { DefaultPrivateKeyClientController } from '../../../lib/client/controller/DefaultPrivateKeyClientController';
+import { ImpotentClientController } from '../../../lib/client/controller/ImpotentClientController';
 
 describe('ApiSession.ClientController', () => {
   it('the default session should always have valid controller assigned', async () => {

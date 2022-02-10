@@ -31,7 +31,7 @@ import { PublicAccountInfo } from './ApiSession';
  * Please see our [dockerized-hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) for more info as to how to run a local, [dockerized](https://hub.docker.com/r/buidlerlabs/hedera-services), 
  * [hedera-services](https://github.com/hashgraph/hedera-services) network.
  */
-export const HEDERA_CUSTOM_NET_NAME: string = "customnet";
+export const HEDERA_CUSTOM_NET_NAME = "customnet";
 
 export const AVAILABLE_NETWORK_NAMES = {
   CustomNet: HEDERA_CUSTOM_NET_NAME, 
@@ -155,7 +155,7 @@ export class HederaNetwork {
    * }
    */
   private parseNetworkAddressBookFrom(val: string): HederaNodesAddressBook {
-    let networkInfo = {};
+    const networkInfo = {};
 
     if (val) {
       const nodeEntries = val.split(/\s*,\s*/);

@@ -143,7 +143,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
      * @throws - if there is no such event-name defined, an error gets thrown
      */
     public onEvent(name: string, clb: undefined | { (...args: any[]): void }) {
-        let eventExists = Object.values(this.interface.events).find(ev => ev.name === name) !== undefined;
+        const eventExists = Object.values(this.interface.events).find(ev => ev.name === name) !== undefined;
 
         if (!eventExists && UNHANDLED_EVENT_NAME !== name) {
             throw new Error(`There is no such event named '${name}' defined in this contract.`);
@@ -175,11 +175,11 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
     private async createContractRequestFor({ fDescription, args }: { fDescription: FunctionFragment, args: any[] })
         : Promise<{ meta: CreateContractRequestMeta, request: ContractFunctionCall }> {
         let requestOptionsPresentInArgs = false;
-        let constructorArgs: any = { 
+        const constructorArgs: any = { 
             contractId: this.id,
             gas: this.session.defaults.contractTransactionGas
         };
-        let meta: CreateContractRequestMeta = {
+        const meta: CreateContractRequestMeta = {
             emitReceipt: this.session.defaults.emitLiveContractReceipts
         };
         
@@ -276,6 +276,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
      * the contract's output function ABI specs.
      */
     private tryExtractingResponse(txResponse: ContractFunctionResult, fDescription: FunctionFragment) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const EthersBigNumber = require('@ethersproject/bignumber').BigNumber;
         let fResponse;
         const fResult = this.interface.decodeFunctionResult(fDescription, txResponse.asBytes());

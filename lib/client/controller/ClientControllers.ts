@@ -27,4 +27,4 @@ export class ClientControllers {
 
     return candidateClientControllers.length === 0 ? this.Unknown : candidateClientControllers[0].value;
   }
-};
+}
