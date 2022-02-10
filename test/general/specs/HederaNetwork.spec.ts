@@ -6,8 +6,8 @@ import {
 } from '@hashgraph/sdk';
 
 import { 
-  HederaNetwork, 
-  HEDERA_CUSTOM_NET_NAME 
+  HEDERA_CUSTOM_NET_NAME,
+  HederaNetwork 
 } from '../../../lib/HederaNetwork';
 
 describe('HederaNetwork', () => {
@@ -24,3 +24,4 @@ describe('HederaNetwork', () => {
     )).not.toThrowError();
   });
 });
+

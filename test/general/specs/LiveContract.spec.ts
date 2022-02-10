@@ -1,12 +1,13 @@
-import BigNumber from "bignumber.js";
 import {
   describe, expect, it,
 } from '@jest/globals';
+import BigNumber from "bignumber.js";
 import { ContractId } from "@hashgraph/sdk";
+
 import { load, read } from "../../utils";
-import { LiveContract } from "../../../lib/live/LiveContract";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
+import { LiveContract } from "../../../lib/live/LiveContract";
 
 describe('LiveContract', () => {
   it("emitting an event during contract construction time should be returned following a successfull upload", async () => {
