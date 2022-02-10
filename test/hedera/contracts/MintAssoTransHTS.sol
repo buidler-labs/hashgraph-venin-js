@@ -3,19 +3,18 @@ pragma solidity ^0.8.9;
 pragma experimental ABIEncoderV2;
 
 import "./hip-206/HederaTokenService.sol";
-import "./hip-206/HederaResponseCodes.sol";
-
 
 contract MintAssoTransHTS is HederaTokenService {
 
     address tokenAddress;
 
-    constructor(address _tokenAddress) public {
+    constructor(address _tokenAddress) {
         tokenAddress = _tokenAddress;
      }
 
+
     function mintFungibleToken(uint64 _amount) external {
-        (int response, uint64 newTotalSupply, int64[] memory serialNumbers) = HederaTokenService.mintToken(tokenAddress, _amount, new bytes[](0));
+        (int response, , ) = HederaTokenService.mintToken(tokenAddress, _amount, new bytes[](0));
            
         if (response != HederaResponseCodes.SUCCESS) {
             revert ("Mint Failed");

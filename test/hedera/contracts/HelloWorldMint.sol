@@ -10,22 +10,23 @@ contract HelloWorldMint is HederaResponseCodes {
 
     address tokenAddress;
 
-    constructor(address _tokenAddress) public {
+    constructor(address _tokenAddress) {
         tokenAddress = _tokenAddress;
     }
 
     function mint() public {
-        (int responseCode, uint64 newTotalSupply, int[] memory serialNumbers) = mintToken(tokenAddress, 0, new bytes[](1));
+        (int responseCode, , ) = mintToken(tokenAddress, 0, new bytes[](1));
         if (responseCode != 22) {
             revert();
         }
     }
 
-    function brrr(uint64 amount) public {
+    function brrr(uint64 amount) public returns(uint64) {
         (int responseCode, uint64 newTotalSupply, int[] memory serialNumbers) = mintToken(tokenAddress, amount, new bytes[](0));
         if (responseCode != 22 || serialNumbers.length > 0) {
             revert();
         }
+        return newTotalSupply;
     }
 
     function mintToken(address token, uint64 amount, bytes[] memory metadata) internal

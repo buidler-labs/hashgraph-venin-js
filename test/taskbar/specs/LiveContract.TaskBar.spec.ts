@@ -68,7 +68,7 @@ describe('LiveContract.TaskBar', () => {
     // Contracts
     const taskRegistryContract = await Contract.newFrom({ code: read({ contract: 'TaskRegistry' }), ignoreWarnings: true });
     const cappedRegistryHelperContract = await Contract.newFrom({ code: read({ contract: 'CappedRegistryHelper' }) });
-    const taskRegistryManagerContract = await Contract.newFrom({ code: read({ contract: 'WRegistryManager' }) });
+    const taskRegistryManagerContract = await Contract.newFrom({ code: read({ contract: 'RegistryManager' }) });
 
     // Live Contracts
     const cappedRegistryLiveContract = await session.upload(cappedRegistryHelperContract, maxNrOfTasksPerRegistry);
