@@ -32,8 +32,7 @@ contract NFTShop is HederaResponseCodes {
        _;
     }
 
-    //isPaymentCovered(pieces)
-    function mint(address to, uint256 amount) external payable returns (int64[] memory) {
+    function mint(address to, uint256 amount) external payable isPaymentCovered(amount) returns (int64[] memory) {
         bytes[] memory nftMetadatas = generateBytesArrayForHTS(
             metadata,
             amount
