@@ -23,7 +23,7 @@ describe('LiveContract.Hedera', () => {
 
     await expect(newTotalSupply).toEqual(1000 + 1);
     
-    const tokenInfo = await liveToken.getInfo();
+    const tokenInfo = await liveToken.getLiveEntityInfo();
     expect(tokenInfo.totalSupply.toNumber()).toEqual(newTotalSupply);
   });
 
@@ -39,7 +39,7 @@ describe('LiveContract.Hedera', () => {
 
     await expect(newTotalSupply).toEqual(1000 - 1);
     
-    const tokenInfo = await liveToken.getInfo();
+    const tokenInfo = await liveToken.getLiveEntityInfo();
     expect(tokenInfo.totalSupply.toNumber()).toEqual(newTotalSupply);
   });
 
@@ -74,8 +74,8 @@ describe('LiveContract.Hedera', () => {
     await liveContract.mintFungibleToken(150);
     await liveContract.tokenTransfer(session, aliceLiveAccount, 50);
 
-    const aliceInfo = await aliceLiveAccount.getInfo();
-    const tokenInfo = await liveToken.getInfo();
+    const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
+    const tokenInfo = await liveToken.getLiveEntityInfo();
     
     expect(aliceInfo.tokenRelationships._map.get(liveToken.id.toString()).balance.toNumber())
       .toEqual(50);
@@ -104,7 +104,7 @@ describe('LiveContract.Hedera', () => {
     // When
     await liveContract.tokenAssociate(aliceLiveAccount, liveToken);
   
-    const aliceInfo = await aliceLiveAccount.getInfo();
+    const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     
     expect(aliceInfo.tokenRelationships._map.has(liveToken.id.toString())).toBeTruthy();
   
@@ -132,7 +132,7 @@ describe('LiveContract.Hedera', () => {
     // When
     await liveContract.tokenAssociate(aliceLiveAccount, liveToken);
     await liveContract.tokenDissociate(aliceLiveAccount, liveToken);
-    const aliceInfo = await aliceLiveAccount.getInfo();
+    const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     
     // Then
     expect(aliceInfo.tokenRelationships._map.has(liveToken.id.toString())).toBeFalsy();
@@ -163,7 +163,7 @@ describe('LiveContract.Hedera', () => {
     // When
     await liveContract.tokensAssociate(aliceLiveAccount, [liveToken.getSolidityAddress(), liveToken2.getSolidityAddress()]);
   
-    const aliceInfo = await aliceLiveAccount.getInfo();
+    const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     
     expect(aliceInfo.tokenRelationships._map.has(liveToken.id.toString())).toBeTruthy();
     expect(aliceInfo.tokenRelationships._map.has(liveToken2.id.toString())).toBeTruthy();
@@ -194,7 +194,7 @@ describe('LiveContract.Hedera', () => {
     // When
     await liveContract.tokensAssociate(aliceLiveAccount, [liveToken.getSolidityAddress(), liveToken2.getSolidityAddress()]);
     await liveContract.tokensDissociate(aliceLiveAccount, [liveToken.getSolidityAddress(), liveToken2.getSolidityAddress()]);
-    const aliceInfo = await aliceLiveAccount.getInfo();
+    const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     
     // Then
     expect(aliceInfo.tokenRelationships._map.has(liveToken.id.toString())).toBeFalsy();
@@ -223,8 +223,8 @@ describe('LiveContract.Hedera', () => {
     const serialNumbers = await liveContract.mintNonFungibleToken(["ipfs-hash"]);
     await liveContract.transferNFT(aliceLiveAccount, serialNumbers[0].toNumber());
 
-    const aliceInfo = await aliceLiveAccount.getInfo();
-    const tokenInfo = await liveToken.getInfo();
+    const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
+    const tokenInfo = await liveToken.getLiveEntityInfo();
     
     expect(aliceInfo.ownedNfts.toNumber()).toEqual(1);
     expect(tokenInfo.totalSupply.toNumber()).toEqual(1);
@@ -255,9 +255,9 @@ describe('LiveContract.Hedera', () => {
       [aliceLiveAccount.getSolidityAddress(), benLiveAccount.getSolidityAddress()], 
       [serialNumbers[0].toNumber(), serialNumbers[1].toNumber()]);
 
-    const aliceInfo = await aliceLiveAccount.getInfo();
-    const benInfo = await benLiveAccount.getInfo();
-    const tokenInfo = await liveToken.getInfo();
+    const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
+    const benInfo = await benLiveAccount.getLiveEntityInfo();
+    const tokenInfo = await liveToken.getLiveEntityInfo();
     
     expect(aliceInfo.ownedNfts.toNumber()).toEqual(1);
     expect(benInfo.ownedNfts.toNumber()).toEqual(1);

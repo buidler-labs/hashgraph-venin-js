@@ -45,7 +45,7 @@ describe('LiveJson', () => {
         const uploadedLiveJson = await session.upload({ a: "some text", b: { c: 42.0 } });
         const retrievedLiveJson = await session.getLiveJson({ id: uploadedLiveJson.id });
 
-        const jsonInfo = await retrievedLiveJson.getInfo();
+        const jsonInfo = await retrievedLiveJson.getLiveEntityInfo();
         expect(jsonInfo).not.toBeNull();
         expect(jsonInfo.fileId).toBeInstanceOf(FileId);
     });

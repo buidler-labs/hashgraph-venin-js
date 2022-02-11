@@ -59,7 +59,7 @@ describe('LiveContract', () => {
     const naiveOwnerCheckContract = await Contract.newFrom({ code: read({ contract: 'naive_owner_check' }) });
     const liveContract = await session.upload(naiveOwnerCheckContract);
 
-    const contractInfo = await liveContract.getInfo();
+    const contractInfo = await liveContract.getLiveEntityInfo();
     
     await expect(contractInfo.contractId).toBeInstanceOf(ContractId);
   });

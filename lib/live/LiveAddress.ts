@@ -34,7 +34,7 @@ export class LiveAddress extends LiveEntity<string, void> implements SolidityAdd
         return typeof other === 'string' ? extractSolidityAddressFrom(other) === this.id : false;
     }
 
-    public getInfo(): Promise<void> {
+    public getLiveEntityInfo(): Promise<void> {
         throw new Error("Method does not exist for type LiveAddress");
     }
 }

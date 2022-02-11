@@ -37,7 +37,7 @@ describe('LiveAccount', () => {
       generateKey: false
     }));
 
-    const accountInfo = await account.getInfo();
+    const accountInfo = await account.getLiveEntityInfo();
     expect(accountInfo).not.toBeNull();
     expect(accountInfo.accountId).toBeInstanceOf(AccountId);
   });

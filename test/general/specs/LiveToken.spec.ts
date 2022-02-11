@@ -37,7 +37,7 @@ describe('LiveToken', () => {
     });
 
     it("getting info of newly created token, info is correct", async () => {
-        const info = await liveToken.getInfo();
+        const info = await liveToken.getLiveEntityInfo();
         const accPubKey = session.publicKey.toString();
         expect(info.adminKey.toString()).toEqual(accPubKey);
         expect(info.supplyKey.toString()).toEqual(accPubKey);
@@ -56,7 +56,7 @@ describe('LiveToken', () => {
         const account = await session.create(new Account());
 
         await liveToken.assignSupplyControlTo(account.publicKey);
-        const info = await liveToken.getInfo();
+        const info = await liveToken.getLiveEntityInfo();
 
         expect(account.publicKey.toString()).toEqual(info.supplyKey.toString());
     });
@@ -67,7 +67,7 @@ describe('LiveToken', () => {
         const liveContract = await session.upload(bytesContract);
 
         await liveToken.assignSupplyControlTo(liveContract);
-        const info = await liveToken.getInfo();
+        const info = await liveToken.getLiveEntityInfo();
 
         expect(liveContract.id.toString()).toEqual(info.supplyKey.toString());
     });

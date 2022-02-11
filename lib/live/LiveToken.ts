@@ -32,7 +32,7 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo> implements Solidit
     await this.session.execute(tokenUpdateTx, TypeOfExecutionReturn.Receipt, true);
   }
 
-  public async getInfo(): Promise<TokenInfo> {
+  public async getLiveEntityInfo(): Promise<TokenInfo> {
     const tokenInfoQuery = new TokenInfoQuery().setTokenId(this.id);
     return this.session.execute(tokenInfoQuery, TypeOfExecutionReturn.Result, false);
   }

@@ -23,7 +23,7 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements S
     return this.id.toSolidityAddress();
   }
 
-  public getInfo(): Promise<AccountInfo> {
+  public getLiveEntityInfo(): Promise<AccountInfo> {
     const accountInfoQuery = new AccountInfoQuery().setAccountId(this.id);
     return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
   }
