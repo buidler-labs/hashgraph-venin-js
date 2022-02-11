@@ -113,7 +113,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
       this.events = new EventEmitter();
       this.interface = cInterface;
 
-      // Dinamically inject ABI function handling
+      // Dynamically inject ABI function handling
       Object.values(this.interface.functions).forEach(fDescription => Object.defineProperty(this, fDescription.name, {
         enumerable: true,
         value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {

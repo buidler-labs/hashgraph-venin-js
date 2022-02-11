@@ -161,7 +161,7 @@ describe('LiveContract.Hedera', () => {
     controller.changeAccount(aliceLiveAccount.id, aliceLiveAccount.privateKey)
 
     // When
-    await liveContract.tokensAssociate(aliceLiveAccount, [liveToken.getSolidityAddress(), liveToken2.getSolidityAddress()]);
+    await liveContract.tokensAssociate(aliceLiveAccount, [liveToken, liveToken2]);
   
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     
@@ -192,8 +192,8 @@ describe('LiveContract.Hedera', () => {
     controller.changeAccount(aliceLiveAccount.id, aliceLiveAccount.privateKey)
 
     // When
-    await liveContract.tokensAssociate(aliceLiveAccount, [liveToken.getSolidityAddress(), liveToken2.getSolidityAddress()]);
-    await liveContract.tokensDissociate(aliceLiveAccount, [liveToken.getSolidityAddress(), liveToken2.getSolidityAddress()]);
+    await liveContract.tokensAssociate(aliceLiveAccount, [liveToken, liveToken2]);
+    await liveContract.tokensDissociate(aliceLiveAccount, [liveToken, liveToken2]);
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     
     // Then
@@ -251,9 +251,7 @@ describe('LiveContract.Hedera', () => {
     // When
     await liveToken.assignSupplyControlTo(liveContract);
     const serialNumbers = await liveContract.mintNonFungibleToken(["ipfs-hash", "another-ipfs-hash"]);
-    await liveContract.transferNFTs(
-      [aliceLiveAccount.getSolidityAddress(), benLiveAccount.getSolidityAddress()], 
-      [serialNumbers[0].toNumber(), serialNumbers[1].toNumber()]);
+    await liveContract.transferNFTs([aliceLiveAccount, benLiveAccount], [serialNumbers[0].toNumber(), serialNumbers[1].toNumber()]);
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const benInfo = await benLiveAccount.getLiveEntityInfo();
