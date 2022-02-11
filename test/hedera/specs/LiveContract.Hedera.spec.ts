@@ -2,12 +2,13 @@ import {
   describe, expect, it
 } from '@jest/globals';
 
-import { Hbar, TokenSupplyType, TokenType } from "@hashgraph/sdk";
+import { Hbar, TokenType } from "@hashgraph/sdk";
 
 import { Account, KeyType } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 import { Token } from '../../../lib/static/create/Token';
+import { defaultNonFungibleTokenSpecs } from "../../constants";
 import { read } from "../../utils";
 
 describe('LiveContract.Hedera', () => {
@@ -158,7 +159,7 @@ describe('LiveContract.Hedera', () => {
     const liveToken2 = await session.create(token2);
     const liveContract = await session.upload(contract, { _contract: { gas: 200_000 } });
   
-    controller.changeAccount(aliceLiveAccount.id, aliceLiveAccount.privateKey)
+    controller.changeAccount(aliceLiveAccount.id, aliceLiveAccount.privateKey);
 
     // When
     await liveContract.tokensAssociate(aliceLiveAccount, [liveToken, liveToken2]);
@@ -215,7 +216,7 @@ describe('LiveContract.Hedera', () => {
     // Make everything live
     const { session } = await ApiSession.default();
     const aliceLiveAccount = await session.create(account);
-    const liveToken = await session.create(nonFungibleTokenSpecs);
+    const liveToken = await session.create(new Token(defaultNonFungibleTokenSpecs));
     const liveContract = await session.upload(contract, { _contract: { gas: 200_000 } }, liveToken);
 
     // When
@@ -229,7 +230,6 @@ describe('LiveContract.Hedera', () => {
     expect(aliceInfo.ownedNfts.toNumber()).toEqual(1);
     expect(tokenInfo.totalSupply.toNumber()).toEqual(1);
   });
-
 
   it("given a non-fungible, live, token, a contract would make use of the HTS to mint multiple and make the NFT transfers to associated accounts", async () => {
 
@@ -245,7 +245,7 @@ describe('LiveContract.Hedera', () => {
     const { session } = await ApiSession.default();
     const aliceLiveAccount = await session.create(account);
     const benLiveAccount = await session.create(account);
-    const liveToken = await session.create(nonFungibleTokenSpecs);
+    const liveToken = await session.create(new Token(defaultNonFungibleTokenSpecs));
     const liveContract = await session.upload(contract, { _contract: { gas: 200_000 } }, liveToken);
 
     // When
@@ -262,18 +262,6 @@ describe('LiveContract.Hedera', () => {
     expect(tokenInfo.totalSupply.toNumber()).toEqual(2);
   });
 
-  const nonFungibleTokenSpecs = new Token({
-    decimals: 0,
-    initialSupply: 0,
-    keys: {
-      kyc: null
-    },
-    maxSupply: 10,
-    name: "hbarRocks",
-    supplyType: TokenSupplyType.Finite,
-    symbol: "HROKs",
-    type: TokenType.NonFungibleUnique,
-  });
 });
 
 
