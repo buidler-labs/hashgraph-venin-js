@@ -7,7 +7,7 @@ import { AccountId } from "@hashgraph/sdk";
 import { 
   load as loadResource, 
   read as readResource,
-  ResouorceReadOptions
+  ResourceReadOptions
 } from "../../utils";
 import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { LiveAddress } from "../../../lib/live/LiveAddress";
@@ -18,7 +18,7 @@ function load(contractPath: string) {
   return loadResource(contractPath, 'solidity-by-example');
 }
 
-function read(what: ResouorceReadOptions) {
+function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'solidity-by-example', ...what });
 }
 

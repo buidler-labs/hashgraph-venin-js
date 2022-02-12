@@ -13,7 +13,7 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
      * @param {ConstructorFragment|FunctionFragment} fDescription - The function/constructor schema
      * @param {Array} args - A list of arguments to be parsed into the underlying AbiDescription 
      */
-  static async newFor(fDescription: ConstructorFragment|FunctionFragment, args: any[]) {
+  static async newFor(fDescription: ConstructorFragment | FunctionFragment, args: any[]) {
     if (!Array.isArray(args)) {
       throw new ContractFunctionParametersParser("I need an array of args in order to construct the ContractFunctionParameters instance for.");
     } else if (fDescription.inputs.length !== args.length) {
@@ -30,16 +30,17 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
 
       if (fInputDescription.type.startsWith('address')) {
         const considerMappingSolidityAddressableToAddress = (arg: any): string => isSolidityAddressable(arg) ? arg.getSolidityAddress() : arg;
-        if(Array.isArray(argToAdd)) {
+        if (Array.isArray(argToAdd)) {
           argToAdd = argToAdd.map(considerMappingSolidityAddressableToAddress);
-        } else{
+        } else {
           argToAdd = considerMappingSolidityAddressableToAddress(argToAdd);
         }
       } else if (shouldUseBigNumbers) {
+        const toBigNumber = (arg: any): BigNumber => arg instanceof BigNumber ? arg : new BigNumber(arg);
         if (Array.isArray(argToAdd)) {
-          argToAdd = argToAdd.map(v => v instanceof BigNumber ? v : new BigNumber(v));
+          argToAdd = argToAdd.map(toBigNumber);
         } else {
-          argToAdd = argToAdd instanceof BigNumber ? argToAdd : new BigNumber(argToAdd);
+          argToAdd = toBigNumber(argToAdd);
         }
       }
       toReturn[fctCallName](argToAdd);

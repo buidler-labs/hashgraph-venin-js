@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.9;
 
-import "./hip-206/HederaTokenService.sol";
+import "../../hedera/contracts/hip-206/HederaTokenService.sol";
 
 contract HelloWorldMint is HederaTokenService {
 

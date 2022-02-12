@@ -2,14 +2,14 @@ import {
     expect, describe, it,
 } from '@jest/globals';
 
-import { read as readResource, ResouorceReadOptions } from '../../utils';
+import { read as readResource, ResourceReadOptions } from '../../utils';
 import { Contract } from '../../../lib/static/upload/Contract';
 
 const CALL_CALLER_BYTECODE = read({ solo: 'call_caller' }).evm.bytecode.object;
 const CALL_RECEIVER_BYTECODE = read({ solo: 'call_receiver' }).evm.bytecode.object;
 const HELLO_WORLD_BYTECODE = read({ solo: 'hello_world' }).evm.bytecode.object;
 
-function read(what: ResouorceReadOptions) {
+function read(what: ResourceReadOptions) {
     return readResource({ relativeTo: 'solidity-by-example', ...what });
 }
 

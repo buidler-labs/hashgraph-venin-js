@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.9;
 
-import "./hip-206/IHederaTokenService.sol";
-import "./hip-206/HederaResponseCodes.sol";
+import "../../hedera/contracts/hip-206/IHederaTokenService.sol";
+import "../../hedera/contracts/hip-206/HederaResponseCodes.sol";
 
 contract NFTShop is HederaResponseCodes {
     address constant precompileAddress = address(0x167);

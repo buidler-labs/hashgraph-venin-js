@@ -3,27 +3,26 @@ import {
   describe, expect, it
 } from '@jest/globals';
 
-import { Account, KeyType } from '../../../lib/static/create/Account';
+import { ResourceReadOptions, read as readResource } from "../../utils";
+import { defaultEd25519AccountFeatures, defaultNonFungibleTokenFeatures } from "../../constants";
+import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 import { LiveAccountWithPrivateKey } from '../../../lib/live/LiveAccount';
 import { Token } from '../../../lib/static/create/Token';
-import { defaultNonFungibleTokenSpecs } from "../../constants";
-import { read } from "../../utils";
+
+function read(what : ResourceReadOptions) {
+  return readResource({ relativeTo: 'hscs', ...what })
+}
 
 describe('LiveContract.NFTShop', () => {
 
   it("Given an NFT Shop, a user is able to mint", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
-    const account = new Account({
-      generateKey: true,
-      initialBalance: new Hbar(80),
-      keyType: KeyType.ED25519,
-      maxAutomaticTokenAssociations: 1
-    });
+    const account = new Account({ ...defaultEd25519AccountFeatures, initialBalance: new Hbar(80)});
 
-    const contract = await Contract.newFrom({ code: read({ contract: 'NFTShop', relativeTo: 'hedera' }), ignoreWarnings: true });
+    const contract = await Contract.newFrom({ code: read({ contract: 'NFTShop' }), ignoreWarnings: true });
 
     const client = Client.forNetwork({ '127.0.0.1:50211': new AccountId(3) })
       .setOperator(process.env.HEDERAS_OPERATOR_ID, process.env.HEDERAS_OPERATOR_KEY);
@@ -38,7 +37,7 @@ describe('LiveContract.NFTShop', () => {
       session
     });
 
-    const token = new Token(defaultNonFungibleTokenSpecs);
+    const token = new Token(defaultNonFungibleTokenFeatures);
 
     const liveToken = await session.create(token);
     const liveContract = await session.upload(

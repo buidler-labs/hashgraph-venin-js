@@ -1,19 +1,19 @@
-import BigNumber from "bignumber.js";
 import {
   describe, expect, it,
 } from '@jest/globals';
+import BigNumber from "bignumber.js";
 import { Hbar } from "@hashgraph/sdk";
 import { arrayify } from '@ethersproject/bytes';
 
 import { 
-  ResouorceReadOptions, 
+  ResourceReadOptions, 
   read as readResource
 } from "../../utils";
-import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
+import { LiveEntity } from "../../../lib/live/LiveEntity";
 
-function read(what: ResouorceReadOptions) {
+function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'taskbar', ...what });
 }
 
