@@ -4,7 +4,7 @@ import {
 import { Hbar } from "@hashgraph/sdk";
 
 import { ResourceReadOptions, read as readResource } from "../../utils";
-import { defaultEd25519AccountFeatures, defaultFungibleTokenFeatures, defaultNonFungibleTokenFeatures } from "../../constants";
+import { defaultFungibleTokenFeatures, defaultNonFungibleTokenFeatures } from "../../constants";
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
@@ -35,7 +35,7 @@ describe('LiveContract.Strato', () => {
 
   it("given a fungible, live, token, associating it to a live-contract should allow the contract to control the supply and transfer to associated accounts", async () => {
     const token = new Token({... defaultFungibleTokenFeatures, ...{initialSupply: 1000}});
-    const account = new Account(defaultEd25519AccountFeatures);
+    const account = new Account({maxAutomaticTokenAssociations: 1});
     const contract = await Contract.newFrom({ code: read({ contract: 'MintTransHTS' }), ignoreWarnings: true });
 
     // Make everything live
@@ -58,7 +58,7 @@ describe('LiveContract.Strato', () => {
   });
 
   it("given a non-fungible, live, token, a contract would make use of the HTS to mint and make the NFT transfer to associated accounts", async () => {
-    const account = new Account({ ...defaultEd25519AccountFeatures, initialBalance: new Hbar(10) });
+    const account = new Account({ initialBalance: new Hbar(10), maxAutomaticTokenAssociations: 1 });
     const contract = await Contract.newFrom({ code: read({ contract: 'MintTransHTS' }), ignoreWarnings: true });
 
     // Make everything live
@@ -82,7 +82,7 @@ describe('LiveContract.Strato', () => {
 
   it("given a non-fungible, live, token, a contract would make use of the HTS to mint multiple and make the NFT transfers to associated accounts", async () => {
 
-    const account = new Account(defaultEd25519AccountFeatures);
+    const account = new Account({maxAutomaticTokenAssociations: 1});
     const contract = await Contract.newFrom({ code: read({ contract: 'MintTransHTS' }), ignoreWarnings: true });
 
     // Make everything live

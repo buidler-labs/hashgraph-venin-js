@@ -1,11 +1,11 @@
-import { PrivateKey, AccountId, TransferTransaction, TransactionId } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TransactionId, TransferTransaction } from '@hashgraph/sdk';
 import {
-  expect, describe, it,
+  describe, expect, it,
 } from '@jest/globals';
 
+import { Account, KeyType } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { LiveAccountWithPrivateKey } from '../../../lib/live/LiveAccount';
-import { Account, KeyType } from '../../../lib/static/create/Account';
 import { getKeyTypeFor } from '../../utils';
 
 describe('LiveAccount', () => {
@@ -20,7 +20,6 @@ describe('LiveAccount', () => {
   it("a session should allow for the creation of accounts with ECSDA key types if explicitly requested", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account({
-      generateKey: true,
       keyType: KeyType.ECSDA
     }));
 
@@ -32,9 +31,7 @@ describe('LiveAccount', () => {
     const { session } = await ApiSession.default();
     const privKey = PrivateKey.generateECDSA();
     const account = await session.create(new Account({
-      key: privKey,
-      keyType: KeyType.ECSDA,
-      generateKey: false
+      key: privKey
     }));
 
     const accountInfo = await account.getLiveEntityInfo();
@@ -46,7 +43,7 @@ describe('LiveAccount', () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account());
 
-    let transaction = new TransferTransaction()
+    const transaction = new TransferTransaction()
       .setTransactionId(TransactionId.generate(session.accountId))
       .setNodeAccountIds([new AccountId(2)])
       .freeze();

@@ -1,8 +1,8 @@
 import { AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { SolidityAddressable } from "../core/SolidityAddressable";
 import { LiveEntity } from "./LiveEntity";
+import { SolidityAddressable } from "../core/SolidityAddressable";
 
 type LiveAccountConstructorArgs = {
   session: ApiSession,
@@ -33,12 +33,12 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements S
  * A wrapper class that contains both a {@link LiveAccount} and its associated private-key generated, most likely, at network-creation time.
  * Consequently, this is meant to be generated when first {@link ApiSession.create}-ing an {@link Account}.
  */
- export class LiveAccountWithPrivateKey extends LiveAccount {
+export class LiveAccountWithPrivateKey extends LiveAccount {
   public readonly privateKey: PrivateKey;
 
   constructor({ session, id, publicKey, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {
-      super({ session, id, publicKey });
-      this.privateKey = privateKey;
+    super({ id, publicKey, session });
+    this.privateKey = privateKey;
   }
 
   public tryToSign(transaction: Transaction): void {

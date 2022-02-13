@@ -4,7 +4,7 @@ import {
 } from '@jest/globals';
 
 import { ResourceReadOptions, read as readResource } from "../../utils";
-import { defaultEd25519AccountFeatures, defaultNonFungibleTokenFeatures } from "../../constants";
+import { defaultNonFungibleTokenFeatures } from "../../constants";
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
@@ -20,7 +20,7 @@ describe('LiveContract.NFTShop', () => {
   it("Given an NFT Shop, a user is able to mint", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
-    const account = new Account({ ...defaultEd25519AccountFeatures, initialBalance: new Hbar(80)});
+    const account = new Account({ initialBalance: new Hbar(80), maxAutomaticTokenAssociations: 1});
 
     const contract = await Contract.newFrom({ code: read({ contract: 'NFTShop' }), ignoreWarnings: true });
 
