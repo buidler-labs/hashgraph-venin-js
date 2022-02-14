@@ -3,8 +3,8 @@ import {
 } from '@jest/globals';
 import { Hbar } from "@hashgraph/sdk";
 
+import { GasFees, defaultFungibleTokenFeatures, defaultNonFungibleTokenFeatures } from "../../constants";
 import { ResourceReadOptions, read as readResource } from "../../utils";
-import { defaultFungibleTokenFeatures, defaultNonFungibleTokenFeatures } from "../../constants";
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
@@ -18,7 +18,7 @@ describe('LiveContract.Strato', () => {
 
   it("given a fungible, live, token, burning over a precompiled contract-service bridge should be permitted", async () => {
     const contract = await Contract.newFrom({ code: read({ contract: 'HelloWorldBurn'}), ignoreWarnings: true });
-    const token = new Token({... defaultFungibleTokenFeatures, ...{initialSupply: 1000}});
+    const token = new Token({... defaultFungibleTokenFeatures, initialSupply: 1000});
 
     const { session } = await ApiSession.default();
     const liveToken = await session.create(token);
@@ -34,7 +34,7 @@ describe('LiveContract.Strato', () => {
   });
 
   it("given a fungible, live, token, associating it to a live-contract should allow the contract to control the supply and transfer to associated accounts", async () => {
-    const token = new Token({... defaultFungibleTokenFeatures, ...{initialSupply: 1000}});
+    const token = new Token({... defaultFungibleTokenFeatures, initialSupply: 1000});
     const account = new Account({maxAutomaticTokenAssociations: 1});
     const contract = await Contract.newFrom({ code: read({ contract: 'MintTransHTS' }), ignoreWarnings: true });
 
@@ -46,8 +46,8 @@ describe('LiveContract.Strato', () => {
 
     // When
     await liveToken.assignSupplyControlTo(liveContract);
-    await liveContract.mintFungibleToken(150);
-    await liveContract.tokenTransfer(session, aliceLiveAccount, 50);
+    await liveContract.mintFungibleToken({ gas: GasFees.mintToken }, 150);
+    await liveContract.tokenTransfer({ gas: GasFees.transferToken }, session, aliceLiveAccount, 50);
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const tokenInfo = await liveToken.getLiveEntityInfo();
@@ -69,8 +69,8 @@ describe('LiveContract.Strato', () => {
 
     // When
     await liveToken.assignSupplyControlTo(liveContract);
-    const serialNumbers = await liveContract.mintNonFungibleToken(["ipfs-hash"]);
-    await liveContract.transferNFT(aliceLiveAccount, serialNumbers[0].toNumber());
+    const serialNumbers = await liveContract.mintNonFungibleToken({ gas: GasFees.mintToken }, ["ipfs-hash"]);
+    await liveContract.transferNFT({ gas: GasFees.transferToken }, aliceLiveAccount, serialNumbers[0].toNumber());
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const tokenInfo = await liveToken.getLiveEntityInfo();
@@ -94,8 +94,8 @@ describe('LiveContract.Strato', () => {
 
     // When
     await liveToken.assignSupplyControlTo(liveContract);
-    const serialNumbers = await liveContract.mintNonFungibleToken(["ipfs-hash", "another-ipfs-hash"]);
-    await liveContract.transferNFTs([aliceLiveAccount, benLiveAccount], [serialNumbers[0].toNumber(), serialNumbers[1].toNumber()]);
+    const serialNumbers = await liveContract.mintNonFungibleToken({ gas: GasFees.mintToken }, ["ipfs-hash", "another-ipfs-hash"]);
+    await liveContract.transferNFTs({ gas: GasFees.transferToken }, [aliceLiveAccount, benLiveAccount], [serialNumbers[0].toNumber(), serialNumbers[1].toNumber()]);
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const benInfo = await benLiveAccount.getLiveEntityInfo();
@@ -108,6 +108,3 @@ describe('LiveContract.Strato', () => {
   });
 
 });
-
-
-

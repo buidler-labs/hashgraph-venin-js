@@ -3,11 +3,11 @@ import {
 } from '@jest/globals';
 import { Hbar } from "@hashgraph/sdk";
 
+import { GasFees, defaultFungibleTokenFeatures } from "../../constants";
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 import { Token } from '../../../lib/static/create/Token';
-import { defaultFungibleTokenFeatures } from "../../constants";
 import { read } from "../../utils";
 
 describe('LiveContract.Hedera', () => {
@@ -43,7 +43,7 @@ describe('LiveContract.Hedera', () => {
     controller.changeAccount(aliceLiveAccount.id, aliceLiveAccount.privateKey)
 
     // When
-    await liveContract.tokenAssociate(aliceLiveAccount, liveToken);
+    await liveContract.tokenAssociate({ gas: GasFees.associateToken }, aliceLiveAccount, liveToken);
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
 
     // Then
@@ -64,8 +64,8 @@ describe('LiveContract.Hedera', () => {
     controller.changeAccount(aliceLiveAccount.id, aliceLiveAccount.privateKey)
 
     // When
-    await liveContract.tokenAssociate(aliceLiveAccount, liveToken);
-    await liveContract.tokenDissociate(aliceLiveAccount, liveToken);
+    await liveContract.tokenAssociate({ gas: GasFees.associateToken }, aliceLiveAccount, liveToken);
+    await liveContract.tokenDissociate({ gas: GasFees.dissociateToken }, aliceLiveAccount, liveToken);
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
 
     // Then
@@ -90,7 +90,7 @@ describe('LiveContract.Hedera', () => {
     controller.changeAccount(aliceLiveAccount.id, aliceLiveAccount.privateKey);
 
     // When
-    await liveContract.tokensAssociate(aliceLiveAccount, [liveToken, liveToken2]);
+    await liveContract.tokensAssociate({ gas: GasFees.associateToken }, aliceLiveAccount, [liveToken, liveToken2]);
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
 
     // Then
@@ -114,8 +114,8 @@ describe('LiveContract.Hedera', () => {
     controller.changeAccount(aliceLiveAccount.id, aliceLiveAccount.privateKey)
 
     // When
-    await liveContract.tokensAssociate(aliceLiveAccount, [liveToken, liveToken2]);
-    await liveContract.tokensDissociate(aliceLiveAccount, [liveToken, liveToken2]);
+    await liveContract.tokensAssociate({ gas: GasFees.associateToken }, aliceLiveAccount, [liveToken, liveToken2]);
+    await liveContract.tokensDissociate({ gas: GasFees.dissociateToken }, aliceLiveAccount, [liveToken, liveToken2]);
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
 
     // Then
@@ -123,6 +123,3 @@ describe('LiveContract.Hedera', () => {
     expect(aliceInfo.tokenRelationships._map.has(liveToken2.id.toString())).toBeFalsy();
   });
 });
-
-
-

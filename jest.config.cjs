@@ -11,9 +11,8 @@ module.exports = {
   testMatch: [
     "**/?(*.)+(spec|test).ts"
   ],
-  testTimeout: 180000,
+  testTimeout: 300000,
   transform: {
     "^.+\\.ts?$": "ts-jest"
   },
 };
-  

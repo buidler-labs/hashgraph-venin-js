@@ -23,6 +23,7 @@ import { Contract } from "../static/upload/Contract";
 import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
 import { LiveAddress } from "./LiveAddress";
 import { LiveEntity } from "./LiveEntity";
+import Long from "long";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
@@ -185,7 +186,10 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
         
       // Try to unpack common meta-args that can be passed in at query/transaction construction time
       if (args && args.length > 0) {
-        if (Number.isInteger(args[0].gas)) {
+        if (args[0].gas instanceof Hbar) {
+          args[0].gas = args[0].gas.toTinybars();
+        }
+        if (Number.isInteger(args[0].gas) || args[0].gas instanceof Long) {
           constructorArgs.gas = args[0].gas;
           requestOptionsPresentInArgs = true;
         }

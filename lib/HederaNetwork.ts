@@ -92,7 +92,9 @@ export class HederaNetwork {
     if (HEDERA_CUSTOM_NET_NAME === this.name) {
       return Client.forNetwork(this.nodes);
     }
-    return Client.forName(this.name as NetworkName);
+    // TODO: remove 'setMaxNodesPerTransaction' once upgrading away from 2.7.0 and tests are passing
+    return Client.forName(this.name as NetworkName)
+      .setMaxNodesPerTransaction(1);
   }
 
   /**
