@@ -6,17 +6,17 @@ import elliptic from "elliptic";
 import nacl from "tweetnacl";
 
 import { ApiSession } from '../lib/ApiSession';
-import { LiveContract } from '../lib/live/LiveContract';
-import { KeyType } from '../lib/static/create/Account';
 import { Contract } from '../lib/static/upload/Contract';
+import { KeyType } from '../lib/static/create/Account';
+import { LiveContract } from '../lib/live/LiveContract';
 
-export type ResouorceReadOptions = { relativeTo?: string, contract?: string, solo?: string };
+export type ResourceReadOptions = { relativeTo?: string, contract?: string, solo?: string };
 
 const derPrefix = "3030020100300706052b8104000a04220420";
 const derPrefixBytes = Buffer.from(derPrefix, "hex");
 const secp256k1 = new elliptic.ec("secp256k1");
 
-export function read({ relativeTo = 'general', contract, solo }: ResouorceReadOptions) {
+export function read({ relativeTo = 'general', contract, solo }: ResourceReadOptions) {
   if (undefined != contract) {
     return fs.readFileSync(path.join(__dirname, `${relativeTo}/contracts`, `${contract}.sol`), 'utf8');
   } else {

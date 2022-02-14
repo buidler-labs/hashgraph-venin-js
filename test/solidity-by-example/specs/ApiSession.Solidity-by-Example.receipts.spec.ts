@@ -10,11 +10,11 @@ import {
     TransactionRecordQuery 
 } from '@hashgraph/sdk';
 
-import { read as readResource, ResouorceReadOptions } from '../../utils';
+import { read as readResource, ResourceReadOptions } from '../../utils';
 import { Contract } from '../../../lib/static/upload/Contract';
 import { ApiSession } from '../../..';
 
-function read(what: ResouorceReadOptions) {
+function read(what: ResourceReadOptions) {
     return readResource({ relativeTo: 'solidity-by-example', ...what });
 }
 

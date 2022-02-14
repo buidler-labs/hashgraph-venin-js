@@ -1,5 +1,5 @@
 export interface SolidityAddressable {
-    getSolidityAddress(): Promise<string>;
+    getSolidityAddress(): string;
 }
 
 export function isSolidityAddressable(arg: any): arg is SolidityAddressable {

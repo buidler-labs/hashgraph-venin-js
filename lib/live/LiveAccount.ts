@@ -1,8 +1,8 @@
-import { AccountId, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
+import { AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
 
-import { ApiSession } from "../ApiSession";
-import { SolidityAddressable } from "../core/SolidityAddressable";
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveEntity } from "./LiveEntity";
+import { SolidityAddressable } from "../core/SolidityAddressable";
 
 type LiveAccountConstructorArgs = {
   session: ApiSession,
@@ -10,7 +10,8 @@ type LiveAccountConstructorArgs = {
   publicKey: PublicKey,
 };
 
-export class LiveAccount extends LiveEntity<AccountId> implements SolidityAddressable {
+export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements SolidityAddressable {
+  
   public readonly publicKey: PublicKey;
 
   constructor({ session, id, publicKey }: LiveAccountConstructorArgs) {
@@ -18,8 +19,13 @@ export class LiveAccount extends LiveEntity<AccountId> implements SolidityAddres
     this.publicKey = publicKey;
   }
   
-  public async getSolidityAddress(): Promise<string> {
+  public getSolidityAddress(): string {
     return this.id.toSolidityAddress();
+  }
+
+  public getLiveEntityInfo(): Promise<AccountInfo> {
+    const accountInfoQuery = new AccountInfoQuery().setAccountId(this.id);
+    return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
   }
 }
 
@@ -27,12 +33,12 @@ export class LiveAccount extends LiveEntity<AccountId> implements SolidityAddres
  * A wrapper class that contains both a {@link LiveAccount} and its associated private-key generated, most likely, at network-creation time.
  * Consequently, this is meant to be generated when first {@link ApiSession.create}-ing an {@link Account}.
  */
- export class LiveAccountWithPrivateKey extends LiveAccount {
+export class LiveAccountWithPrivateKey extends LiveAccount {
   public readonly privateKey: PrivateKey;
 
   constructor({ session, id, publicKey, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {
-      super({ session, id, publicKey });
-      this.privateKey = privateKey;
+    super({ id, publicKey, session });
+    this.privateKey = privateKey;
   }
 
   public tryToSign(transaction: Transaction): void {

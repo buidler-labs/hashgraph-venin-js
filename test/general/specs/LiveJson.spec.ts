@@ -1,6 +1,7 @@
 import {
     expect, describe, it,
 } from '@jest/globals';
+import { FileId } from "@hashgraph/sdk";
 import { ApiSession } from '../../../lib/ApiSession';
 
 import { Json } from '../../../lib/static/upload/Json';
@@ -37,5 +38,15 @@ describe('LiveJson', () => {
 
         expect(uploadedLiveJson.a).toEqual(retrievedLiveJson.a);
         expect(uploadedLiveJson.b).toEqual(retrievedLiveJson.b);
+    });
+
+    it("getting info for a file, the information about the file is correctly fetched", async () => {
+        const { session } = await ApiSession.default();
+        const uploadedLiveJson = await session.upload({ a: "some text", b: { c: 42.0 } });
+        const retrievedLiveJson = await session.getLiveJson({ id: uploadedLiveJson.id });
+
+        const jsonInfo = await retrievedLiveJson.getLiveEntityInfo();
+        expect(jsonInfo).not.toBeNull();
+        expect(jsonInfo.fileId).toBeInstanceOf(FileId);
     });
 });

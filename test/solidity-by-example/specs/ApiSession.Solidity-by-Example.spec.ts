@@ -4,11 +4,11 @@ import {
   jest
 } from '@jest/globals';
 
-import { read as readResource, ResouorceReadOptions } from '../../utils';
+import { read as readResource, ResourceReadOptions } from '../../utils';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 
-function read(what: ResouorceReadOptions) {
+function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'solidity-by-example', ...what });
 }
 

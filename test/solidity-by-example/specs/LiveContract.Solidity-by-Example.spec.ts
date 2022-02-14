@@ -7,7 +7,7 @@ import { AccountId } from "@hashgraph/sdk";
 import { 
   load as loadResource, 
   read as readResource,
-  ResouorceReadOptions
+  ResourceReadOptions
 } from "../../utils";
 import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { LiveAddress } from "../../../lib/live/LiveAddress";
@@ -18,14 +18,14 @@ function load(contractPath: string) {
   return loadResource(contractPath, 'solidity-by-example');
 }
 
-function read(what: ResouorceReadOptions) {
+function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'solidity-by-example', ...what });
 }
 
 describe('LiveContract.Solidity-by-Example', () => {
   it("creating a contract should allow its live-address to be convertable to the underlying model", async () => {
     const { session } = await ApiSession.default();
-    const hapiSessionOwnerAddress = await session.getSolidityAddress();
+    const hapiSessionOwnerAddress = session.getSolidityAddress();
     const carContract = await Contract.newFrom({ code: read({ contract: 'new_contract' }), name: 'Car', ignoreWarnings: true });
     const carFactoryContract = await Contract.newFrom({ code: read({ contract: 'new_contract' }), name: 'CarFactory', ignoreWarnings: true });
     const liveCarFactoryContract = await session.upload(carFactoryContract);
@@ -52,7 +52,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     const returnedMyAddress = await liveContract.MY_ADDRESS();
 
     expect(returnedMyAddress).toBeInstanceOf(LiveEntity);
-    expect(returnedMyAddress.equals(await session.getSolidityAddress())).toBeTruthy();
+    expect(returnedMyAddress.equals(session.getSolidityAddress())).toBeTruthy();
     await expect(liveContract.MY_UINT()).resolves.toEqual(uintArgForConstructor);
   });
 

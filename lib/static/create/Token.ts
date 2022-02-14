@@ -8,10 +8,10 @@ import {
 } from "@hashgraph/sdk";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
-import { LiveToken } from "../../live/LiveToken";
 import { ArgumentsForCreate } from "../../core/CreatableEntity";
-import { TypeOfExecutionReturn } from "../../ApiSession";
 import { BasicCreatableEntity } from "./BasicCreatableEntity";
+import { LiveToken } from "../../live/LiveToken";
+import { TypeOfExecutionReturn } from "../../ApiSession";
 
 export type TokenFeatures = {
   name: string,
@@ -57,8 +57,8 @@ export class Token extends BasicCreatableEntity<LiveToken> {
       pauseKey: this.info.keys?.pause !== null ? this.info.keys?.pause ?? session.publicKey : undefined,
       supplyKey: this.info.keys?.supply !== null ? this.info.keys?.supply ?? session.publicKey : undefined,
       tokenName: this.info.name,
-      tokenType: this.info.type,
       tokenSymbol: this.info.symbol,
+      tokenType: this.info.type,
       treasuryAccountId: session.accountId,
       wipeKey: this.info.keys?.wipe !== null ? this.info.keys?.wipe ?? session.publicKey : undefined,
 

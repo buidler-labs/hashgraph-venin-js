@@ -11,8 +11,11 @@ module.exports = {
   ],
   root: true,
   rules: {
+    "@typescript-eslint/no-explicit-any": "off",
     "indent": [ "warn", 2, { "FunctionExpression": {"body": 1, "parameters": 2}, "ImportDeclaration": 1, "MemberExpression": 1, "SwitchCase": 1 } ],
-    "sort-imports": ["warn"],
-    "sort-keys": ["warn", "asc", { "caseSensitive": true, "minKeys": 2, "natural": false }],
+    "sort-imports": ["warn", {
+      "allowSeparatedGroups": true
+    }],
+    "sort-keys": ["warn", "asc", { "caseSensitive": true, "minKeys": 2, "natural": false }]
   }
 };

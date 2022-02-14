@@ -1,19 +1,19 @@
-import BigNumber from "bignumber.js";
 import {
   describe, expect, it,
 } from '@jest/globals';
+import BigNumber from "bignumber.js";
 import { Hbar } from "@hashgraph/sdk";
 import { arrayify } from '@ethersproject/bytes';
 
 import { 
-  ResouorceReadOptions, 
+  ResourceReadOptions, 
   read as readResource
 } from "../../utils";
-import { LiveEntity } from "../../../lib/live/LiveEntity";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
+import { LiveEntity } from "../../../lib/live/LiveEntity";
 
-function read(what: ResouorceReadOptions) {
+function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'taskbar', ...what });
 }
 
@@ -68,7 +68,7 @@ describe('LiveContract.TaskBar', () => {
     // Contracts
     const taskRegistryContract = await Contract.newFrom({ code: read({ contract: 'TaskRegistry' }), ignoreWarnings: true });
     const cappedRegistryHelperContract = await Contract.newFrom({ code: read({ contract: 'CappedRegistryHelper' }) });
-    const taskRegistryManagerContract = await Contract.newFrom({ code: read({ contract: 'WRegistryManager' }) });
+    const taskRegistryManagerContract = await Contract.newFrom({ code: read({ contract: 'RegistryManager' }) });
 
     // Live Contracts
     const cappedRegistryLiveContract = await session.upload(cappedRegistryHelperContract, maxNrOfTasksPerRegistry);
@@ -81,7 +81,7 @@ describe('LiveContract.TaskBar', () => {
 
     // Register events of interest
     taskRegistryLiveContract.onEvent("OwnershipTransferred", async ({ previousOwner, newOwner }) => {
-      const hapAccountSolidityAddress = `0x${await session.getSolidityAddress()}`; 
+      const hapAccountSolidityAddress = `0x${session.getSolidityAddress()}`; 
       
       expect(previousOwner).toEqual('0x0000000000000000000000000000000000000002');
       expect(newOwner).toEqual(hapAccountSolidityAddress);
