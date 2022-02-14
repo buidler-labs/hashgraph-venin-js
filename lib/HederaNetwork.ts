@@ -1,14 +1,14 @@
-import axios from 'axios';
 import { 
   AccountId, 
-  Client, 
-  PublicKey
+  Client
 } from "@hashgraph/sdk";
 import { NetworkName } from "@hashgraph/sdk/lib/client/Client";
 
+import { 
+  HederaNodesAddressBook, 
+  NetworkRuntimeParameters 
+} from "./StratoContext";
 import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
-import { HederaNodesAddressBook, NetworkRuntimeParameters } from "./StratoContext";
-import { PublicAccountInfo } from './ApiSession';
 
 /**
  * The Hedera Network label value used in library configurations (such as the {@link HederaNetwork.defaultApiSession} method) to signify 
@@ -35,58 +35,14 @@ export const HEDERA_CUSTOM_NET_NAME = "customnet";
 
 export const AVAILABLE_NETWORK_NAMES = {
   CustomNet: HEDERA_CUSTOM_NET_NAME, 
-  MainNet: "mainnet", 
-  TestNet: "testnet", 
-  PreviewNet: "previewnet" 
+  MainNet: "mainnet",
+  PreviewNet: "previewnet", 
+  TestNet: "testnet"
 };
 
 export type NetworkDefaults = { 
   fileChunkSize: number
 };
-
-/**
- * Example for GET https://testnet.mirrornode.hedera.com/api/v1/accounts?account.id=0.0.15655455 : {
-  "accounts": [
-    {
-      "account": "0.0.15655455",
-      "auto_renew_period": 7890000,
-      "balance": {
-        "balance": 1000000000000,
-        "timestamp": "1643201100.161418000",
-        "tokens": [
-          { "token_id": "0.0.28541430", "balance": 0 },
-          { "token_id": "0.0.28541431", "balance": 5 },
-          { "token_id": "0.0.28541432", "balance": 5 }
-        ]
-      },
-      "deleted": false,
-      "expiry_timestamp": null,
-      "key": {
-        "_type": "ED25519",
-        "key": "1cd2be85ba8fc45d175b23e2ae47285109297dfd5542f096af0d404880ab98c5"
-      },
-      "max_automatic_token_associations": 0,
-      "memo": "",
-      "receiver_sig_required": false
-    }
-  ],
-  "links": { "next": null }
-} */
-class HederaAccountInfo {
-  constructor(private readonly info: any) {
-    // TODO: map other properties if required & validate the provided ones
-    //       assume there's only one account response present in the info parameter
-  }
-
-  public get asSessionAccountInfo(): PublicAccountInfo {
-    const accountOfInterest = this.info.accounts[0];
-
-    return {
-      id: AccountId.fromString(accountOfInterest.account),
-      publicKey: PublicKey.fromString(accountOfInterest.key.key)
-    }
-  }
-}
 
 /**
  * The main entry-class for the Hedera Strato library.
@@ -122,12 +78,12 @@ export class HederaNetwork {
     } catch(e) {
       // This is a non-standard client. Maybe it's a local-net one?
       if (HEDERA_CUSTOM_NET_NAME === this.name) {
-          if (!this.nodes || Object.keys(this.nodes).length === 0) {
-              throw new EnvironmentInvalidError(`Please provide a list of network nodes in order to use a ${this.name} network.`);
-          }
+        if (!this.nodes || Object.keys(this.nodes).length === 0) {
+          throw new EnvironmentInvalidError(`Please provide a list of network nodes in order to use a ${this.name} network.`);
+        }
       } else {
-          // Note: this should never happen, but still ... better play it safe
-          throw new EnvironmentInvalidError(`There is no such ${this.name} network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(', ')}`);
+        // Note: this should never happen, but still ... better play it safe
+        throw new EnvironmentInvalidError(`There is no such ${this.name} network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(', ')}`);
       }
     }
   }
@@ -137,12 +93,6 @@ export class HederaNetwork {
       return Client.forNetwork(this.nodes);
     }
     return Client.forName(this.name as NetworkName);
-  }
-
-  public async getInfoFor(account: AccountId): Promise<HederaAccountInfo> {
-    const rawAccountInfoResponse = await axios.get(`${this.mirrorRestEndpoint}/api/v1/accounts?account.id=${account.toString()}`)
-
-    return new HederaAccountInfo(rawAccountInfoResponse.data);
   }
 
   /**
@@ -177,18 +127,5 @@ export class HederaNetwork {
       }
     }
     return networkInfo;
-  }
-
-  private get mirrorRestEndpoint() {
-    switch (this.name) {
-      case 'mainnet':
-        return 'https://mainnet-public.mirrornode.hedera.com';
-      case 'previewnet':
-        return 'https://previewnet.mirrornode.hedera.com';
-      case 'testnet':
-        return 'https://testnet.mirrornode.hedera.com';
-      default:
-        throw new Error(`Don't know yet how to query a '${this.name}' network. Please use one of the official ones.`);
-    }
   }
 }
