@@ -1,5 +1,5 @@
 export function config() { 
-    return { 
-        parsed: undefined
-    }; 
+  return { 
+    parsed: undefined
+  }; 
 }

@@ -7,7 +7,7 @@ module.exports = function(config) {
     browsers: ['ChromeHeadless'],
     files: [
       { pattern: './lib.esm/*.js', type: 'module' },
-      { pattern: './lib.esm/*.js.map', included: false, served: true, watched: false, nocache: true },
+      { included: false, nocache: true, pattern: './lib.esm/*.js.map', served: true, watched: false },
       { pattern: './smoke.spec.js', type: 'module' },
     ],
     frameworks: ['jasmine'],

@@ -8,6 +8,8 @@ import { terser } from "rollup-plugin-terser";
 import virtual from '@rollup/plugin-virtual';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import WebWorkerLoader from 'rollup-plugin-web-worker-loader';
+import nodePolyfills from 'rollup-plugin-node-polyfills';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -18,7 +20,7 @@ function getPathOf(file) {
   return pathJoin(__dirname, file);
 }
 
-function getShimContent(file) {
+function getWebSourceContent(file) {
   const shimPath = getPathOf(file);
 
   return readFileSync(shimPath).toString('utf-8');
@@ -35,20 +37,41 @@ function getHederasSettingsFrom(obj) {
   return toReturn;
 }
 
-export default {
-  input: getPathOf('../../index.ts'),
-  context: 'window',
-  treeshake: true,
-  output: [
-    {
+export default async function getConfig() {
+  const webWorkerLoaderConfig = { 
+    pattern: /web-worker:(.+)/, 
+    targetPlatform: 'browser'
+  };
+  const webWorkerLoader = WebWorkerLoader(webWorkerLoaderConfig);
+
+  return {
+    input: getPathOf('../../index.ts'),
+    context: 'window',
+    treeshake: true,
+    output: [ {
       file: getPathOf('./lib.esm/hedera-strato.js'),
       format: 'esm',
       plugins: [terser()],
       sourcemap: true
-    }
-  ],
-  plugins: [
-    babel({ 
+    } ],
+    plugins: [
+      nodePolyfills({
+        crypto: false
+      }),
+      {
+        ...webWorkerLoader,
+        resolveId(importee, importer) {
+          const match = importee.match(webWorkerLoaderConfig.pattern);
+
+          if (match && match.length) {
+            const name = match[match.length - 1];
+
+            importee = `web-worker:${getPathOf(name)}`;
+          }
+          return webWorkerLoader.resolveId(importee, importer);
+        }
+      },
+      babel({ 
         babelHelpers: 'runtime', 
         include: ['lib/**/*.ts'], 
         exclude: './node_modules/**',
@@ -60,26 +83,28 @@ export default {
           ['@babel/env', { targets: "> 0.25%, not dead" }], 
           ['@babel/typescript']
         ]
-    }),
-    virtual({
-        'dotenv': getShimContent("./shims/dotenv.js"),
-        'lib/SolidityCompiler': getShimContent("./shims/SolidityCompiler.js"),
-        'lib/StratoLogger': getShimContent("./shims/StratoLogger.js")
-    }),
-    replace({
+      }),
+      virtual({
+        'dotenv': getWebSourceContent("./shims/dotenv.js"),
+        'lib/SolidityCompiler': getWebSourceContent("./shims/SolidityCompiler.js"),
+        'lib/StratoLogger': getWebSourceContent("./shims/StratoLogger.js"),
+      }),
+      replace({
         preventAssignment: true,
         values: {
-          // don't take away the HEDERAS_ENV_PATH otherwise ApiSession.default definition will fail
+        // don't take away the HEDERAS_ENV_PATH otherwise ApiSession.default definition will fail
           "process.env.HEDERAS_ENV_PATH": process.env.HEDERAS_ENV_PATH,
+          'process.env.NODE_ENV': "'test'",
           "process.env": JSON.stringify(getHederasSettingsFrom(process.env))
         }
-    }),
-    json(),
-    commonjs(),
-    resolve({
+      }),
+      json(),
+      commonjs(),
+      resolve({
         extensions,
+        mainFields: ["browser", "module", "main"],
         preferBuiltins: false,
-        mainFields: ["browser", "module", "main"]
-    })
-  ]
+      })
+    ]
+  }
 }
