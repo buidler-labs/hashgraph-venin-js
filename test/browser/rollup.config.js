@@ -1,15 +1,16 @@
-import { join as pathJoin } from 'path';
-import { readFileSync } from 'fs';
+/* eslint-env node */
 
+import { join as pathJoin } from 'path';
+
+import alias from '@rollup/plugin-alias';
 import babel from '@rollup/plugin-babel';
-import resolve from '@rollup/plugin-node-resolve';
-import replace from "@rollup/plugin-replace";
-import { terser } from "rollup-plugin-terser";
-import virtual from '@rollup/plugin-virtual';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
-import WebWorkerLoader from 'rollup-plugin-web-worker-loader';
 import nodePolyfills from 'rollup-plugin-node-polyfills';
+import replace from "@rollup/plugin-replace";
+import resolve from '@rollup/plugin-node-resolve';
+import { terser } from "rollup-plugin-terser";
+import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -18,12 +19,6 @@ const extensions = ['.js', '.ts' ];
 
 function getPathOf(file) {
   return pathJoin(__dirname, file);
-}
-
-function getWebSourceContent(file) {
-  const shimPath = getPathOf(file);
-
-  return readFileSync(shimPath).toString('utf-8');
 }
 
 function getHederasSettingsFrom(obj) {
@@ -38,16 +33,9 @@ function getHederasSettingsFrom(obj) {
 }
 
 export default async function getConfig() {
-  const webWorkerLoaderConfig = { 
-    pattern: /web-worker:(.+)/, 
-    targetPlatform: 'browser'
-  };
-  const webWorkerLoader = WebWorkerLoader(webWorkerLoaderConfig);
-
   return {
-    input: getPathOf('../../index.ts'),
     context: 'window',
-    treeshake: true,
+    input: getPathOf('../../index.ts'),
     output: [ {
       file: getPathOf('./lib.esm/hedera-strato.js'),
       format: 'esm',
@@ -55,27 +43,38 @@ export default async function getConfig() {
       sourcemap: true
     } ],
     plugins: [
-      nodePolyfills({
-        crypto: false
+      webWorkerLoader({
+        sourcemap: true
       }),
-      {
-        ...webWorkerLoader,
-        resolveId(importee, importer) {
-          const match = importee.match(webWorkerLoaderConfig.pattern);
-
-          if (match && match.length) {
-            const name = match[match.length - 1];
-
-            importee = `web-worker:${getPathOf(name)}`;
-          }
-          return webWorkerLoader.resolveId(importee, importer);
-        }
-      },
+      alias({
+        entries: [
+          { find: 'dotenv', replacement: getPathOf("./polyfills/dotenv.js") },
+          { find: /.*SolidityCompiler.*/, replacement: getPathOf("./polyfills/SolidityCompiler.js") },
+          { find: /.*StratoLogger.*/, replacement: getPathOf("./polyfills/StratoLogger.js") },
+        ]
+      }),
+      resolve({
+        // We need to dedupe the sdk itself to forcefully look in the current dir's node_modules to pick up that version of it otherwise, 
+        // due to multiple issues in the SDK code base, the strato runtime might fail in all sorts of ways.
+        // TODO: once sdk is stable, this won't be required. Remove package.json from this directory as well.
+        dedupe: [ '@hashgraph/sdk' ],
+        extensions,
+        mainFields: [ "browser", "module", "main" ],
+        preferBuiltins: false,
+        rootDir: getPathOf('.'),
+      }),
+      commonjs({
+        esmExternals: true,
+        requireReturnsDefault: "preferred"
+      }),
+      nodePolyfills({
+        sourceMap: true
+      }),
       babel({ 
         babelHelpers: 'runtime', 
-        include: ['lib/**/*.ts'], 
         exclude: './node_modules/**',
         extensions,
+        include: ['lib/**/*.ts'], 
         plugins: [
           ["@babel/plugin-transform-runtime", { "regenerator": true }]
         ],
@@ -84,27 +83,17 @@ export default async function getConfig() {
           ['@babel/typescript']
         ]
       }),
-      virtual({
-        'dotenv': getWebSourceContent("./shims/dotenv.js"),
-        'lib/SolidityCompiler': getWebSourceContent("./shims/SolidityCompiler.js"),
-        'lib/StratoLogger': getWebSourceContent("./shims/StratoLogger.js"),
-      }),
       replace({
         preventAssignment: true,
         values: {
-        // don't take away the HEDERAS_ENV_PATH otherwise ApiSession.default definition will fail
+          // don't take away the HEDERAS_ENV_PATH otherwise ApiSession.default definition will fail
+          "process.env": JSON.stringify(getHederasSettingsFrom(process.env)),
           "process.env.HEDERAS_ENV_PATH": process.env.HEDERAS_ENV_PATH,
           'process.env.NODE_ENV': "'test'",
-          "process.env": JSON.stringify(getHederasSettingsFrom(process.env))
         }
       }),
-      json(),
-      commonjs(),
-      resolve({
-        extensions,
-        mainFields: ["browser", "module", "main"],
-        preferBuiltins: false,
-      })
-    ]
+      json()
+    ],
+    treeshake: true,
   }
 }

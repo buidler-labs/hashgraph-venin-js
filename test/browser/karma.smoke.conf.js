@@ -1,3 +1,6 @@
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 process.env.CHROME_BIN = require('puppeteer').executablePath()
 
 module.exports = function(config) {

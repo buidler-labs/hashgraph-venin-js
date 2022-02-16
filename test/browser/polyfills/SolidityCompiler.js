@@ -1,4 +1,4 @@
-import CompilerWorker from 'web-worker:./shims/SolidityCompiler.worker.js';
+import CompilerWorker from 'web-worker:./SolidityCompiler.worker.js';
 
 /* eslint-disable no-undef */
 export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = '__contract__.sol';
@@ -32,24 +32,27 @@ export class SolidityCompiler {
           }
         }
       },
-      sources: { [VIRTUAL_SOURCE_CONTRACT_FILE_NAME]: { code }},
+      sources: { [VIRTUAL_SOURCE_CONTRACT_FILE_NAME]: { content: code }},
     };
 
     return new Promise((accept, reject) => {
-      compilerWorker.onmessage = function({ type, data }) {
-        if (type === 'loaded' || hasCompilerLoaded) {
+      compilerWorker.onmessage = function({ data }) {
+        if (data.type === 'compile_result') {
+          accept(data.payload);
+        } else if (data.type === 'loaded' || hasCompilerLoaded) {
           hasCompilerLoaded = true;
           compilerWorker.postMessage({ 
-            data: JSON.stringify(solInput),
+            payload: JSON.stringify(solInput),
             type: 'compile'
           });
           return;
+        } else {
+          console.log("Unhandled message received from web-worker:", data);
         }
-        accept(data);
       };
       compilerWorker.onerror = function(e) {
         reject(e);
       };
     });
   }
-} 
+}

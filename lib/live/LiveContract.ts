@@ -21,6 +21,7 @@ import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { SolidityAddressable, extractSolidityAddressFrom  } from "../core/SolidityAddressable";
 import { Contract } from "../static/upload/Contract";
 import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
+import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber';
 import { LiveAddress } from "./LiveAddress";
 import { LiveEntity } from "./LiveEntity";
 import Long from "long";
@@ -280,8 +281,6 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
      * the contract's output function ABI specs.
      */
     private tryExtractingResponse(txResponse: ContractFunctionResult, fDescription: FunctionFragment) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const EthersBigNumber = require('@ethersproject/bignumber').BigNumber;
       let fResponse;
       const fResult = this.interface.decodeFunctionResult(fDescription, txResponse.asBytes());
       const fResultKeys = Object.keys(fResult).filter(evDataKey => isNaN(Number(evDataKey)));
