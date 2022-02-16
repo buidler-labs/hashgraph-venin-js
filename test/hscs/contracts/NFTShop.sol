@@ -4,13 +4,27 @@ pragma solidity ^0.8.9;
 import "../../hedera/contracts/hip-206/IHederaTokenService.sol";
 import "../../hedera/contracts/hip-206/HederaResponseCodes.sol";
 
+// @title NFTShop - a simple minting and transfering contract
+// @author Buidler Labs
+// @dev The functions implemented make use of Hedera Token Service precompiled contract
 contract NFTShop is HederaResponseCodes {
+    
+    // @dev Hedera Token Service precompiled address
     address constant precompileAddress = address(0x167);
+
+    // @dev The address of the Non-Fungible token
     address tokenAddress;
+
+    // @dev The address of the token treasury, the address which receives tokens once they are minted
     address tokenTreasury;
+
+    // @dev The price for a mint
     uint64 mintPrice;
+
+    // @dev The metadata which the minted tokens will contain
     bytes metadata;
 
+    // @dev Constructor is the only place where the tokenAddress, tokenTreasury, mintPrice and metadata are being set
     constructor(
         address _tokenAddress,
         address _tokenTreasury,
@@ -23,8 +37,10 @@ contract NFTShop is HederaResponseCodes {
         metadata = _metadata;
     }
 
+    // @notice Error used when reverting the minting function if it doesn't receive the required payment amount
     error InsufficientPay();
 
+    // @dev Modifier to test if while minting, the necessary amount of hbars is paid
     modifier isPaymentCovered(uint256 pieces) {
         if (uint256(mintPrice) * pieces > msg.value) {
             revert InsufficientPay();
@@ -32,6 +48,10 @@ contract NFTShop is HederaResponseCodes {
         _;
     }
 
+    // @dev Main minting and transfering function
+    // @param to The address to which the tokens are transfered after being minted
+    // @param amount The number of tokens to be minted
+    // @return The serial numbers of the tokens which have been minted
     function mint(address to, uint256 amount)
         external
         payable
@@ -82,6 +102,7 @@ contract NFTShop is HederaResponseCodes {
         return serialNumbers;
     }
 
+    // @dev Helper function which generates array of addresses required for HTSPrecompiled
     function generateAddressArrayForHTS(address _address, uint256 _items)
         internal
         pure
@@ -93,6 +114,7 @@ contract NFTShop is HederaResponseCodes {
         }
     }
 
+    // @dev Helper function which generates array required for metadata by HTSPrecompiled
     function generateBytesArrayForHTS(bytes memory _bytes, uint256 _items)
         internal
         pure

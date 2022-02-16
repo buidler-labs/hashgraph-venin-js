@@ -81,15 +81,16 @@ describe('LiveContract.NFTShop', () => {
     const liveToken = await session.create(token);
     const liveContract = await session.upload(
       contract,
+      { _contract: { gas: 200_000 } },
       liveToken,
       session.accountId.toSolidityAddress(),
       nftPrice.toTinybars().toNumber(),
-      "ipfs-hash"
+      "Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy"
     );
 
     liveToken.assignSupplyControlTo(liveContract);
 
-    await liveContract.mint(
+    const serialNumbers = await liveContract.mint(
       {
         amount: new Hbar(nftPrice.toBigNumber().toNumber() * amountToMint),
         gas: 1_500_000
@@ -100,8 +101,8 @@ describe('LiveContract.NFTShop', () => {
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const contractInfo = await liveContract.getLiveEntityInfo();
-    expect(aliceInfo.ownedNfts.toNumber()).toEqual(5);
-    expect(contractInfo.balance.toBigNumber().toNumber()).toEqual(50);
+    expect(aliceInfo.ownedNfts.toNumber()).toEqual(serialNumbers.length);
+    expect(contractInfo.balance.toBigNumber().toNumber()).toEqual(nftPrice.toBigNumber().toNumber() * amountToMint);
 
   });
 });
