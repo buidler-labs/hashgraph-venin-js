@@ -1,5 +1,5 @@
 
-import { TokenSupplyType, TokenType } from "@hashgraph/sdk";
+import { Hbar, TokenSupplyType, TokenType } from "@hashgraph/sdk";
 
 import type { TokenFeatures } from "../lib/static/create/Token";
 
@@ -25,4 +25,13 @@ export const defaultNonFungibleTokenFeatures: TokenFeatures = {
   supplyType: TokenSupplyType.Finite,
   symbol: "HROKs",
   type: TokenType.NonFungibleUnique
+};
+
+export const GasFees = {
+  // Taken from 'Precompile Gas Costs' @ https://hips.hedera.com/hip/hip-206
+  associateToken: new Hbar(0.015),
+  burnToken: new Hbar(0.015),
+  dissociateToken: new Hbar(0.015),
+  mintToken: new Hbar(0.015),
+  transferToken: new Hbar(0.015),
 };
