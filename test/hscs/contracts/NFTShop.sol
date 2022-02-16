@@ -8,7 +8,6 @@ import "../../hedera/contracts/hip-206/HederaResponseCodes.sol";
 // @author Buidler Labs
 // @dev The functions implemented make use of Hedera Token Service precompiled contract
 contract NFTShop is HederaResponseCodes {
-    
     // @dev Hedera Token Service precompiled address
     address constant precompileAddress = address(0x167);
 
@@ -39,6 +38,18 @@ contract NFTShop is HederaResponseCodes {
 
     // @notice Error used when reverting the minting function if it doesn't receive the required payment amount
     error InsufficientPay();
+
+    // @dev Error used to revert if an error occured during HTS mint
+    error MintError(int32 errorCode);
+
+    // @dev Error used to revert if an error occured during HTS transfer
+    error TransferError(int32 errorCode);
+
+    // @dev event used if a mint was successful
+    event NftMint(address indexed tokenAddress, int64[] serialNumbers);
+
+    // @dev event used after tokens have been transfered
+    event NftTransfer(address indexed tokenAddress, address indexed from, address indexed to, int64[] serialNumbers);
 
     // @dev Modifier to test if while minting, the necessary amount of hbars is paid
     modifier isPaymentCovered(uint256 pieces) {
@@ -75,12 +86,17 @@ contract NFTShop is HederaResponseCodes {
             ? abi.decode(result, (int32, uint64, int64[]))
             : (HederaResponseCodes.UNKNOWN, 0, new int64[](0));
 
-        require(responseCode == HederaResponseCodes.SUCCESS, "Mint failed");
+        if (responseCode != HederaResponseCodes.SUCCESS) {
+            revert MintError(responseCode);
+        }
+
+        emit NftMint(tokenAddress, serialNumbers);
 
         address[] memory tokenTreasuryArray = generateAddressArrayForHTS(
             tokenTreasury,
             amount
         );
+
         address[] memory minterArray = generateAddressArrayForHTS(to, amount);
 
         (bool successTransfer, bytes memory resultTransfer) = precompileAddress
@@ -97,7 +113,11 @@ contract NFTShop is HederaResponseCodes {
             ? abi.decode(resultTransfer, (int32))
             : HederaResponseCodes.UNKNOWN;
 
-        require(responseCode == HederaResponseCodes.SUCCESS, "Transfer failed");
+        if (responseCode != HederaResponseCodes.SUCCESS) {
+            revert TransferError(responseCode);
+        }
+
+        emit NftTransfer(tokenAddress, tokenTreasury, to, serialNumbers);
 
         return serialNumbers;
     }

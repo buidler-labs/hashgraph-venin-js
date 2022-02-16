@@ -90,6 +90,14 @@ describe('LiveContract.NFTShop', () => {
 
     liveToken.assignSupplyControlTo(liveContract);
 
+    liveContract.onEvent("NftMint", ({tokenAddress, serialNumbers}) => {
+      session.log.debug("NFTs minted", tokenAddress, serialNumbers);
+    });
+
+    liveContract.onEvent("NftTransfer", ({tokenAddress, from, to, serialNumbers}) => {
+      session.log.debug("NFTs transfered", tokenAddress, serialNumbers, from, to );
+    });
+
     const serialNumbers = await liveContract.mint(
       {
         amount: new Hbar(nftPrice.toBigNumber().toNumber() * amountToMint),
