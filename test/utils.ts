@@ -56,7 +56,7 @@ export function getKeyTypeFor(privateKey: PrivateKey): KeyType {
     // Try ECSDA
     if (keyBytes.length == 50 && arrayStartsWith(keyBytes, derPrefixBytes)) {
       secp256k1.keyFromPrivate(keyBytes.subarray(derPrefixBytes.length));
-      keyTypeToReturn = KeyType.ECSDA;
+      keyTypeToReturn = KeyType.ECDSA;
     }
   }
   return keyTypeToReturn;

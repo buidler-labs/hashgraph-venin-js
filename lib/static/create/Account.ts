@@ -13,8 +13,8 @@ import { ArgumentsForCreate } from "../../core/CreatableEntity";
 import { BasicCreatableEntity } from "./BasicCreatableEntity";
 import { LiveAccountWithPrivateKey } from "../../live/LiveAccount";
 
-export const enum KeyType {
-  ECSDA,
+export enum KeyType {
+  ECDSA,
   ED25519,
   Unknown
 }
@@ -57,10 +57,11 @@ export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
     if (!this._key) {
       if (!this.info.key) {
         const { keyType } = this.info;
+        const keyTypeString = keyType === KeyType.ED25519 ? KeyType[KeyType.ED25519] : KeyType[KeyType.ECDSA];
         const generatedKey = keyType === KeyType.ED25519 ? 
           await PrivateKey.generateED25519Async() : await PrivateKey.generateECDSAAsync();
-
-        session.log.debug(`A new key-type '${keyType}' has been created: ${generatedKey.toStringDer()} . Copy it since this is only time you'll see it.`);
+        
+        session.log.debug(`A new '${keyTypeString}' key has been created: ${generatedKey.toStringDer()} . Copy it since this is only time you'll see it.`);
         this._key = generatedKey;
       } else {
         this._key = this.info.key as PrivateKey;

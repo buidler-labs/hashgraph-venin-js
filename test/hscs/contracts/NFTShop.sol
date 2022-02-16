@@ -26,13 +26,18 @@ contract NFTShop is HederaResponseCodes {
     error InsufficientPay();
 
     modifier isPaymentCovered(uint256 pieces) {
-       if(uint256(mintPrice) * pieces > msg.value) {
-           revert InsufficientPay();
-       }
-       _;
+        if (uint256(mintPrice) * pieces > msg.value) {
+            revert InsufficientPay();
+        }
+        _;
     }
 
-    function mint(address to, uint256 amount) external payable isPaymentCovered(amount) returns (int64[] memory) {
+    function mint(address to, uint256 amount)
+        external
+        payable
+        isPaymentCovered(amount)
+        returns (int64[] memory)
+    {
         bytes[] memory nftMetadatas = generateBytesArrayForHTS(
             metadata,
             amount
@@ -56,10 +61,7 @@ contract NFTShop is HederaResponseCodes {
             tokenTreasury,
             amount
         );
-        address[] memory minterArray = generateAddressArrayForHTS(
-            to,
-            amount
-        );
+        address[] memory minterArray = generateAddressArrayForHTS(to, amount);
 
         (bool successTransfer, bytes memory resultTransfer) = precompileAddress
             .call(
