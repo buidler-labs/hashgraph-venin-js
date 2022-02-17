@@ -19,14 +19,14 @@ export class SolidityCompiler {
         metadata: {
           // disabling metadata hash embedding to make the bytecode generation predictable at test-time
           // see https://docs.soliditylang.org/en/latest/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode
-          bytecodeHash: process.env.NODE_ENV === 'test' ? 'none' : 'ipfs'
+          bytecodeHash: process.env.NODE_ENV === 'test' ? 'none' : 'ipfs',
         },
         outputSelection: {
           '*': {
-            '*': ['*']
-          }
-        }
-      }
+            '*': ['*'],
+          },
+        },
+      },
     };
     const stringifiedSolInput = JSON.stringify(solInput);
     const importPrefixes = [
@@ -35,7 +35,7 @@ export class SolidityCompiler {
       // then look at the project's node_modules
       sdkPath.join(process.cwd(), "node_modules"),
       // then expand all the environment provided prefixes (if any)
-      ...(process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES ? process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/) : [])
+      ...(process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES ? process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/) : []),
     ];
     const importsResolver = (sourcePath) => {
       for (const prefix of importPrefixes) {

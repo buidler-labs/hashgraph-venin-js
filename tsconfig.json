@@ -6,6 +6,7 @@
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
+    "sourceMap": true,
     "esModuleInterop": true,
     "outDir": "./build/types",
     "allowSyntheticDefaultImports": true,
@@ -13,14 +14,5 @@
   },
   "include": [
     "./index.ts"
-  ],
-  "typedocOptions": {
-    "entryPoints": ["index.ts"],
-    "excludePrivate": true,
-    "excludeProtected": true,
-    "includeVersion": true,
-    "name": "Hedera Strato JS",
-    "out": "docs",
-    "readme": "README_docs.md"
-  }
+  ]
 }

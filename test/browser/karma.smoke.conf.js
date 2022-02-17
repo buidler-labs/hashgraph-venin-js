@@ -17,9 +17,9 @@ module.exports = function(config) {
     logLevel: config.LOG_DEBUG,
     plugins: [
       'karma-jasmine',
-      'karma-chrome-launcher'
+      'karma-chrome-launcher',
     ],
     reporters: ['progress'],
-    singleRun: true
+    singleRun: true,
   });
 };

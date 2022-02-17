@@ -1,30 +1,7 @@
-# Hedera Strato JS
-Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's underlying services](https://docs.hedera.com/guides/docs/sdks).
-
-> **Disclaimer:** This project is not an official Hedera project and, as such, it is not affiliated with it in any way, shape or form. It is an independent, community driven, effort to bring clarity and *joy* to developing descentralized apps (dApps) on the Hedera network-chain ecosystem.
-
-> **Note:** Currently, the library is only available for NodeJS runtime environments but efforts are underway to have it deployable and working in web browsers as well.
-
-> **Note #2:** Please keep in mind that, although core features are tested and working, this is still currently in heavy-active development and, as such, it's not yet ready for production usage. The API might also change before we reach there!
-
-## Quick start example
-Just clone and follow the the instructions in our [quick-start demo repo](https://github.com/buidler-labs/hsj-example). As described in that readme, you will need a `.env` file to configure some network parameters. If you're going to use our [local, dockerized, hedera-node services](https://github.com/buidler-labs/dockerized-hedera-services), just copy-paste [this config](.env.local-customnet) and you should be good to go.
-
-If you want a quick flavour of where that will get you, here's how one might tipically use the library:
-``` js
-const hapiSession = await HederaNetwork.defaultApiSession();
-const helloWorldContract = await Contract.newFrom({ path: './hello_world.sol' });
-const liveContract = await hapiSession.upload(helloWorldContract);
-
-console.log(await liveContract.greet());
-```
-By the way, the above code snippet loads a solidity file, compiles it, uploads it to the network and ends up console-logging the resulting output of calling the `greet` function/variable of the deployed `hello_world.sol` contract. It's that easy!
-
-## Features walkthrough
-The following is a breakthrough of all the possible cases currently permitted by the library which are 3 broad ones:
-- create/retrieve an api session -> load a contract code -> compile and upload the contract -> interact with the deployed contract
-- create/retrieve an api session -> retrieve a reference of a previously deployed contract -> interact with the contract
-- create/retrieve an api session -> upload a JSON object; retrieve a _live_ json data-instance
+---
+id: session
+title: The Session
+---
 
 ### Creating an ApiSession
 Sessions can be conveniantly created via a call to `HederaNetwork.defaultApiSession()`. This will, by default, try to look for a file called `.env` and load some network params from there (please see the [`.env.sample` file](.env.sample) for more info and options). The [full method signature accepts an options argument with 2 extra fields](classes/HederaNetwork.html#defaultApiSession): an `env` dictionary and/or a `path` string. Both of them portray obey the same naming as that depicted in the [`.env.sample` file](.env.sample). Whichever one is provided gets to be used but if both of them are fed in, the `env` runtime dictionary overwrites the `path`-loaded parameters. 
@@ -89,11 +66,3 @@ Let's say you have the following object that you want to persist to Hedera: `{a:
 Of course, storing a Json wouldn't be that helpful unless someone might be able to retrieve it at some later moment in the future. That's done through the `session.getLiveJson` method call. You only need the `LiveJson.id` to pass in as the `id` object parameter.
 
 [This test-case](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveJson.spec.ts#L33) shows how this can be done.
-
-## Features summary
-- Upload a [Solidity Contract](https://docs.soliditylang.org/en/v0.8.10/index.html) (either by _code_ or by _path_) to Hedera and directly interact with it in JS (via [_LiveContracts_](https://github.com/buidler-labs/hedera-strato-js/blob/main/lib/live/LiveContract.ts))
-- Given a [ContractId](https://docs.hedera.com/guides/docs/hedera-api/basic-types/contractid) and its ABI, retrieve a live-instance of a contract and interact with it
-- Upload a JSON object to [Hedera File Services](https://docs.hedera.com/guides/docs/sdks/file-storage) allowing for later retrieval
-
-## License
-This work has been published under the MIT License.
