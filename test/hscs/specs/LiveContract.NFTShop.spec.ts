@@ -42,7 +42,7 @@ describe('LiveContract.NFTShop', () => {
       { _contract: { gas: 200_000 } },
       liveToken,
       client._operator.accountId.toSolidityAddress(),
-      nftPrice.toTinybars().toNumber(),
+      nftPrice,
       "ipfs-hash"
     );
 
@@ -70,32 +70,33 @@ describe('LiveContract.NFTShop', () => {
   it("Given an NFT Shop, treasury is able to mint for user", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
+    const metadata = "Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy";
 
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const token = new Token(defaultNonFungibleTokenFeatures);
-    const contract = await Contract.newFrom({ code: read({ contract: 'NFTShop' }), ignoreWarnings: true });
+    const contract = await Contract.newFrom({ code: read({ contract: 'NFTShop' }) });
 
     const { session } = await ApiSession.default();
+    
     const aliceLiveAccount = await session.create(account);
-
     const liveToken = await session.create(token);
     const liveContract = await session.upload(
       contract,
       { _contract: { gas: 200_000 } },
       liveToken,
-      session.accountId.toSolidityAddress(),
-      nftPrice.toTinybars().toNumber(),
-      "Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy"
+      session,
+      nftPrice,
+      metadata
     );
 
     liveToken.assignSupplyControlTo(liveContract);
 
     liveContract.onEvent("NftMint", ({tokenAddress, serialNumbers}) => {
-      session.log.debug("NFTs minted", tokenAddress, serialNumbers);
+      session.log.info("NFTs minted", tokenAddress, serialNumbers.map(item => item.toNumber()));
     });
 
     liveContract.onEvent("NftTransfer", ({tokenAddress, from, to, serialNumbers}) => {
-      session.log.debug("NFTs transfered", tokenAddress, serialNumbers, from, to );
+      session.log.info("NFTs transfered", tokenAddress, serialNumbers.map(item => item.toNumber()), from, to );
     });
 
     const serialNumbers = await liveContract.mint(
@@ -106,9 +107,14 @@ describe('LiveContract.NFTShop', () => {
       aliceLiveAccount,
       amountToMint
     );
+    
+    session.log.info("Serial numbers minted by the smart contract", serialNumbers.map(item => item.toNumber()));
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const contractInfo = await liveContract.getLiveEntityInfo();
+
+    session.log.info(`Number of NFTs owned by Alice: ${aliceInfo.ownedNfts.toNumber()}`);
+    session.log.info(`HBar balance of contract: ${contractInfo.balance.toBigNumber().toNumber()}`);
     expect(aliceInfo.ownedNfts.toNumber()).toEqual(serialNumbers.length);
     expect(contractInfo.balance.toBigNumber().toNumber()).toEqual(nftPrice.toBigNumber().toNumber() * amountToMint);
 

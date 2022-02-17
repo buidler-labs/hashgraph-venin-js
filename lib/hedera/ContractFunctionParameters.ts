@@ -1,6 +1,7 @@
 import { ConstructorFragment, FunctionFragment } from "@ethersproject/abi";
 import BigNumber from "bignumber.js";
-import { ContractFunctionParameters as HederaContractFunctionParameters } from "@hashgraph/sdk";
+
+import { Hbar, ContractFunctionParameters as HederaContractFunctionParameters } from "@hashgraph/sdk";
 
 import { ParamTypeToFunctionNameMapper } from "../ParamTypeToFunctionNameMapper";
 import { isSolidityAddressable } from "../core/SolidityAddressable";
@@ -36,7 +37,12 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
           argToAdd = considerMappingSolidityAddressableToAddress(argToAdd);
         }
       } else if (shouldUseBigNumbers) {
-        const toBigNumber = (arg: any): BigNumber => arg instanceof BigNumber ? arg : new BigNumber(arg);
+        const toBigNumber = (arg: any): BigNumber => {
+          if(arg instanceof Hbar) {
+            return arg._valueInTinybar;
+          }
+          return arg instanceof BigNumber ? arg : new BigNumber(arg);
+        }
         if (Array.isArray(argToAdd)) {
           argToAdd = argToAdd.map(toBigNumber);
         } else {
