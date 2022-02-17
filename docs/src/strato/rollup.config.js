@@ -13,7 +13,7 @@ import { terser } from "rollup-plugin-terser";
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: getPathOf('./.env') });
 
 const extensions = ['.js', '.ts' ];
 
@@ -35,7 +35,7 @@ function getHederasSettingsFrom(obj) {
 export default async function getConfig() {
   return {
     context: 'window',
-    input: getPathOf('../../index.ts'),
+    input: './index.ts',
     output: [ {
       file: getPathOf('./lib.esm/hedera-strato.js'),
       format: 'esm',
@@ -89,7 +89,7 @@ export default async function getConfig() {
           // don't take away the HEDERAS_ENV_PATH otherwise ApiSession.default definition will fail
           "process.env": JSON.stringify(getHederasSettingsFrom(process.env)),
           "process.env.HEDERAS_ENV_PATH": process.env.HEDERAS_ENV_PATH,
-          'process.env.NODE_ENV': "'test'",
+          'process.env.NODE_ENV': "'production'",
         },
       }),
       json(),

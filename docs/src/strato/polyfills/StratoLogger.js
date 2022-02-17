@@ -1,5 +1,7 @@
 /* eslint-env browser */
 
+import EventEmitter from "events";
+
 const LEVELS = {
   error: 0,
   warn: 1,
@@ -13,8 +15,9 @@ const LEVELS = {
   silly: 6
 };
 
-export class StratoLogger {
+export class StratoLogger extends EventEmitter {
   constructor(params /*: LoggerRuntimeParameters */) {
+    super();
     this._level = LEVELS[params.level];
     this._isLoggingEnabled = params.enabled;
   }
@@ -24,27 +27,27 @@ export class StratoLogger {
   }
   
   debug(message, ...meta) {
-    if (this._isLevelEnabled(LEVELS.debug)) console.debug(message, ...meta);
+    if (this._isLevelEnabled(LEVELS.debug)) this.emit("debug", message, ...meta);
     return this;
   }
   error(message, ...meta) {
-    if (this._isLevelEnabled(LEVELS.error)) console.error(message, ...meta);
+    if (this._isLevelEnabled(LEVELS.error)) this.emit("error", message, ...meta);
     return this;
   }
   info(message, ...meta) {
-    if (this._isLevelEnabled(LEVELS.info)) console.info(message, ...meta);
+    if (this._isLevelEnabled(LEVELS.info)) this.emit("info", message, ...meta);
     return this;
   }
   silly(message, ...meta) {
-    if (this._isLevelEnabled(LEVELS.silly)) console.debug(message, ...meta);
+    if (this._isLevelEnabled(LEVELS.silly)) this.emit("debug", message, ...meta);
     return this;
   }
   verbose(message, ...meta) {
-    if (this._isLevelEnabled(LEVELS.verbose)) console.debug(message, ...meta);
+    if (this._isLevelEnabled(LEVELS.verbose)) this.emit("debug", message, ...meta);
     return this;
   }
   warn(message, ...meta) {
-    if (this._isLevelEnabled(LEVELS.warn)) console.warn(message, ...meta);
+    if (this._isLevelEnabled(LEVELS.warn)) this.emit("warn", message, ...meta);
     return this;
   }
 
