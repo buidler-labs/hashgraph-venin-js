@@ -1,0 +1,36 @@
+.loadingSpinner {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 40px;
+}
+.loadingSpinner div {
+    display: inline-block;
+    position: absolute;
+    left: 8px;
+    width: 8px;
+    background: #fff;
+    animation: loadingSpinner 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+}
+.loadingSpinner div:nth-child(1) {
+    left: 8px;
+    animation-delay: -0.24s;
+}
+.loadingSpinner div:nth-child(2) {
+    left: 20px;
+    animation-delay: -0.12s;
+}
+.loadingSpinner div:nth-child(3) {
+    left: 32px;
+    animation-delay: 0;
+}
+@keyframes loadingSpinner {
+    0% {
+        top: 4px;
+        height: 32px;
+    }
+    50%, 100% {
+        top: 12px;
+        height: 16px;
+    }
+}

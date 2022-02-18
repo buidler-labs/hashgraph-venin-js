@@ -125,7 +125,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     const ctxArgs: StratoContextSource = typeof params === 'string' ? { params: {}, path: params } : { params, path };
     const ctx = new StratoContext(ctxArgs);
 
-    return this.buildFrom(ctx);
+    return ApiSession.buildFrom(ctx);
   }
 
   /**

@@ -44,25 +44,25 @@ export class SolidityCompiler {
     }
     if (!compilerWorker) {
       compilerWorker = new CompilerWorker();
-
-      return new Promise((accept, reject) => {
-        compilerWorker.onmessage = function({ data }) {
-          if (data.type === 'compile_result') {
-            accept(data.payload);
-          } else if (data.type === 'loaded' || hasCompilerLoaded) {
-            hasCompilerLoaded = true;
-            triggerCompile(code);
-            return;
-          } else {
-            console.log("Unhandled message received from web-worker:", data);
-          }
-        };
-        compilerWorker.onerror = function(e) {
-          reject(e);
-        };
-      });
+    }else {
+      triggerCompile(code);
     }
 
-    triggerCompile(code);
+    return new Promise((accept, reject) => {
+      compilerWorker.onmessage = function({ data }) {
+        if (data.type === 'compile_result') {
+          accept(data.payload);
+        } else if (data.type === 'loaded' || hasCompilerLoaded) {
+          hasCompilerLoaded = true;
+          triggerCompile(code);
+          return;
+        } else {
+          console.log("Unhandled message received from web-worker:", data);
+        }
+      };
+      compilerWorker.onerror = function(e) {
+        reject(e);
+      };
+    });
   }
 }

@@ -27,6 +27,25 @@
   color: var(--ifm-color-content-inverse);
 }
 
+.playgroundRunButton {
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 0.2rem;
+  margin-right: 0.5rem;
+  background-color: #3ac73a;
+}
+
+.playgroundRunButton:hover {
+  background-color: #47dc47;
+}
+
+.playgroundRunButton:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
 .playgroundEditor {
   font: var(--ifm-code-font-size) / var(--ifm-pre-line-height)
     var(--ifm-font-family-monospace) !important;
