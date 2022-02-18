@@ -46,7 +46,9 @@ module.exports = async function () {
       ],
     ],
     projectName: "hedera-strato-js",
-    scripts: [ {
+    scripts: [ 
+      "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js",
+      {
         async: true,
         src: './strato-loader.js',
       }, {
