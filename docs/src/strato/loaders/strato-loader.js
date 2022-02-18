@@ -1,7 +1,13 @@
-// We need to obfuscate the github token so that GitHub won't pick it up and revoke it (we want this supversioned)
+// We need to obfuscate the token so that GitHub won't pick it up and revoke it (we want this supversioned)
 function getGithubPat(prefix = 'ghp_') {
     return `${prefix}bLbBZvYulZydqAYU7aVbPqNoUMkcG30MI3Ad`;
 }
+
+// Set this upfront for naive handling of race conditions (at least docs won't crash)
+window.StratoOperator = {
+    accountId: 'unknown',
+    network: 'unknown'
+};
 
 (async function() {
     const { ApiSession, Contract, Token, Json } = await import('./hedera-strato.js');
@@ -58,9 +64,5 @@ function getGithubPat(prefix = 'ghp_') {
         window.Contract = Contract;
         window.Json = Json;
         window.Token = Token;
-        window.StratoOperator = {
-            accountId: 'unknown',
-            network: 'unknown'
-        };
     }
 })();
