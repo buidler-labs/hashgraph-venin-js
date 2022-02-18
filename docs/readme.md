@@ -98,7 +98,7 @@ contract HelloWorld {
 }`;
 const { session } = await ApiSession.default();
 const helloWorldContract = await Contract.newFrom({ code });
-const liveContract = await hapiSession.upload(helloWorldContract);
+const liveContract = await session.upload(helloWorldContract);
 
 console.log(await liveContract.greet());
 ```
