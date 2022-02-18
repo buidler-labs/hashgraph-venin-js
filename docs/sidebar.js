@@ -30,6 +30,10 @@ module.exports = {
           'api/entities/token' 
         ]
       }],
-    },
+    }, {
+      type: 'doc',
+      id: 'playground',
+      label: 'Playground',
+    }
   ],
 };
