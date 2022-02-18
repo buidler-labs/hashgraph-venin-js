@@ -53,5 +53,9 @@
         window.Contract = Contract;
         window.Json = Json;
         window.Token = Token;
+        window.StratoOperator = {
+            accountId: 'unknown',
+            network: 'unknown'
+        };
     }
 })();
