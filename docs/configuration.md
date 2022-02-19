@@ -26,6 +26,8 @@ Following is a table detailing all the object-parameters along with their enviro
 | HEDERAS_CLIENT_CONTROLLER_DEFAULT_PRIVATE_KEY | client.controller.default.operatorKey | [^default-operatorKey] | - | - | The private-key used by the operators when switching accounts on a `HederaClient` using a `DefaultPrivateKeyClientController`
 | HEDERAS_CLIENT_CONTROLLER_TYPE | client.controller.type | - | `Hedera`, `DefaultPrivateKey` | `Hedera` | The type of client-controller deployed. It's basically laying out the foundation of wallet-integration since a `controller` can propagate either an account-change or a network change.
 | HEDERAS_CLIENT_TYPE | client.type | No | `Hedera` | `Hedera` | The network-client type used for the underlying session
+| HEDERAS_CONTRACTS_INCLUDED_PREFIXES | - | No | [^relative-path-prefixes] | `contracts` | The places to search for imported contract paths from within a solidity code. The contract's parent folder is the first one being searched, followed by the project's `node_modules` and then, if nothing matches, the rest of the included prefixes are looked at in the order in which they are defined
+| HEDERAS_CONTRACTS_RELATIVE_PATH | - | No | path | `contracts` | The name of the folder relative to the project root directory where all the solidity contracts are expected to reside. This is used when Strato is doing the contract compiling of a given relative-pathed contract
 | HEDERAS_DEFAULT_CONTRACT_CREATION_GAS      | session.defaults.contractCreationGas             | No  | number  | 150000     | The default amount spent for creating a contract on the network
 | HEDERAS_DEFAULT_CONTRACT_TRANSACTION_GAS   | session.defaults.contractTransactionGas          | No  | number  | 169000     | The default amount given when executing a contract transaction
 | HEDERAS_DEFAULT_EMIT_CONSTRUCTOR_LOGS      | session.defaults.emitConstructorLogs             | No  | boolean | `true`    | `true` to emit the constructor logs at contract-creation time, `false` otherwise
@@ -40,11 +42,13 @@ Following is a table detailing all the object-parameters along with their enviro
 | HEDERAS_CLIENT_SAVED_STATE | client.saved | No | base64 string | - | Used to recover a previous ongoing session with the purpose of some day having some sort of wallet token here to work with. Can be obtained via a `ApiSession.save()` call
 | HEDERAS_ENV_PATH | - | No | path | `.env` | The path of the `.env` like file used to source the config parameters from
 
-[^customnet-hedera-network]: required if `HEDERAS_NETWORK`/`network.name` is `customnet`
-[^customnet-nodes]: a comma separated string of node-network addreses having the following format : `<ip>:<port>#<account_id>` eg `127.0.0.2:52111#3` to make an address-book of one node located at `127.0.0.1`, port `52111` having account-id `0.0.3` 
-[^client-type-hedera]: required if `HEDERAS_CLIENT_TYPE`/`client.type` is `Hedera` (the default)
-[^default-operatorKey]: required
+<!-- Be careful with the order of the generated footnotes! Rendering them always maintains the same order and markdown has to be aligned with this otherwise the reference links won't work -->
 [^winston-logger-github]: see https://github.com/winstonjs/winston#logging
+[^client-type-hedera]: required if `HEDERAS_CLIENT_TYPE`/`client.type` is `Hedera` (the default)
+[^customnet-nodes]: a comma separated string of node-network addreses having the following format : `<ip>:<port>#<account_id>` eg `127.0.0.2:52111#3` to make an address-book of one node located at `127.0.0.1`, port `52111` having account-id `0.0.3` 
+[^customnet-hedera-network]: required if `HEDERAS_NETWORK`/`network.name` is `customnet`
+[^relative-path-prefixes]: a comma separated list of relative folder paths to look at when importing a relative solidity contract-file from within one of the contracts that we wish to compile
+[^default-operatorKey]: required if `HEDERAS_CLIENT_CONTROLLER_TYPE` is `DefaultPrivateKey`
 
 ## Parameters resolution
 The default context parameters are being resolved in the following order:
