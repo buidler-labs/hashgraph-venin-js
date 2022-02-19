@@ -40,10 +40,14 @@ const { session } = await ApiSession.default();
 const counterContract = await Contract.newFrom({ path: './increment.sol' });
 const liveContract = await session.upload(counterContract);
 
-// Increment then retrieve the counter. 
+// Increment then retrieve the counter
 await liveContract.inc();
-console.log(await liveContract.get());
+console.log((await liveContract.get()).toNumber());
 ```
+
+:::note
+We need the `.toNumber` call since the returned value of calling the `get` method is an `uint` which [maps to a `BigNumber`](https://mikemcl.github.io/bignumber.js/) and `console.log` does not know how to display such instances.
+:::
 
 By convention, when calling `Contract.newFrom` passing it a `path`, Strato expects to find the solidity contract code in the `contracts` folder. This is configurable via the `HEDERAS_CONTRACTS_RELATIVE_PATH` environment variable.
 

@@ -39,7 +39,7 @@ Besides setting a `memo` you can pick and use any other fields that [the `FileCr
 You'll need its `liveJson.id` for that which will need to be passed to `ApiSession`'s `getLiveJson` method:
 ```js live
 const { session } = await ApiSession.default();
-const liveJson = await session.getLiveJson({ id: "0.0.x" });
+const liveJson = await session.getLiveJson({ id: "0.0.30771386" });
 
 console.log(`The answer is still: ${liveJson.theAnswer}`);
 ```
