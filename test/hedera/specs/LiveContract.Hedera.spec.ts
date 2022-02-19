@@ -14,7 +14,7 @@ describe('LiveContract.Hedera', () => {
 
   it("given a fungible, live, token, minting over a precompiled contract-service bridge should be permitted", async () => {
     const contract = await Contract.newFrom({ code: read({ contract: 'HelloWorldMint', relativeTo: 'hedera' }), ignoreWarnings: true });
-    const token = new Token({ ...defaultFungibleTokenFeatures, ...{ initialSupply: 1000 } });
+    const token = new Token({ ...defaultFungibleTokenFeatures, initialSupply: 1000 });
 
     const { session } = await ApiSession.default();
     const liveToken = await session.create(token);
@@ -74,7 +74,7 @@ describe('LiveContract.Hedera', () => {
 
   it("given 2 fungible, live, tokens, associating them to the client account using the hedera token service precompiled contract works as expected", async () => {
     const token = new Token(defaultFungibleTokenFeatures);
-    const token2 = new Token({ ...defaultFungibleTokenFeatures, ...{ name: "Token2", symbol: "T2" } });
+    const token2 = new Token({ ...defaultFungibleTokenFeatures, name: "Token2", symbol: "T2" });
 
     const account = new Account({ initialBalance: new Hbar(10) });
 
@@ -100,7 +100,7 @@ describe('LiveContract.Hedera', () => {
 
   it("given 2 fungible, live, tokens, associating and dissociating them to the client account using the hedera token service precompiled contract works as expected", async () => {
     const token = new Token(defaultFungibleTokenFeatures);
-    const token2 = new Token({ ...defaultFungibleTokenFeatures, ...{ name: "Token2", symbol: "T2" } });
+    const token2 = new Token({ ...defaultFungibleTokenFeatures, name: "Token2", symbol: "T2" });
     const account = new Account({ initialBalance: new Hbar(10) });
     const contract = await Contract.newFrom({ code: read({ contract: 'AssociateDissociateTokens', relativeTo: 'hedera' }), ignoreWarnings: true });
 
