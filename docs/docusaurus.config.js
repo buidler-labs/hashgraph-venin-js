@@ -59,6 +59,7 @@ module.exports = async function () {
     staticDirectories: [
       "src/strato/lib.esm",
       "src/strato/loaders",
+      "static",
     ],
     tagline: "Write Hedera dApps like a boss because why not?",
     themeConfig: {

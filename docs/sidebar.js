@@ -21,6 +21,7 @@ module.exports = {
         id: 'api/session',
         label: "Session"
       }, {
+        collapsed: false,
         type: 'category',
         label: 'Entities',
         items: [ 
