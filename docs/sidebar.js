@@ -1,15 +1,15 @@
 module.exports = {
   docs: [ {
       type: 'doc',
-      id: 'index',
+      id: 'markdown/introduction',
       label: 'Introduction',
     }, {
       type: 'doc',
-      id: 'quick-start',
+      id: 'markdown/quick-start',
       label: 'Quick Start',
     }, {
       type: 'doc',
-      id: 'configuration',
+      id: 'markdown/configuration',
       label: 'Configuring',
     }, {
       type: 'category',
@@ -18,22 +18,22 @@ module.exports = {
       collapsed: false,
       items: [ {
         type: 'doc',
-        id: 'guides/session',
+        id: 'markdown/guides/session',
         label: "Session"
       }, {
         collapsed: false,
         type: 'category',
         label: 'Entities',
         items: [ 
-          'guides/entities/account', 
-          'guides/entities/contract', 
-          'guides/entities/json',
-          'guides/entities/token' 
+          'markdown/guides/entities/account', 
+          'markdown/guides/entities/contract', 
+          'markdown/guides/entities/json',
+          'markdown/guides/entities/token' 
         ]
       }],
     }, {
       type: 'doc',
-      id: 'playground',
+      id: 'markdown/playground',
       label: 'Playground',
     }
   ],

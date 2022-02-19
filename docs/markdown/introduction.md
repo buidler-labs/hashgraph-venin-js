@@ -1,6 +1,6 @@
 ---
 slug: /
-id: index
+id: introduction
 title: 👋 Welcome to Strato! 🌌
 ---
 
