@@ -17,7 +17,7 @@ window.StratoOperator = {
         Json, 
         KeyType,
         Token, 
-        TokenType,
+        TokenTypes,
     } = await import('./hedera-strato.js');
     
     try {
@@ -45,7 +45,7 @@ window.StratoOperator = {
         };
         const originalApiSessionDefault = ApiSession.default;
 
-        console.log(`Fetched GitHub operator information. ApiSession will default to using account-id '${docsOperator.accountId}' on network '${docsOperator.network}'.`);
+        console.log(`ApiSession will default to using account-id '${docsOperator.accountId}' on network '${docsOperator.network}'.`);
         window.ApiSession = {
             default: function (...args) {
                 let operatorCoordsProvided = false;
@@ -74,6 +74,6 @@ window.StratoOperator = {
         window.Json = Json;
         window.KeyType = KeyType;
         window.Token = Token;
-        window.TokenType = TokenType;
+        window.TokenTypes = TokenTypes;
     }
 })();

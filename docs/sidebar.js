@@ -13,22 +13,22 @@ module.exports = {
       label: 'Configuring',
     }, {
       type: 'category',
-      label: 'API',
+      label: 'Guides',
       collapsible: false,
       collapsed: false,
       items: [ {
         type: 'doc',
-        id: 'api/session',
+        id: 'guides/session',
         label: "Session"
       }, {
         collapsed: false,
         type: 'category',
         label: 'Entities',
         items: [ 
-          'api/entities/account', 
-          'api/entities/contract', 
-          'api/entities/json',
-          'api/entities/token' 
+          'guides/entities/account', 
+          'guides/entities/contract', 
+          'guides/entities/json',
+          'guides/entities/token' 
         ]
       }],
     }, {
