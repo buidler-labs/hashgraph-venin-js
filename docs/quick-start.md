@@ -14,20 +14,20 @@ will suffice.
 ## Hello Strato
 As we've seen in our introductory page, firing up your first Strato smart-contract example should be straight forward but let's kick it up a notch to make things a little more interesting. Suppose you have a trimmed down version (comments & no `dec` method stripped) of [the following contract](https://solidity-by-example.org/first-app/):
 
-```sol
+```sol title="./increment.sol"
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.9;
 
 contract Counter {
-    uint public count;
+  uint public count;
 
-    function get() public view returns (uint) {
-        return count;
-    }
+  function get() public view returns (uint) {
+    return count;
+  }
 
-    function inc() public {
-        count += 1;
-    }
+  function inc() public {
+    count += 1;
+  }
 }
 ```
 
@@ -38,7 +38,7 @@ Interacting with it via Strato would be as simple as
 ```js live
 const { session } = await ApiSession.default();
 const counterContract = await Contract.newFrom({ path: './increment.sol' });
-const liveContract = await hapiSession.upload(counterContract);
+const liveContract = await session.upload(counterContract);
 
 // Increment then retrieve the counter. 
 await liveContract.inc();

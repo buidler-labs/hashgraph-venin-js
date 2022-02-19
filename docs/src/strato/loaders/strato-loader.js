@@ -10,7 +10,15 @@ window.StratoOperator = {
 };
 
 (async function() {
-    const { ApiSession, Contract, Token, Json } = await import('./hedera-strato.js');
+    const { 
+        Account, 
+        ApiSession, 
+        Contract,
+        Json, 
+        KeyType,
+        Token, 
+        TokenType,
+    } = await import('./hedera-strato.js');
     
     try {
         const docsOperatorResponse = await fetch('https://api.github.com/repos/buidler-labs/project-assets/contents/hedera-strato-js/docs-operator.json', {
@@ -61,8 +69,11 @@ window.StratoOperator = {
         console.error('There was an error while fetching the docs-client operator. Falling back to the bundled operator.', e);
         window.ApiSession = ApiSession;
     } finally {
+        window.Account = Account;
         window.Contract = Contract;
         window.Json = Json;
+        window.KeyType = KeyType;
         window.Token = Token;
+        window.TokenType = TokenType;
     }
 })();

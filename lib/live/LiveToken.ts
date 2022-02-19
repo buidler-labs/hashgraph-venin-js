@@ -3,7 +3,7 @@ import {
   TokenId,
   TokenInfo,
   TokenInfoQuery,
-  TokenUpdateTransaction
+  TokenUpdateTransaction,
 } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";

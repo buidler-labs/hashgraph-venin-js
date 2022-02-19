@@ -1,10 +1,10 @@
 import { 
   AccountId, 
+  TokenType as HederaTokenType,
   Key, 
   Timestamp, 
   TokenCreateTransaction, 
   TokenSupplyType,
-  TokenType 
 } from "@hashgraph/sdk";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
@@ -41,6 +41,20 @@ type TokenKeys = {
   wipe?: Key
 };
 
+class TokenType {
+  public constructor(readonly hTokenType: HederaTokenType) {}
+
+  public equals(what: any) {
+    return what instanceof TokenType ? this.hTokenType._code === what.hTokenType._code :
+      what instanceof HederaTokenType ? this.hTokenType._code === what._code : false;
+  }
+}
+
+export const TokenTypes = {
+  FungibleCommon: new TokenType(HederaTokenType.FungibleCommon),
+  NonFungibleUnique: new TokenType(HederaTokenType.NonFungibleUnique),
+}
+
 export class Token extends BasicCreatableEntity<LiveToken> {
 
   public constructor(private readonly info: TokenFeatures) {
@@ -58,16 +72,16 @@ export class Token extends BasicCreatableEntity<LiveToken> {
       supplyKey: this.info.keys?.supply !== null ? this.info.keys?.supply ?? session.publicKey : undefined,
       tokenName: this.info.name,
       tokenSymbol: this.info.symbol,
-      tokenType: this.info.type,
+      tokenType: this.info.type.hTokenType ?? HederaTokenType.FungibleCommon,
       treasuryAccountId: session.accountId,
       wipeKey: this.info.keys?.wipe !== null ? this.info.keys?.wipe ?? session.publicKey : undefined,
 
       // Merge everything with what's provided
-      ...this.info
+      ...this.info,
     };
     const createTokenTransaction = new TokenCreateTransaction(constructorArgs as unknown);
     const creationReceipt = await session.execute(createTokenTransaction, TypeOfExecutionReturn.Receipt, true);
 
-    return new LiveToken({ session, id: creationReceipt.tokenId });
+    return new LiveToken({ id: creationReceipt.tokenId, session });
   }
 }

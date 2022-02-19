@@ -1,4 +1,5 @@
 import CompilerWorker from 'web-worker:./SolidityCompiler.worker.js';
+import ContractsInFileStorage from './ContractsInFileStorage';
 
 /* eslint-disable no-undef */
 export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = '__contract__.sol';
@@ -39,12 +40,14 @@ export class SolidityCompiler {
     if (!window.Worker) {
       throw new Error('Your browser does not support WebWorkers therefore Contract compilation is not available.');
     }
-    if (!code || path !== undefined) {
-      throw new Error('Only direct code compilation is supported by the browser at this poin. Providing a path to the top-level solidity code is not provided.');
+    if (path !== undefined && ContractsInFileStorage[path] !== undefined) {
+      code = ContractsInFileStorage[path];
+    } else if (!code || path !== undefined) {
+      throw new Error('Only direct code compilation is fully supported by the browser at this point. Path loading is limited only to the scope of the examples present in this documentation.');
     }
     if (!compilerWorker) {
       compilerWorker = new CompilerWorker();
-    }else {
+    } else {
       triggerCompile(code);
     }
 

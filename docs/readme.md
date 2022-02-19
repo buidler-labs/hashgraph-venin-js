@@ -72,10 +72,10 @@ We will support this for as long as we're going to build on Hedera and, if there
 ## The gist
 Suppose you want to upload, execute and print the resulting `greet` message for [the following contract](https://solidity-by-example.org/hello-world/):
 
-```sol
+```sol title="./hello_world.sol"
 // SPDX-License-Identifier: MIT
-// compiler version must be greater than or equal to 0.8.10 and less than 0.9.0
-pragma solidity ^0.8.10;
+// compiler version must be greater than or equal to 0.8.9 and less than 0.9.0
+pragma solidity ^0.8.9;
 
 // highlight-start
 contract HelloWorld {
@@ -89,15 +89,8 @@ Here's how you would do it in Strato:
   <TabItem value="strato-code" label="Strato">
 
 ```js live
-const code = `
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
-
-contract HelloWorld {
-    string public greet = "Hello World!";
-}`;
 const { session } = await ApiSession.default();
-const helloWorldContract = await Contract.newFrom({ code });
+const helloWorldContract = await Contract.newFrom({ path: "./hello_world.sol" });
 const liveContract = await session.upload(helloWorldContract);
 
 console.log(await liveContract.greet());
@@ -156,7 +149,7 @@ console.log(greet);
 _(click on the "Hedera" tab to find out what would be the equivalent of this snippet written solely using the [official Hedera SDK JS library](https://github.com/hashgraph/hedera-sdk-js))_
 
 <details>
-  <summary>Oh, by the way, click <code>Run</code> on the <code>Strato</code> tab. See what happens.</summary>
+  <summary>Oh, by the way, if you haven't done it already, click <code>Run</code> on the <code>Strato</code> tab. See what happens.</summary>
 
 It should run the code targeting the <OperatorId /> account id on the <OperatorNetwork /> network. We strive to keep a working balance on it, but if we can't keep up with the usage, you can also
 use your own hedera account instead. [Hedera's Portal](https://portal.hedera.com/) is the best and easiest way to start in this sense.
@@ -180,6 +173,22 @@ Head over to our [configuration page](configuration.md) for more info on other a
 </details>
 
 In both cases, I've left out the error handling part for bravety. Besides that, the Hedera code assumes that the developer has precompiled the contract and that its bytecode is provided to it via the `./hello_world.json` file. Strato does not enforce such an assumption. It takes care of the underlying compilation so that the developer does not have to.
+
+Speaking of that, here's a more self-contained code snippet version that basically does the same thing, but gives even more in-browser control to play around with:
+```js live
+const code = `
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.9;
+
+contract HelloWorld {
+  string public greet = "Hello World!";
+}`;
+const { session } = await ApiSession.default();
+const helloWorldContract = await Contract.newFrom({ code });
+const liveContract = await session.upload(helloWorldContract);
+
+console.log(await liveContract.greet());
+```
 
 ... you get the idea. **It's that simple!**
 

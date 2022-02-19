@@ -1,30 +1,29 @@
 
-import { Hbar, TokenSupplyType, TokenType } from "@hashgraph/sdk";
-
-import type { TokenFeatures } from "../lib/static/create/Token";
+import { Hbar, TokenSupplyType } from "@hashgraph/sdk";
+import { TokenFeatures, TokenTypes } from "../lib/static/create/Token";
 
 export const defaultFungibleTokenFeatures: TokenFeatures = {
   decimals: 0,
   initialSupply: 1000,
   keys: {
-    kyc: null
+    kyc: null,
   },
   name: "hbarRocks",
   symbol: "HROK",
-  type: TokenType.FungibleCommon
+  type: TokenTypes.FungibleCommon,
 }
 
 export const defaultNonFungibleTokenFeatures: TokenFeatures = {
   decimals: 0,
   initialSupply: 0,
   keys: {
-    kyc: null
+    kyc: null,
   },
   maxSupply: 10,
   name: "hbarRocks",
   supplyType: TokenSupplyType.Finite,
   symbol: "HROKs",
-  type: TokenType.NonFungibleUnique
+  type: TokenTypes.NonFungibleUnique,
 };
 
 export const GasFees = {

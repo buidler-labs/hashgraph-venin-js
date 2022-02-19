@@ -46,12 +46,6 @@ Following is a table detailing all the object-parameters along with their enviro
 [^default-operatorKey]: required
 [^winston-logger-github]: see https://github.com/winstonjs/winston#logging
 
-<!-- | `fromExtensions` | `string[]` | `[]` | The extensions to be removed from the route after redirecting. |
-| `toExtensions` | `string[]` | `[]` | The extensions to be appended to the route after redirecting. |
-| `redirects` | `RedirectRule[]` | `[]` | The list of redirect rules. |
-| `createRedirects` | `CreateRedirectsFn` | `undefined` | A callback to create a redirect rule. | -->
-
-
 ## Parameters resolution
 The default context parameters are being resolved in the following order:
 * First, the runtime object-argument is checked and if a config property is present there, that's the one being used _otherwise_
