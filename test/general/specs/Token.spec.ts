@@ -2,16 +2,15 @@ import {
   PrivateKey, 
   PublicKey, 
   TokenCreateTransaction, 
-  TokenId, 
-  TokenType 
+  TokenId,
 } from '@hashgraph/sdk';
 import {
-  expect, describe, it,
-  jest
+  describe, expect, it,
+  jest,
 } from '@jest/globals';
 
+import { Token, TokenTypes } from '../../../lib/static/create/Token';
 import { ApiSession } from '../../../lib/ApiSession';
-import { Token } from '../../../lib/static/create/Token';
 
 describe('Token', () => {
   it("null key values should disable them altogether when creating a token", async () => {
@@ -19,17 +18,17 @@ describe('Token', () => {
     const mockedSessionExecute = jest.fn().mockReturnValue({ tokenId: TokenId.fromString("0.0.69") });
     const session = { 
       execute: mockedSessionExecute,
-      publicKey
+      publicKey,
     } as unknown as ApiSession;
     const token = new Token({
+      keys: {
+        feeSchedule: null,
+        kyc: null,
+        pause: null,
+      },
       name: "Part Loco Monetar",
       symbol: "PLM",
-      type: TokenType.FungibleCommon, 
-      keys: {
-        kyc: null,
-        feeSchedule: null,
-        pause: null
-      }
+      type: TokenTypes.FungibleCommon, 
     });
 
     await token.createVia({ session });

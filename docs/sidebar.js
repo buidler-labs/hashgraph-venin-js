@@ -1,35 +1,40 @@
 module.exports = {
   docs: [ {
       type: 'doc',
-      id: 'index',
+      id: 'markdown/introduction',
       label: 'Introduction',
     }, {
       type: 'doc',
-      id: 'quick-start',
+      id: 'markdown/quick-start',
       label: 'Quick Start',
     }, {
       type: 'doc',
-      id: 'configuration',
+      id: 'markdown/configuration',
       label: 'Configuring',
     }, {
       type: 'category',
-      label: 'API',
+      label: 'Guides',
       collapsible: false,
       collapsed: false,
       items: [ {
         type: 'doc',
-        id: 'api/session',
+        id: 'markdown/guides/session',
         label: "Session"
       }, {
+        collapsed: false,
         type: 'category',
         label: 'Entities',
         items: [ 
-          'api/entities/account', 
-          'api/entities/contract', 
-          'api/entities/json',
-          'api/entities/token' 
+          'markdown/guides/entities/account', 
+          'markdown/guides/entities/contract', 
+          'markdown/guides/entities/json',
+          'markdown/guides/entities/token' 
         ]
       }],
-    },
+    }, {
+      type: 'doc',
+      id: 'markdown/playground',
+      label: 'Playground',
+    }
   ],
 };

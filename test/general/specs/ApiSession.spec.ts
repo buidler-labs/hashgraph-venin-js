@@ -3,17 +3,17 @@ import fs from 'fs/promises';
 import {
   afterEach,
   describe, expect, it,
-  jest
+  jest,
 } from '@jest/globals';
 
-import { AccountId, PrivateKey, TokenType } from '@hashgraph/sdk';
-import { LiveToken } from '../../../lib/live/LiveToken';
+import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { Token, TokenTypes } from '../../../lib/static/create/Token';
 import { ApiSession } from '../../../lib/ApiSession';
-import { HEDERA_CUSTOM_NET_NAME } from '../../../lib/HederaNetwork';
-import { EnvironmentInvalidError } from '../../../lib/errors/EnvironmentInvalidError';
-import { StratoContext } from '../../../lib/StratoContext';
 import { CredentialsInvalidError } from '../../../lib/errors/CredentialsInvalidError';
-import { Token } from '../../../lib/static/create/Token';
+import { EnvironmentInvalidError } from '../../../lib/errors/EnvironmentInvalidError';
+import { HEDERA_CUSTOM_NET_NAME } from '../../../lib/HederaNetwork';
+import { LiveToken } from '../../../lib/live/LiveToken';
+import { StratoContext } from '../../../lib/StratoContext';
 
 describe('ApiSession', () => {
   const ORIGINAL_ENV = process.env;
@@ -106,7 +106,7 @@ describe('ApiSession', () => {
     const token = new Token({ 
       name: "PLM", 
       symbol: "$",
-      type: TokenType.FungibleCommon
+      type: TokenTypes.FungibleCommon,
     });
 
     await expect(session.create(token)).resolves.toBeInstanceOf(LiveToken);

@@ -11,6 +11,7 @@ import replace from "@rollup/plugin-replace";
 import resolve from '@rollup/plugin-node-resolve';
 import { terser } from "rollup-plugin-terser";
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
+import { rollupImportMapPlugin } from "rollup-plugin-import-map";
 
 import dotenv from 'dotenv';
 dotenv.config({ path: getPathOf('./.env') });
@@ -43,6 +44,11 @@ export default async function getConfig() {
       sourcemap: true,
     } ],
     plugins: [
+      rollupImportMapPlugin({
+        imports: {
+          "bignumber.js": "https://unpkg.com/bignumber.js@9.0.2/bignumber.mjs"
+        }
+      }),
       webWorkerLoader({
         sourcemap: true,
       }),

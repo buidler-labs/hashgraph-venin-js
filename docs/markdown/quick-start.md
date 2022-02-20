@@ -14,20 +14,20 @@ will suffice.
 ## Hello Strato
 As we've seen in our introductory page, firing up your first Strato smart-contract example should be straight forward but let's kick it up a notch to make things a little more interesting. Suppose you have a trimmed down version (comments & no `dec` method stripped) of [the following contract](https://solidity-by-example.org/first-app/):
 
-```sol
+```sol title="./increment.sol"
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.9;
 
 contract Counter {
-    uint public count;
+  uint public count;
 
-    function get() public view returns (uint) {
-        return count;
-    }
+  function get() public view returns (uint) {
+    return count;
+  }
 
-    function inc() public {
-        count += 1;
-    }
+  function inc() public {
+    count += 1;
+  }
 }
 ```
 
@@ -35,15 +35,19 @@ Instead of having a value that we read from the contract, we have state-mutating
 
 Interacting with it via Strato would be as simple as 
 
-```js ./increment.js
-const hapiSession = await ApiSession.default();
-const helloWorldContract = await Contract.newFrom({ path: './increment.sol' });
-const liveContract = await hapiSession.upload(helloWorldContract);
+```js live
+const { session } = await ApiSession.default();
+const counterContract = await Contract.newFrom({ path: './increment.sol' });
+const liveContract = await session.upload(counterContract);
 
-// Increment then retrieve the counter. 
+// Increment then retrieve the counter
 await liveContract.inc();
-console.log(await liveContract.get());
+console.log((await liveContract.get()).toNumber());
 ```
+
+:::note
+We need the `.toNumber` call since the returned value of calling the `get` method is an `uint` which [maps to a `BigNumber`](https://mikemcl.github.io/bignumber.js/) and `console.log` does not know how to display such instances.
+:::
 
 By convention, when calling `Contract.newFrom` passing it a `path`, Strato expects to find the solidity contract code in the `contracts` folder. This is configurable via the `HEDERAS_CONTRACTS_RELATIVE_PATH` environment variable.
 
