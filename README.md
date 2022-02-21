@@ -1,4 +1,13 @@
 # Hedera Strato JS
+
+![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square)
+![node version](https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square)
+![tested with jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?style=flat-square)
+![contributions](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
+![license](https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square)
+
+[![NPM](https://nodei.co/npm/@buidlerlabs/hedera-strato-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-strato-js/)
+
 Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
 
 > **Disclaimer:** This project is not an official Hedera project and, as such, it is not affiliated with it in any way, shape or form. It is an independent, community driven, effort to bring clarity and *joy* to developing descentralized apps (dApps) on the Hedera network-chain ecosystem.
@@ -10,14 +19,6 @@ Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and w
 > **Note #2:** Please keep in mind that, although core features are extensively tested and appear to be working, this is still currently under _heavy-active_ development and, as such, we don't recommend this just yet for production use. The API is also very likely to change before we reach there!
 >
 >Having said that, we will continue to use it as is in production even at this initial stage just because we can and are quick to solve any issues that we might encounter.
-
-![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square)
-![node version](https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square)
-![tested with jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?style=flat-square)
-![contributions](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
-![license](https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square)
-
-[![NPM](https://nodei.co/npm/@buidlerlabs/hedera-strato-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-strato-js/)
 
 ## Features
 Strato already supports a lot of stuff:
@@ -92,7 +93,6 @@ Have the `.env` file ready (see above) and run
 ```
 $ npm test
 ```
-
 > **Note:** If you're targeting an official network such as a `testnet` or a `previewnet`, there will be a cost involved in running the library tests that has to do with API usage regarding contract deployments and execution (among other things). There's also the option of a `customnet` targeting a self-hosted `hedera-service` deployment. If you want to go down that path (recommended especially if you are planning to contribute), please [follow these instructions](https://github.com/buidler-labs/dockerized-hedera-services).
 
 ## Contributions

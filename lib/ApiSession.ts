@@ -1,9 +1,5 @@
-import { EventEmitter } from "events";
-
-import { Interface } from '@ethersproject/abi';
 import { 
   AccountId,
-  Client,
   ContractCallQuery, 
   ContractExecuteTransaction,
   ContractFunctionResult, 
@@ -18,29 +14,25 @@ import {
   TransactionRecordQuery,
   TransactionResponse 
 } from '@hashgraph/sdk';
-import { 
-  HederaNetwork
-} from './HederaNetwork';
+import { EventEmitter } from "events";
+import { Interface } from '@ethersproject/abi';
 
 import { ContractFunctionCall, LiveContract } from './live/LiveContract';
+import { StratoContext, StratoContextSource, StratoParameters } from "./StratoContext";
+import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
+import { ClientController } from "./client/controller/ClientController";
+import { CreatableEntity } from "./core/CreatableEntity";
+import { HederaNetwork } from './HederaNetwork';
+import { Json } from './static/upload/Json';
 import { LiveEntity } from './live/LiveEntity';
 import { LiveJson } from './live/LiveJson';
+import { RecursivePartial } from "./core/UsefulTypes";
+import { Saver } from "./core/Persistance";
 import { SolidityAddressable } from './core/SolidityAddressable';
-import { Json } from './static/upload/Json';
-import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
 import { StratoClient } from "./client/StratoClient";
 import { StratoLogger } from "./StratoLogger";
-import { 
-  StratoContext, 
-  StratoContextSource, 
-  StratoParameters
-} from "./StratoContext";
-import { Saver } from "./core/Persistance";
-import { CreatableEntity } from "./core/CreatableEntity";
-import { UploadableEntity } from "./core/UploadableEntity";
-import { ClientController } from "./client/controller/ClientController";
 import { Subscription } from "./core/Subscription";
-import { RecursivePartial } from "./core/UsefulTypes";
+import { UploadableEntity } from "./core/UploadableEntity";
 
 type ApiSessionConstructorArgs = {
   ctx: StratoContext,
@@ -50,7 +42,7 @@ type ControlledSession = {
   controller: ClientController,
   session: ApiSession
 };
-type ExecutableTransaction = ContractFunctionCall|Transaction;
+type ExecutableTransaction = Query<any>|Transaction;
 type TransactionedReceipt = {
   transaction: ExecutableTransaction,
   receipt: TransactionReceipt
@@ -193,13 +185,13 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     return createdLiveEntity;
   }
 
-   /**
+  /**
     * Queries/Executes a contract function, capable of returning the {@link ContractFunctionResult} if successfull. This depends on the {@param returnType} of course.
     */
   public async execute<T extends TypeOfExecutionReturn>(transaction: ContractFunctionCall, returnType?: T, getReceipt?: boolean)
     : Promise<ExecutionReturnTypes<ContractFunctionResult>[T]>;
 
-   /**
+  /**
     * A catch-all/generic {@link Transaction} execution operation yeilding, upon success, of a {@link TransactionResponse}.
     */
   public async execute<T extends TypeOfExecutionReturn>(transaction: Transaction, returnType?: T, getReceipt?: boolean)
@@ -211,9 +203,9 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   public async execute<T extends TypeOfExecutionReturn, R>(transaction: Query<R>, returnType?: T, getReceipt?: boolean)
    : Promise<ExecutionReturnTypes<R>[T]>;
 
-   // Overload implementation
+  // Overload implementation
   public async execute<T extends TypeOfExecutionReturn, R>(
-      transaction: ExecutableTransaction|Query<R>, 
+      transaction: ExecutableTransaction, 
       returnType: T, 
       getReceipt = false)
     : Promise<ExecutionReturnTypes<ContractFunctionResult|TransactionResponse|R>[T]> {
@@ -228,30 +220,20 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
 
     // see if the above assumption holds and refine executionResult if case may be
     if (txResponse instanceof TransactionResponse) {
-      // start out by emiting the receipt for the original transaction, if required, and someone is interested in it
-      if (this.canReceiptBeEmitted(getReceipt) || returnType === TypeOfExecutionReturn.Receipt) {
-        txReceipt = await this.client.getReceipt(txResponse);
-        if (this.canReceiptBeEmitted(getReceipt)) {
-          this.events.emit(TRANSACTION_ON_RECEIPT_EVENT_NAME, { transaction, receipt: txReceipt });
-        }
-      }
-      
-      if (returnType === TypeOfExecutionReturn.Record || (isContractTransaction && returnType === TypeOfExecutionReturn.Result)) {
-        if (!txReceipt) {
-          txReceipt = await this.client.getReceipt(txResponse);
-        }
+      // start out by generating the receipt for the original transaction
+      txReceipt = await this.client.getReceipt(txResponse);
 
+      if (returnType === TypeOfExecutionReturn.Record || (isContractTransaction && returnType === TypeOfExecutionReturn.Result)) {
         const txRecordQuery = new TransactionRecordQuery().setTransactionId(txResponse.transactionId);
 
         txRecord = await this.client.execute(txRecordQuery);
 
-        // try sending the receipt for the underlying TransactionRecordQuery
-        if (this.canReceiptBeEmitted(getReceipt)) {
-          this.events.emit(TRANSACTION_ON_RECEIPT_EVENT_NAME, { transaction: txRecordQuery, receipt: txRecord.receipt });
-        }
-
         // lock onto the contract-function-result of the record just in case a Result return-type is expected
         executionResult = txRecord.contractFunctionResult;
+      }
+
+      if(this.canReceiptBeEmitted(getReceipt)) {
+        this.events.emit(TRANSACTION_ON_RECEIPT_EVENT_NAME, { receipt: txReceipt, transaction: transaction });
       }
     } else {
       // Note: ContractFunctionResult-s cannot emit receipts!

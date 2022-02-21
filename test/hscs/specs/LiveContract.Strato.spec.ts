@@ -10,15 +10,15 @@ import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 import { Token } from '../../../lib/static/create/Token';
 
-function read(what : ResourceReadOptions) {
+function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'hscs', ...what })
 }
 
 describe('LiveContract.Strato', () => {
 
   it("given a fungible, live, token, burning over a precompiled contract-service bridge should be permitted", async () => {
-    const contract = await Contract.newFrom({ code: read({ contract: 'HelloWorldBurn'}), ignoreWarnings: true });
-    const token = new Token({... defaultFungibleTokenFeatures, initialSupply: 1000});
+    const contract = await Contract.newFrom({ code: read({ contract: 'HelloWorldBurn' }), ignoreWarnings: true });
+    const token = new Token({ ...defaultFungibleTokenFeatures, initialSupply: 1000 });
 
     const { session } = await ApiSession.default();
     const liveToken = await session.create(token);
@@ -34,8 +34,8 @@ describe('LiveContract.Strato', () => {
   });
 
   it("given a fungible, live, token, associating it to a live-contract should allow the contract to control the supply and transfer to associated accounts", async () => {
-    const token = new Token({... defaultFungibleTokenFeatures, initialSupply: 1000});
-    const account = new Account({maxAutomaticTokenAssociations: 1});
+    const token = new Token({ ...defaultFungibleTokenFeatures, initialSupply: 1000 });
+    const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const contract = await Contract.newFrom({ code: read({ contract: 'MintTransHTS' }), ignoreWarnings: true });
 
     // Make everything live
@@ -51,7 +51,7 @@ describe('LiveContract.Strato', () => {
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const tokenInfo = await liveToken.getLiveEntityInfo();
-    
+
     // Then
     expect(aliceInfo.tokenRelationships._map.get(liveToken.id.toString()).balance.toNumber()).toEqual(50);
     expect(tokenInfo.totalSupply.toNumber()).toEqual(1000 + 150);
@@ -74,7 +74,7 @@ describe('LiveContract.Strato', () => {
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const tokenInfo = await liveToken.getLiveEntityInfo();
-    
+
     // Then
     expect(aliceInfo.ownedNfts.toNumber()).toEqual(1);
     expect(tokenInfo.totalSupply.toNumber()).toEqual(1);
@@ -82,7 +82,7 @@ describe('LiveContract.Strato', () => {
 
   it("given a non-fungible, live, token, a contract would make use of the HTS to mint multiple and make the NFT transfers to associated accounts", async () => {
 
-    const account = new Account({maxAutomaticTokenAssociations: 1});
+    const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const contract = await Contract.newFrom({ code: read({ contract: 'MintTransHTS' }), ignoreWarnings: true });
 
     // Make everything live
@@ -100,11 +100,10 @@ describe('LiveContract.Strato', () => {
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const benInfo = await benLiveAccount.getLiveEntityInfo();
     const tokenInfo = await liveToken.getLiveEntityInfo();
-    
+
     // Then
     expect(aliceInfo.ownedNfts.toNumber()).toEqual(1);
     expect(benInfo.ownedNfts.toNumber()).toEqual(1);
     expect(tokenInfo.totalSupply.toNumber()).toEqual(2);
   });
-
 });
