@@ -8,7 +8,7 @@ Strato has native support to store and retrieve basic JavaScript objects (JSONs)
 
 ### Storing a Json
 You use a `ApiSession` for that, like so:
-```js live
+```js live=true containerKey=store_a_json
 const { session } = await ApiSession.default();
 const liveJson = await session.upload(new Json({ theAnswer: 42 }));
 
@@ -37,7 +37,7 @@ Besides setting a `memo` you can pick and use any other fields that [the `FileCr
 
 ### Retrieving a Json
 You'll need its `liveJson.id` for that which will need to be passed to `ApiSession`'s `getLiveJson` method:
-```js live
+```js live=true containerKey=retreive_a_json
 const { session } = await ApiSession.default();
 const liveJson = await session.getLiveJson({ id: "0.0.30771386" });
 

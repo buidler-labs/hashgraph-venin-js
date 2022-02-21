@@ -3,17 +3,15 @@ class LiveEventEmitter {
         this._events = {};
     }
 
-    once(name, listener) {
+    on(name, listener) {
         if (!this._events[name]) {
-            this._events[name] = listener;
+            this._events[name] = [];
         }
+
+        this._events[name].push(listener);
     }
 
     removeListener(name) {
-        if (!this._events[name]) {
-            throw new Error(`Can't remove the listener. Event "${name}" doesn't exits.`);
-        }
-
         this._events[name] = null;
     }
 
@@ -22,7 +20,11 @@ class LiveEventEmitter {
             throw new Error(`Can't emit an event. Event "${name}" doesn't exits.`);
         }
 
-        this._events[name](data);
+        const fireCallbacks = (callback) => {
+            callback(data);
+        };
+
+        this._events[name].forEach(fireCallbacks);
     }
 }
 

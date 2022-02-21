@@ -24,7 +24,7 @@ export const OperatorNetwork = () => (
 
 Want to give it a in-browser spin, now you can. Type in your code and press the `Run` button and you should be set to go.
 
-```js live
+```js live=true containerKey=live_from_code
 const code = `
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;

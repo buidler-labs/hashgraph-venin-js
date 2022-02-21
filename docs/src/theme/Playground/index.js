@@ -10,7 +10,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './styles.module.css';
 import ReactLive from "../ReactLive/ReactLive";
 
-export default function Playground({children}) {
+export default function Playground({children, ...props}) {
     const {
         siteConfig: {
             themeConfig: {
@@ -19,9 +19,20 @@ export default function Playground({children}) {
         },
     } = useDocusaurusContext();
 
+    //convert .md metastring to props
+    const metaProps = props.metastring.split(' ').reduce((acc, curr) => {
+        const [key, value] = curr.split('=')
+        acc[key] = value
+
+        return acc
+    }, {})
+
     return (
         <div className={styles.playgroundContainer}>
-            <ReactLive playgroundPosition={playgroundPosition}>{children}</ReactLive>
+            <ReactLive
+                playgroundPosition={playgroundPosition}
+                {...metaProps}
+            >{children}</ReactLive>
         </div>
     );
 }

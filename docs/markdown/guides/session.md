@@ -22,7 +22,7 @@ Retrieval operations
 ## Subscribing to receipts
 The session also allows to get notified of transaction receipts via the `subscribeToReceiptsWith` method. You pass it a callback, do some contract transactions and wait to get called like so:
 
-```js live
+```js live=true containerKey=subscribe_to_recipts
 const code = `
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
@@ -35,12 +35,12 @@ contract Counter {
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ code });
 const receiptsSubscription = session.subscribeToReceiptsWith(({ transaction, receipt }) => {
-    console.log(`Transaction ${transaction.id.toString()} receipt reported finishing with status ${receipt.status}`);
+    console.log(`Transaction ${transaction.transactionId.toString()} receipt reported finishing with status ${receipt.status}`);
 });
-const liveContract = await hapiSession.upload(contract);
+const liveContract = await session.upload(contract);
 
 await liveContract.inc({ emitReceipt: true });
-receiptSubscription.unsubscribe();
+receiptsSubscription.unsubscribe();
 ```
 
 The above example also shows how you can cancel such a subscription via the `Subscription.unsubscribe()` method.

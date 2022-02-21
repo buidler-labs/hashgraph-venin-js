@@ -25,11 +25,11 @@ To pass [Create Smart Contract Transaction](https://docs.hedera.com/guides/docs/
 
 You can, of course, pass in both `_file` and `_contract` options. Merging the above 2 examples, `session.upload(contract, {_contract: {gas: 100_000}, _file: {fileMemo: "Hello Strato"}})` would end up uploading a `Contract.byteCode` to Hedera and have a memo attached to the resulting file called "Hello Strato". It would then set a `gas` limit of 100000ℏ to create the contract. A working example of this, could look as follows:
 
-```js live
+```js live=true containerKey=contract_and_file_options
 const { session } = await ApiSession.default();
 const helloWorldContract = await Contract.newFrom({ path: "./hello_world.sol" });
 const liveContract = await session.upload(helloWorldContract, {
-    _contract: {gas: 100_000}, 
+    _contract: {gas: 100000}, 
     _file: {fileMemo: "Hello Strato"}
 });
 
@@ -40,7 +40,7 @@ console.log(await liveContract.greet());
 Passing in constructor parameters is easy, just add them when `ApiSession.upload`-ing like so: `session.upload(contract, arg1, arg2, ... argn)`. If you're going to have meta-arguments (see above) as well as constructor-args passed in, add the meta-args object first and then add whatever constructor arguments are desired.
 
 Example: 
-```js live
+```js live=true containerKey=contructor_parameters
 const code = `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
@@ -53,9 +53,9 @@ contract MessageHolder {
 }`;
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ code });
-const liveContract = await session.upload(contract , {_contract: {gas: 100_000}}, 
+const liveContract = await session.upload(contract , {_contract: {gas: 100000}}, 
     "Strato is amazing!"
-});
+);
 
 console.log(await liveContract.message());
 ```
@@ -67,7 +67,7 @@ As you've probably seen so many times now, following a succesfull deployment, _a
 
 So if, for example, we were to upload [solidity-by-example](https://solidity-by-example.org/)'s [First App](https://solidity-by-example.org/first-app/) Contract via a `session.upload` call, that will eventually resolve to a `LiveContract` instance which would have a `get`, an `inc` and a `dec` [defined on it as one might expect](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L87).
 
-```js live
+```js live=true containerKey=call_deployed_contract_methods
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ path: './counter.sol' });
 const liveContract = await session.upload(contract);
@@ -79,7 +79,7 @@ console.log(await liveContract.get());
 
 Of course, function arguments are also supported so if we have such a live-contract function ([solidity-by-example's State Variable](https://solidity-by-example.org/state-variables/) code, [for instance](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L111)), you can call into these methods, passing in the expected values as expected.
 
-```js live
+```js live=true containerKey=function_arguments
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ path: './state-variables.sol' });
 const liveContract = await session.upload(contract);
@@ -95,7 +95,7 @@ When dealing with _big numbers_, the library uses the same one used by the Heder
 #### Dealing with events
 Contract _events_ are propagated upwards from `LiveContract` through the `EventEmitter`-inspired methods. As such one can _listen_ to an event by simply calling a `.onEvent("event_name", () => { ... })` on the live-contract instance. Our test cases include [solidity-by-example's Events code](https://solidity-by-example.org/events/) to make sure this works. [Have a look for yourself](https://github.com/buidler-labs/hedera-strato-js/blob/12300217a7d19abb5edc118e01295fdb18774d85/test/LiveContract.spec.ts#L210), if interested, or check it out right now:
 
-```js live
+```js live=true containerKey=dealing_with_events
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ path: './events.sol' });
 const liveContract = await session.upload(contract);
@@ -112,7 +112,7 @@ Similar to when uploading a _Smart Contract_, calling any of its methods follows
 
 Of course, similar to the "upload contract operation" detailed above, any argument following the the meta-arguments object would be passed to the method itself. In this regards, using the same _State Variable_ contract, doing a `liveContract.set({maxTransactionFee: new HBar(1)}, 42)` would call the `set` method passing in integer `42` as parameter and setting the `maxTransactionFee` for the transaction to 1ℏ.
 
-```js live
+```js live=true containerKey=transaction_meta_arguments
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ path: './state-variables.sol' });
 const liveContract = await session.upload(contract);
@@ -128,7 +128,7 @@ Uploading a `Contract` is not the only way to get a hold on a deployed, `LiveCon
 
 Want to find out more? [Have a look at our test-case](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L31) for an example on how one might go about doing just that or check it out yourself with a pre-uploaded testnet [`SimpleStorage` contract](https://solidity-by-example.org/state-variables/) just for the sake of example:
 
-```js live
+```js live=true containerKey=retreive_deployed_contracts
 const { session } = await ApiSession.default();
 const liveContract = await session.getLiveContract({ 
     id: '0.0.30771282', 

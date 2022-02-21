@@ -17,11 +17,6 @@ const LiveEditorContainer = ({isRunning, onRunAction, onChange, disabled}) => {
             </Header>
             <ThemedLiveEditor onChange={onChange} disabled={isRunning}/>
             <Header>
-                {/* <Translate
-                  id="theme.Playground.result"
-                  description="The result label of the live codeblocks">
-                  Result
-                </Translate> */}
                 <button
                     className={styles.playgroundRunButton}
                     onClick={onRunAction} disabled={disabled || isRunning}>

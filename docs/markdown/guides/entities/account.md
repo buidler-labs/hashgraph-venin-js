@@ -6,7 +6,7 @@ title: Account
 ## Creating an account
 
 If you want to create such entities, it's as simple as:
-```js live
+```js live=true containerKey=creating_an_account
 const { session } = await ApiSession.default();
 const liveAccount = await session.create(new Account());
 
@@ -28,7 +28,7 @@ export type AccountFeatures = {
 ```
 
 Be default, if you don't specify it a `key` / `keyType`, it defaults to generating a private `ED25519` PrivateKey. Here is how you would create an `ECDSA` one:
-```js live
+```js live=true containerKey=key_or_keyType
 const { session } = await ApiSession.default();
 const liveAccount = await session.create(new Account({ keyType: KeyType.ECDSA }));
 

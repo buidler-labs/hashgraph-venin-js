@@ -88,7 +88,7 @@ Here's how you would do it in Strato:
 <Tabs>
   <TabItem value="strato-code" label="Strato">
 
-```js live
+```js live=true containerKey=greet_from_path
 const { session } = await ApiSession.default();
 const helloWorldContract = await Contract.newFrom({ path: "./hello_world.sol" });
 const liveContract = await session.upload(helloWorldContract);
@@ -175,7 +175,7 @@ Head over to our [configuration page](configuration.md) for more info on other a
 In both cases, I've left out the error handling part for bravety. Besides that, the Hedera code assumes that the developer has precompiled the contract and that its bytecode is provided to it via the `./hello_world.json` file. Strato does not enforce such an assumption. It takes care of the underlying compilation so that the developer does not have to.
 
 Speaking of that, here's a more self-contained code snippet version that basically does the same thing, but gives even more in-browser control to play around with:
-```js live
+```js live=true containerKey=greet_from_code
 const code = `
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;

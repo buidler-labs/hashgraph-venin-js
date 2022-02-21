@@ -35,14 +35,14 @@ Instead of having a value that we read from the contract, we have state-mutating
 
 Interacting with it via Strato would be as simple as 
 
-```js live
+```js live=true containerKey=increment_from_path
 const { session } = await ApiSession.default();
 const counterContract = await Contract.newFrom({ path: './increment.sol' });
 const liveContract = await session.upload(counterContract);
 
 // Increment then retrieve the counter
 await liveContract.inc();
-console.log((await liveContract.get()).toNumber());
+console.log(await liveContract.get());
 ```
 
 :::note

@@ -34,11 +34,12 @@
   border: none;
   border-radius: 0.2rem;
   margin-right: 0.5rem;
-  background-color: #3ac73a;
+  background-color: var(--ifm-color-success-lighter);
+  color: var(--ifm-color-content-inverse);
 }
 
 .playgroundRunButton:hover {
-  background-color: #47dc47;
+  background-color: var(--ifm-color-success-lightest);
 }
 
 .playgroundRunButton:disabled {
@@ -56,4 +57,41 @@
 .playgroundPreview {
   padding: 1rem;
   background-color: var(--ifm-pre-background);
+}
+
+.playgroundLogsContainer {
+  max-height: 30rem;
+  overflow-y: scroll;
+}
+
+.playgroundLogsContainer p {
+  margin: 0;
+}
+
+.playgroundLogItem {
+  color: var(--ifm-color-content)
+}
+
+.playgroundLogItem.internal {
+  color: #989898;
+}
+
+.playgroundLogItem.userInput {
+  font-weight: bold;
+}
+
+.playgroundLogItem.info {
+  color: #4bc4b0;
+}
+
+.playgroundLogItem.debug {
+  color: #4bc463;
+}
+
+.playgroundLogItem.warn {
+  color: #d7aa33;
+}
+
+.playgroundLogItem.error {
+  color: #c23737;
 }

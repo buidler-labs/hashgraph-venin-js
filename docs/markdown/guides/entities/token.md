@@ -40,7 +40,7 @@ const TokenTypes = {
 }
 ```
 and `create` it via an `ApiSession`:
-```js live
+```js live=true containerKey=create_a_token
   const { session } = await ApiSession.default();
   const token = new Token({
     name: "Wrapped HBAR",

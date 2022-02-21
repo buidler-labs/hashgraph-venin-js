@@ -1,21 +1,20 @@
 import styles from "../../Playground/styles.module.css";
 import BrowserOnly from "@docusaurus/core/lib/client/exports/BrowserOnly";
-import {LiveContext, LiveError, LivePreview} from "react-live";
+import {LiveContext} from "react-live";
 import * as React from "react";
 import {renderToString} from "react-dom/server";
 
 function LivePreviewLoader() {
-    // Is it worth improving/translating?
     return <div>Loading...</div>;
 }
 
-const LiveResultContainer = ({running}) => {
-    return <div className={styles.playgroundPreview}>
+const LiveResultContainer = ({isRunning, error, errorCallback}) => {
+    return <div>
         <BrowserOnly fallback={<LivePreviewLoader/>}>
             {() => (
                 <>
-                    <LogsResult isRunning={running}/>
-                    <LiveError/>
+                    <LogsResult isRunning={isRunning}/>
+                    <ErrorResult error={error} errorCallback={errorCallback}/>
                 </>
             )}
         </BrowserOnly>
@@ -28,16 +27,33 @@ const LogsResult = ({isRunning}) => {
     const {element: Element} = context;
 
     React.useEffect(() => {
-        const logsHTML = renderToString(<Element/>)
+        const logsHTML = Element ? renderToString(<Element/>) : null;
 
-        if(logsHTML){
+        if (logsHTML) {
             setLogs(logsHTML);
         }
     }, [context])
 
-    return isRunning
-        ? (Element ? <Element/> : null)
-        : (logs ? <div dangerouslySetInnerHTML={{__html: logs}}/> : null)
+    const LiveLogsContainer = Element ? <div className={styles.playgroundPreview}><Element/></div> : null
+    const LogsResultContainer = logs ? <div className={styles.playgroundPreview}>
+            <div dangerouslySetInnerHTML={{__html: logs}}/>
+    </div> : null;
+
+    return isRunning ? LiveLogsContainer : LogsResultContainer
+}
+
+const ErrorResult = ({error, errorCallback}) => {
+    const context = React.useContext(LiveContext)
+
+    React.useEffect(() => {
+        if(context.error) {
+            errorCallback(context.error)
+        }
+
+    }, [context])
+
+
+    return error ? <pre style={{color: 'red'}}>{error}</pre> : null;
 }
 
 export default LiveResultContainer;

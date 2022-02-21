@@ -50,10 +50,10 @@ module.exports = async function () {
       "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js",
       {
         async: true,
-        src: './strato-loader.js',
+        src: '/strato-loader.js',
       }, {
         async: true,
-        src: './hedera-strato.js.map',
+        src: '/hedera-strato.js.map',
       },
     ],
     staticDirectories: [
