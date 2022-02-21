@@ -1,5 +1,10 @@
 .env
-build/
+.docusaurus
+.idea/
+
 coverage/
-dist/
+lib.cjs/
+lib.esm/
 node_modules/
+untracked/
+types/

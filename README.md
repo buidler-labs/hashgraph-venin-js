@@ -1,23 +1,69 @@
 # Hedera Strato JS
-Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's underlying services](https://docs.hedera.com/guides/docs/sdks).
+
+![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square)
+![node version](https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square)
+![tested with jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?style=flat-square)
+![contributions](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
+![license](https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square)
+
+[![NPM](https://nodei.co/npm/@buidlerlabs/hedera-strato-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-strato-js/)
+
+Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
 
 > **Disclaimer:** This project is not an official Hedera project and, as such, it is not affiliated with it in any way, shape or form. It is an independent, community driven, effort to bring clarity and *joy* to developing descentralized apps (dApps) on the Hedera network-chain ecosystem.
 
-> **Note:** Currently, the library is only available for NodeJS runtime environments but efforts are underway to have it deployable and working in web browsers as well.
+> **Note:** Currently, the library is mostly available for NodeJS runtime environments since there is where most of the bulk development effort occurs. Efforts are underway to have it deployable and working in web browsers as well.
+>
+>These docs are using such an ad-hoc bundled to power the live-coding widgets. If you eager to see how this can be done, have a look over our browser smoke-test rollup config for inspiration.
 
-> **Note #2:** Please keep in mind that, although core features are tested and working, this is still currently in heavy-active development and, as such, it's not yet ready for production usage. The API might also change before we reach there!
+> **Note #2:** Please keep in mind that, although core features are extensively tested and appear to be working, this is still currently under _heavy-active_ development and, as such, we don't recommend this just yet for production use. The API is also very likely to change before we reach there!
+>
+>Having said that, we will continue to use it as is in production even at this initial stage just because we can and are quick to solve any issues that we might encounter.
 
-## Installing it
-``` bash
-$ npm i @buidlerlabs/hedera-strato-js
-```
+## Features
+Strato already supports a lot of stuff:
+* [x] Compile a Solidity contract to obtain its Hedera accepted ABI directly from the library
+* [x] Deploy a contract to the network
+* [x] Use intuitive API mechanics for interacting with a deployed, live contract
+* [x] Pubsub for contract emitted events
+* [x] Pubsub for transaction receipts
+* [x] Using Hedera File Storage as a place to store a generic JSON
+* [x] Create token via the Hedera Token Service (HTS)
+* [x] Create a Hedera account
+* [x] Ready to be plugged into a web3 wallet (_when such will exist_)
+* [x] End to end tested sourcing multiple contracts for the test-base from places such as [solidity-by-example](https://solidity-by-example.org/) and the [hedera-sdk-js repo](https://github.com/hashgraph/hedera-sdk-js/tree/main/examples)
+#### ... with more planned for development:
+* [ ] Be able to _seamlessly_ run it in browser (even the contract compilation part if required)
+* [ ] Update/delete/_other_ token operations
+* [ ] Hedera Consensus Service support
+* [ ] Other account operations
+* [ ] Better error reporting
+* [ ] Increase logging support
+* [ ] Better integration of _entities_ across the code-base
+#### ... and more.
 
-### Getting started
-1. Create an `.env` file at the root of your repo with the following content filledin accordingly (see [.env.sample](./.env.sample) for more details and options):
+## The drive
+As any good-striving, long-lasting, endevour, we are using Strato to hopefully fuel everything that we, here at BuiDler Labs, build on Hedera. Our Hedera porfolio currently consists of:
+* [FileCoin-Hedera Grant](https://github.com/taskbar-team/hedera-filecoin-devgrant) - a development grant used to put the foundations of [MyTaskbar](https://mytaskbar.io/) v2, the more decentralized version
+* [HeadStarter](headstarter.org) - the first Hedera IDO platform
+
+We're basically eating our own dog food. That way, we can hopefully prove that it's something delicious or, if not, we have a good incentive to make it so. This also makes it a good reason to not have it as a "shot and forget" kind of effort. 
+
+We will support this for as long as we're going to build on Hedera and, if there's comunity interest, even beyond that. 
+
+## Documentation
+You can find the [API docs here](https://hsj-docs.buidlerlabs.com/).
+
+We do offer Live Editor functionality where you can give a go to the samples we have prepared.
+
+Another option would be to just code in-browser using our [playground](https://hsj-docs.buidlerlabs.com/markdown/playground)
+
+## Quick start
+1. Create an `.env` file at the root of your repo with the following content filled in accordingly (see [.env.sample](./.env.sample) for more details and options):
 ```sh
-HEDERA_NETWORK=testnet
-HEDERA_OPERATOR_ID=0.0...
-HEDERA_OPERATOR_KEY=...
+HEDERAS_NETWORK=testnet
+HEDERAS_OPERATOR_ID=0.0...
+HEDERAS_OPERATOR_KEY=...
 ```
 2. Create a `contracts` folder in which you add your `hello_world.sol` solidity contract definition:
 
@@ -42,14 +88,6 @@ If all goes well, you should see the expected `Hello Hedera Strato!` logged insi
 
 Also, if you want a quick play-through a similar example, please have a look at [our minimum-working code](https://github.com/buidler-labs/hsj-example) repo. 
 
-## Features
-- Upload a [Solidity Contract](https://docs.soliditylang.org/en/v0.8.10/index.html) (either by _code_ or by _path_) to Hedera and directly interact with it in JS (via [_LiveContracts_](https://github.com/buidler-labs/hedera-strato-js/blob/main/lib/live/LiveContract.ts))
-- Given a [ContractId](https://docs.hedera.com/guides/docs/hedera-api/basic-types/contractid) and its ABI, retrieve a live-instance of a contract and interact with it
-- Upload a JSON object to [Hedera File Services](https://docs.hedera.com/guides/docs/sdks/file-storage) allowing for later retrieval
-
-## Using it
-You can find the [API docs here](https://hsj-docs.buidlerlabs.com/). Alternativelly, if you want to locally spin up quickly some working code, have a look at our [minimal example repo](https://github.com/buidler-labs/hsj-example).
-
 ## Testing it
 Have the `.env` file ready (see above) and run 
 ```
@@ -57,14 +95,10 @@ $ npm test
 ```
 > **Note:** If you're targeting an official network such as a `testnet` or a `previewnet`, there will be a cost involved in running the library tests that has to do with API usage regarding contract deployments and execution (among other things). There's also the option of a `customnet` targeting a self-hosted `hedera-service` deployment. If you want to go down that path (recommended especially if you are planning to contribute), please [follow these instructions](https://github.com/buidler-labs/dockerized-hedera-services).
 
-## Roadmap
-- ESM library support to allow browser embedding
-- Add library logs support
-- Add better compiler output support
-- ... others `TBD`
-
 ## Contributions
-Of course, contributions are more then welcomed and encouraged on all fronts: open an issue, update the docs or, if you feel bold enough, directly open a PR and make your case as to why your changes would benefit the library.
+Do you think we missed anything? Want some feature urgented? Do you have an idea of something that we might improve? Head over to [our issues page](https://github.com/buidler-labs/hedera-strato-js/issues) and let us know! We want Strato to be a community-lead initiative. This means that any opinion or critic is encouraged (and even welcomed)! 
+
+Of course, if you're eager to write it yourself, that's also fine and dandy! Just fork us, add your changes and open a pull request. We'll take it from there ...
 
 ## License
 This work has been published under the MIT License.
