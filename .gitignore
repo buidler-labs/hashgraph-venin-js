@@ -1,8 +1,11 @@
 .env
+.docusaurus
+.idea/
+
 html-docs/
 coverage/
-dist/
-/node_modules/
-.docusaurus
+lib.cjs/
+lib.esm/
+node_modules/
 untracked/
-.idea/
+types/

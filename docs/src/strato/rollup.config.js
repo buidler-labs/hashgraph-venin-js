@@ -36,7 +36,7 @@ function getHederasSettingsFrom(obj) {
 export default async function getConfig() {
   return {
     context: 'window',
-    input: './index.ts',
+    input: './lib/index.ts',
     output: [ {
       file: getPathOf('./lib.esm/hedera-strato.js'),
       format: 'esm',

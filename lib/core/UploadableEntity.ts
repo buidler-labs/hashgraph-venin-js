@@ -6,7 +6,7 @@ export type ArgumentsForUpload = {
     args: any[]
 };
 
-export interface UploadableEntity<T extends LiveEntity<R>, R = any> {
+export interface UploadableEntity<T extends LiveEntity<R, I>, R = any, I = any> {
     get nameOfUpload(): string;
 
     uploadTo({ session, args }: ArgumentsForUpload): Promise<T>

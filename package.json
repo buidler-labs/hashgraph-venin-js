@@ -9,7 +9,9 @@
     "import": "./lib.esm/index.js"
   },
   "files": [
-    "lib"
+    "lib.cjs",
+    "lib.esm",
+    "types"
   ],
   "main": "./lib.cjs/index.js",
   "module": "./lib.esm/index.js",
@@ -21,13 +23,15 @@
     "build:bundle-test-browser": "rollup -c ./test/browser/rollup.config.js",
     "build:declarations": "tsc",
     "build:docs": "docusaurus build --out-dir=html-docs docs",
-    "clean": "rm -fr build dist && npm run clean:bundle-test-browser && docusaurus clear",
+    "clean": "run-s clean:bundle-test-browser clean:cjs clean:esm && docusaurus clear",
     "clean:bundle-test-browser": "rm -fr test/browser/lib.esm",
+    "clean:cjs": "rm -fr lib.cjs",
+    "clean:esm": "rm -fr lib.esm",
     "deploy:docs": "docusaurus deploy",
     "docusaurus-swizzle": "docusaurus swizzle",
     "install:test-browser-dependencies": "cd test/browser && npm i",
     "lint": "eslint . --ext ts",
-    "publish:npm": "run-s clean build:cjs build:declarations build:esm && npm publish --access public",
+    "publish:npm": "run-s clean build:cjs build:declarations build:esm && npm publish --access public --dry-run",
     "start:docs": "docusaurus start docs",
     "test": "run-s test:node test:jsdom",
     "test:ci": "run-s lint test test:browser",
@@ -71,6 +75,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.1.3",
     "@rollup/plugin-replace": "^3.0.1",
+    "@types/estree": "^0.0.51",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
     "axios": "^0.26.0",
@@ -106,5 +111,5 @@
     "url": "https://github.com/buidler-labs/hedera-strato-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.6.10"
+  "version": "0.7.0"
 }

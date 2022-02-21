@@ -13,6 +13,6 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "./index.ts"
+    "./lib/index.ts"
   ]
 }
