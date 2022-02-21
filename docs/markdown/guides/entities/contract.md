@@ -108,16 +108,16 @@ await liveContract.test();
 ```
 
 #### Transaction meta-arguments
-Similar to when uploading a _Smart Contract_, calling any of its methods follows the same meta-arguments passing logic: if the first argument is a JS object which has certain properties of interest, those properties are unpacked and used inside the transaction. One such property is the `maxQueryPayment` which makes for a good example: lets say that we would like to set a maximum query payment of 1ℏ for calling the [solidity-by-example's State Variable > get method](https://solidity-by-example.org/state-variables/). In this case, you would simply do a `liveContract.get({maxQueryPayment: new HBar(1)})` and it would suffice.
+Similar to when uploading a _Smart Contract_, calling any of its methods follows the same meta-arguments passing logic: if the first argument is a JS object which has certain properties of interest, those properties are unpacked and used inside the transaction. One such property is the `maxQueryPayment` which makes for a good example: lets say that we would like to set a maximum query payment of 0.001ℏ for calling the [solidity-by-example's State Variable > get method](https://solidity-by-example.org/state-variables/). In this case, you would simply do a `liveContract.get({maxQueryPayment: 100000})` and it would suffice.
 
-Of course, similar to the "upload contract operation" detailed above, any argument following the the meta-arguments object would be passed to the method itself. In this regards, using the same _State Variable_ contract, doing a `liveContract.set({maxTransactionFee: new HBar(1)}, 42)` would call the `set` method passing in integer `42` as parameter and setting the `maxTransactionFee` for the transaction to 1ℏ.
+Of course, similar to the "upload contract operation" detailed above, any argument following the the meta-arguments object would be passed to the method itself. In this regards, using the same _State Variable_ contract, doing a `liveContract.set({maxTransactionFee: 100000}, 42)` would call the `set` method passing in integer `42` as parameter and setting the `maxTransactionFee` for the transaction to 100000 which is 0.001ℏ.
 
 ```js live=true containerKey=transaction_meta_arguments
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ path: './state-variables.sol' });
 const liveContract = await session.upload(contract);
 
-await liveContract.set({maxTransactionFee: new HBar(1)}, 
+await liveContract.set({maxTransactionFee: 100000}, 
     42
 );
 console.log(await liveContract.get());
