@@ -34,7 +34,7 @@
     "lint": "eslint . --ext ts",
     "publish:npm": "run-s clean build:cjs build:declarations build:esm && npm publish --access public",
     "start:docs": "docusaurus start lib.docs",
-    "test": "run-s test:node test:jsdom",
+    "test": "run-s test:node test:jsdom test:browser",
     "test:ci": "run-s lint test test:browser",
     "test:browser": "run-s install:test-browser-dependencies build:bundle-test-browser test:smoke-browser",
     "test:node": "jest --env=./test/jte.node.ts",
@@ -112,5 +112,5 @@
     "url": "https://github.com/buidler-labs/hedera-strato-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.7.0"
+  "version": "0.7.1"
 }
