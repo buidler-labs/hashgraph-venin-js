@@ -31,7 +31,7 @@
     "docusaurus-swizzle": "docusaurus swizzle",
     "install:test-browser-dependencies": "cd test/browser && npm i",
     "lint": "eslint . --ext ts",
-    "publish:npm": "run-s clean build:cjs build:declarations build:esm && npm publish --access public --dry-run",
+    "publish:npm": "run-s clean build:cjs build:declarations build:esm && npm publish --access public",
     "start:docs": "docusaurus start docs",
     "test": "run-s test:node test:jsdom",
     "test:ci": "run-s lint test test:browser",
