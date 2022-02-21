@@ -12,26 +12,31 @@ title: 👋 Welcome to Strato! 🌌
   <a href="#license"><img src="https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square" /> </a>
 </p>
 
+import BrowserOnly from '@docusaurus/BrowserOnly';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 export const OperatorId = () => (
-  window.StratoOperator.network === 'testnet' ? 
-  <a href={ "https://testnet.dragonglass.me/hedera/accounts/" + window.StratoOperator.accountId }>
-    <code>
-      {window.StratoOperator.accountId}
-    </code>
-  </a> 
-  : 
-  <code>
-    {window.StratoOperator.accountId}
-  </code>
+  <BrowserOnly fallback={<code>unknown</code>}>
+    {() => 
+      window.StratoOperator.network === 'testnet' ? 
+      <a href={ "https://testnet.dragonglass.me/hedera/accounts/" + window.StratoOperator.accountId }>
+        <code>
+          {window.StratoOperator.accountId}
+        </code>
+      </a> 
+      : 
+      <code>
+        {window.StratoOperator.accountId}
+      </code>
+    }
+  </BrowserOnly>
 );
 
 export const OperatorNetwork = () => (
-  <code>
-    {window.StratoOperator.network}
-  </code>
+  <BrowserOnly fallback={<code>unknown</code>}>
+    {() => <code> {window.StratoOperator.network} </code> }
+  </BrowserOnly>
 );
 
 ... because it's time we start writing [Hedera](https://hedera.com/) smart-contract dApps[^dapp] frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
@@ -48,7 +53,7 @@ This project is not an official Hedera project and, as such, it is not affiliate
 
 Currently, the library is mostly available for NodeJS runtime environments since there is where most of the bulk development effort occurs. Efforts are underway to have it deployable and working in web browsers as well. 
 
-These docs are using such an ad-hoc bundleld to power the live-coding widgets. If you eager to see how this can be done, have a look over our browser smoke-test rollup config for inspiration. `TODO: add link here`
+These docs are using such an ad-hoc bundled to power the live-coding widgets. If you eager to see how this can be done, have a look over our browser smoke-test rollup config for inspiration. `TODO: add link here`
 
 :::
 
@@ -56,16 +61,16 @@ These docs are using such an ad-hoc bundleld to power the live-coding widgets. I
 
 Please keep in mind that, although core features are extensively tested and appear to be working, this is still currently under _heavy-active_ development and, as such, we don't recommend this just yet for production use. The API is also very likely to change before we reach there!
 
-Having said that, we will continue to use is in production even at this initial stage just because we can and are quick to solve any issues that we might encounter.
+Having said that, we will continue to use it as is in production even at this initial stage just because we can and are quick to solve any issues that we might encounter.
 
 :::
 
 ## The drive
 As any good-striving, long-lasting, endevour, we are using Strato to hopefully fuel everything that we, here at BuiDler Labs, build on Hedera. Our Hedera porfolio currently consists of:
 * [FileCoin-Hedera Grant](https://github.com/taskbar-team/hedera-filecoin-devgrant) - a development grant used to put the foundations of [MyTaskbar](https://mytaskbar.io/) v2, the more decentralized version
-* [HeadStarter](headstarter.org) - the first Hedera IDO platform
+* [HeadStarter](https://headstarter.org) - the first Hedera IDO platform
 
-We're basically eating our own dog food. That way, we can hopefully proove that it's something delicious or, if not, we have a good incentive to make it so. This also makes it a good reason to not have it as a "shot and forget" kind of effort. 
+We're basically eating our own dog food. That way, we can hopefully prove that it's something delicious or, if not, we have a good incentive to make it so. This also makes it a good reason to not have it as a "shot and forget" kind of effort. 
 
 We will support this for as long as we're going to build on Hedera and, if there's comunity interest, even beyond that. 
 
@@ -201,7 +206,7 @@ If you want a quick flavour of where that will get you, here's how one might tip
 By the way, the above code snippet loads a solidity file, compiles it, uploads it to the network and ends up console-logging the resulting output of calling the `greet` function/variable of the deployed `hello_world.sol` contract. It's that easy! -->
 
 ## Give it a spin
-If you want to quickly get your hands dirty, we prepared a [quick-start demo repo](https://github.com/buidler-labs/hsj-example) for you to play with. You'll first need to setup an `.env` file, but don't worry, there are a few mandatory entries and everything is explained in that repo's readme.
+If you want to quickly get your hands dirty, we prepared a [quick-start demo repo](https://github.com/buidler-labs/hsj-example) for you to play with. You'll first need to setup an `.env` file, but don't worry, there are a few mandatory entries and everything is explained in [configuration section](configuration.md) or in the `.env.sample` file.
 
 Another option would be to just code in-browser using our [playground](playground.md).
 
@@ -221,10 +226,11 @@ Strato already supports a lot of stuff:
 #### ... with more planned for development:
 * [ ] Be able to _seamlessly_ run it in browser (even the contract compilation part if required)
 * [ ] Update/delete/_other_ token operations
+* [ ] Hedera Consensus Service support
 * [ ] Other account operations
 * [ ] Better error reporting
 * [ ] Increase logging support
-* [ ] Better integrate _entities_ accross the code-base
+* [ ] Better integration of _entities_ across the code-base
 * ... and more.
 
 ## Contributions
