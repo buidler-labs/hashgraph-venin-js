@@ -2,7 +2,6 @@
 .docusaurus
 .idea/
 
-html-docs/
 coverage/
 lib.cjs/
 lib.esm/
