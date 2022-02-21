@@ -1,5 +1,5 @@
 .env
-build/
+docs.html/
 coverage/
 dist/
 /node_modules/
