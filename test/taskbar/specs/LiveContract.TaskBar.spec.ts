@@ -28,11 +28,11 @@ describe('LiveContract.TaskBar', () => {
     const cappedRegistryLiveContract = await session.upload(cappedRegistryHelperContract, maxNrOfTasksPerRegistry);
     const taskRegistryLiveContract = await session.upload(taskRegistryContract);
 
-    await expect(taskRegistryLiveContract.initialize({ gas: 100000 }, 
+    await expect(taskRegistryLiveContract.initialize({ gas: 100_000 }, 
       session,
       cappedRegistryLiveContract
     )).resolves.toBeUndefined();
-    await expect(taskRegistryLiveContract.initializeTask({ gas: 200000 },
+    await expect(taskRegistryLiveContract.initializeTask({ gas: 200_000 },
       taskId,
       100,
       new TextEncoder().encode('67347465687435726877747265676572'),

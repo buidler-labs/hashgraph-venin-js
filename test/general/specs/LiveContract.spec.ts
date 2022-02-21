@@ -1,8 +1,8 @@
+import { ContractExecuteTransaction, ContractId, Query } from "@hashgraph/sdk";
 import {
-  describe, expect, it,
+  describe, expect, it, jest
 } from '@jest/globals';
 import BigNumber from "bignumber.js";
-import { ContractId } from "@hashgraph/sdk";
 
 import { load, read } from "../../utils";
 import { ApiSession } from "../../../lib/ApiSession";
@@ -62,5 +62,23 @@ describe('LiveContract', () => {
     const contractInfo = await liveContract.getLiveEntityInfo();
     
     await expect(contractInfo.contractId).toBeInstanceOf(ContractId);
+  });
+
+  it("calling a live contract to emit receipts only on one of the calls, no duplicate receipts are emitted", async () => {
+    const { session } = await ApiSession.default();
+    const contract = await Contract.newFrom({ code: read({ contract: 'change_state_with_return' }) });
+    
+    const liveContract = await session.upload(contract);
+
+    const spiedReceiptCallback = jest.fn();
+    const receiptsSubscription = session.subscribeToReceiptsWith(spiedReceiptCallback);
+
+    await liveContract.setAndRetrieve(42);
+    await liveContract.setAndRetrieve({ emitReceipt: true }, 42);
+
+    receiptsSubscription.unsubscribe();
+
+    expect(spiedReceiptCallback.mock.calls.length).toBe(1);
+    expect((spiedReceiptCallback.mock.calls[0][0] as any).transaction).toBeInstanceOf(ContractExecuteTransaction);
   });
 });

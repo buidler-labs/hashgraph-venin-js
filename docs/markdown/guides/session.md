@@ -50,7 +50,7 @@ Also, if you were to `Run` the example, you could see multiple transaction recei
 <details>
   <summary>Emitting receipts by default, accross the entire session, for all <code>LiveContract</code> interactions</summary>
 
-In the above snippet we saw how one could emit an on-demand receipt (via the live-contract meta-arguments property of `emitReceipt` in `liveContract.greet({ emitReceipt: true })`) per individual contract method calls. That's great for controlling and keeping costs down, but what if we would like to have this behaviour as default accross the session usage?
+In the above snippet we saw how one could emit an on-demand receipt (via the live-contract meta-arguments property of `emitReceipt` in `liveContract.inc({ emitReceipt: true })`) per individual contract method calls. That's great for controlling and keeping costs down, but what if we would like to have this behaviour as default accross the session usage?
 
 To do that, you could either [set the `HEDERAS_DEFAULT_EMIT_LIVE_CONTRACT_RECEIPTS` environment option to `true`](../configuration.md#big-table-o-parameters) or have its runtime counter-part, `session.defaults.emitLiveContractReceipts`, to the same value.
 
@@ -64,3 +64,11 @@ const { session } = await ApiSession.default({
 Following this, you could get rid of the `{ emitReceipt: true }` meta-argument and just end up with a clean and more easily readable, `await liveContract.greet()` call.
 
 </details>
+
+:::caution
+
+Setting `emitReceipt` meta-argument to true on contract functions that do not modify state will not have any effect. 
+
+`pure`/`view` solidity functions resolve to a `ContractCallQuery` that is being executed in Strato, which returns a `ContractFunctionResult`. The result of the contract call does not contain receipts or records as the call runs on a single node.
+
+:::

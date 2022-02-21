@@ -39,8 +39,7 @@ describe('ApiSession.Solidity-by-Example.Receipts', () => {
         return verifyContractUploadEventFiringsFor('hello_world', true,
             FileCreateTransaction,
             FileAppendTransaction,
-            ContractCreateTransaction,
-            TransactionRecordQuery
+            ContractCreateTransaction
         );
     });
 
