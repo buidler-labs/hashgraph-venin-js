@@ -57,6 +57,9 @@ export default async function getConfig() {
           { find: 'dotenv', replacement: getPathOf("./polyfills/dotenv.js") },
           { find: /.*SolidityCompiler.*/, replacement: getPathOf("./polyfills/SolidityCompiler.js") },
           { find: /.*StratoLogger.*/, replacement: getPathOf("./polyfills/StratoLogger.js") },
+
+          // Alias-ing browser specific implementations
+          { find: /(.*encoding\/Hex.*)/, replacement: '$1.native' }
         ],
       }),
       resolve({

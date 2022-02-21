@@ -17,7 +17,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 export const OperatorId = () => (
-  <BrowserOnly fallback={<div>unknown</div>}>
+  <BrowserOnly fallback={<code>unknown</code>}>
     {() => 
       window.StratoOperator.network === 'testnet' ? 
       <a href={ "https://testnet.dragonglass.me/hedera/accounts/" + window.StratoOperator.accountId }>
@@ -34,7 +34,7 @@ export const OperatorId = () => (
 );
 
 export const OperatorNetwork = () => (
-  <BrowserOnly fallback={<div>unknown</div>}>
+  <BrowserOnly fallback={<code>unknown</code>}>
     {() => <code> {window.StratoOperator.network} </code> }
   </BrowserOnly>
 );

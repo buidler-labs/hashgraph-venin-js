@@ -1,4 +1,5 @@
 import { EventEmitter } from "events";
+import Long from "long";
 
 import {
   ContractCallQuery, 
@@ -24,7 +25,7 @@ import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters
 import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber';
 import { LiveAddress } from "./LiveAddress";
 import { LiveEntity } from "./LiveEntity";
-import Long from "long";
+import { encodeToHex } from '../core/encoding/Hex';
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
@@ -49,8 +50,8 @@ function isContractQueryRequest(request: ContractFunctionCall): request is Contr
 
 function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[] {
   return logs.map(recordLog => {
-    const data = `0x${recordLog.data.length === 0 ? "" : Buffer.from(recordLog.data).toString('hex')}`;
-    const topics = recordLog.topics.map(topic => "0x" + Buffer.from(topic).toString('hex'));
+    const data = encodeToHex(recordLog.data);
+    const topics = recordLog.topics.map(topic => encodeToHex(topic));
         
     try {
       const logDescription = cInterface.parseLog({ data, topics });
