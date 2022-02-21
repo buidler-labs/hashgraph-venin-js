@@ -78,9 +78,9 @@ contract HelloWorld {
 3. Upload and run your contract with the following code:
 
 ``` js
-const hapiSession = await HederaNetwork.defaultApiSession();
+const { session } = await ApiSession.default();
 const helloWorldContract = await Contract.newFrom({ path: './hello_world.sol' });
-const liveContract = await hapiSession.upload(helloWorldContract);
+const liveContract = await session.upload(helloWorldContract);
 
 console.log(await liveContract.greet());
 ```
