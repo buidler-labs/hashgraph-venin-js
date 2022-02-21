@@ -197,14 +197,6 @@ console.log(await liveContract.greet());
 
 ... you get the idea. **It's that simple!**
 
-<!-- If you're going to use the official-sdk, then you might end up with the following:
-
-Just clone and follow the the instructions in our [quick-start demo repo](https://github.com/buidler-labs/hsj-example). As described in that readme, you will need a `.env` file to configure some network parameters. If you're going to use our [local, dockerized, hedera-node services](https://github.com/buidler-labs/dockerized-hedera-services), just copy-paste [this config](.env.local-customnet) and you should be good to go.
-
-If you want a quick flavour of where that will get you, here's how one might tipically use the library:
-
-By the way, the above code snippet loads a solidity file, compiles it, uploads it to the network and ends up console-logging the resulting output of calling the `greet` function/variable of the deployed `hello_world.sol` contract. It's that easy! -->
-
 ## Give it a spin
 If you want to quickly get your hands dirty, we prepared a [quick-start demo repo](https://github.com/buidler-labs/hsj-example) for you to play with. You'll first need to setup an `.env` file, but don't worry, there are a few mandatory entries and everything is explained in [configuration section](configuration.md) or in the `.env.sample` file.
 
