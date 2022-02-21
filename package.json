@@ -20,7 +20,7 @@
     "build:bundle-docs": "rollup -c ./docs/src/strato/rollup.config.js",
     "build:bundle-test-browser": "rollup -c ./test/browser/rollup.config.js",
     "build:declarations": "tsc",
-    "build:docs": "docusaurus build --out-dir=docs.html docs",
+    "build:docs": "docusaurus build --out-dir=html-docs docs",
     "clean": "rm -fr build dist && npm run clean:bundle-test-browser && docusaurus clear",
     "clean:bundle-test-browser": "rm -fr test/browser/lib.esm",
     "deploy:docs": "docusaurus deploy",

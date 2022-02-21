@@ -68,7 +68,7 @@ Having said that, we will continue to use it as is in production even at this in
 ## The drive
 As any good-striving, long-lasting, endevour, we are using Strato to hopefully fuel everything that we, here at BuiDler Labs, build on Hedera. Our Hedera porfolio currently consists of:
 * [FileCoin-Hedera Grant](https://github.com/taskbar-team/hedera-filecoin-devgrant) - a development grant used to put the foundations of [MyTaskbar](https://mytaskbar.io/) v2, the more decentralized version
-* [HeadStarter](headstarter.org) - the first Hedera IDO platform
+* [HeadStarter](https://headstarter.org) - the first Hedera IDO platform
 
 We're basically eating our own dog food. That way, we can hopefully prove that it's something delicious or, if not, we have a good incentive to make it so. This also makes it a good reason to not have it as a "shot and forget" kind of effort. 
 
