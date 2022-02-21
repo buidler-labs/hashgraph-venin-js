@@ -64,24 +64,7 @@ describe('LiveContract', () => {
     await expect(contractInfo.contractId).toBeInstanceOf(ContractId);
   });
 
-  it("calling a live contract to emit receipts, no duplicate receipts are emitted", async () => {
-    const { session } = await ApiSession.default();
-    const contract = await Contract.newFrom({ code: read({ contract: 'change_state_with_return' }) });
-    
-    const liveContract = await session.upload(contract);
-
-    const spiedReceiptCallback = jest.fn();
-    const receiptsSubscription = session.subscribeToReceiptsWith(spiedReceiptCallback);
-
-    await liveContract.setAndRetrieve({ emitReceipt: true }, 42);
-
-    receiptsSubscription.unsubscribe();
-
-    expect(spiedReceiptCallback.mock.calls.length).toBe(1);
-    expect((spiedReceiptCallback.mock.calls[0][0] as any).transaction).toBeInstanceOf(ContractExecuteTransaction);
-  });
-
-  it("calling a live contract to not emit receipts, no receipts are emitted", async () => {
+  it("calling a live contract to emit receipts only on one of the calls, no duplicate receipts are emitted", async () => {
     const { session } = await ApiSession.default();
     const contract = await Contract.newFrom({ code: read({ contract: 'change_state_with_return' }) });
     
@@ -91,9 +74,11 @@ describe('LiveContract', () => {
     const receiptsSubscription = session.subscribeToReceiptsWith(spiedReceiptCallback);
 
     await liveContract.setAndRetrieve(42);
-    
+    await liveContract.setAndRetrieve({ emitReceipt: true }, 42);
+
     receiptsSubscription.unsubscribe();
 
-    expect(spiedReceiptCallback.mock.calls.length).toBe(0);
+    expect(spiedReceiptCallback.mock.calls.length).toBe(1);
+    expect((spiedReceiptCallback.mock.calls[0][0] as any).transaction).toBeInstanceOf(ContractExecuteTransaction);
   });
 });

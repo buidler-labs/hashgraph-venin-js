@@ -42,9 +42,9 @@ type ControlledSession = {
   controller: ClientController,
   session: ApiSession
 };
-type ExecutableTransaction = Query<any>|Transaction;
-type TransactionedReceipt = {
-  transaction: ExecutableTransaction,
+type SessionExecutable<R> = Query<R>|Transaction;
+type TransactionedReceipt<R> = {
+  transaction: SessionExecutable<R>,
   receipt: TransactionReceipt
 };
 
@@ -205,7 +205,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
 
   // Overload implementation
   public async execute<T extends TypeOfExecutionReturn, R>(
-      transaction: ExecutableTransaction, 
+      transaction: SessionExecutable<R>, 
       returnType: T, 
       getReceipt = false)
     : Promise<ExecutionReturnTypes<ContractFunctionResult|TransactionResponse|R>[T]> {
@@ -311,7 +311,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    *              a reference to both the actual transaction being executed and the resulting receipt.
    * @returns {ReceiptSubscription} - A subscription object that exposes a 'unsubscribe' method to cancel a subscription.
    */
-  public subscribeToReceiptsWith(clb: {(receipt: TransactionedReceipt): any}): Subscription<TransactionedReceipt> {
+  public subscribeToReceiptsWith(clb: {(receipt: TransactionedReceipt<any>): any}): Subscription<TransactionedReceipt<any>> {
     return new Subscription(this.events, TRANSACTION_ON_RECEIPT_EVENT_NAME, clb);
   }
 
