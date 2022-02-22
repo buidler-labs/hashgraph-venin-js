@@ -9,14 +9,14 @@ const remarkNumberedFootnoteLabels = require("remark-numbered-footnote-labels");
 module.exports = async function () {
   const remarkGfm = (await import('remark-gfm')).default;
 
-  return { 
+  return {
     baseUrl: "/",
     deploymentBranch: "main",
     organizationName: "buidler-labs",
-    plugins: [ 
+    plugins: [
       [ "@cmfcmf/docusaurus-search-local", {
         indexBlog: false,
-      }], 
+      }],
       '@docusaurus/theme-live-codeblock',
     ],
     presets: [
@@ -28,8 +28,8 @@ module.exports = async function () {
             exclude: [
               "**/src/**",
             ],
-            remarkPlugins: [ 
-              remarkGfm, 
+            remarkPlugins: [
+              remarkGfm,
               remarkMermaid,
               [ remarkNpm2Yarn, { sync: true } ],
               remarkNumberedFootnoteLabels,
@@ -46,7 +46,7 @@ module.exports = async function () {
       ],
     ],
     projectName: "hedera-strato-js",
-    scripts: [ 
+    scripts: [
       "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js",
       {
         async: true,
@@ -75,12 +75,18 @@ module.exports = async function () {
         playgroundPosition: 'bottom',
       },
       navbar: {
-        items: [ {
-          href: 'https://github.com/buidler-labs/hedera-strato-js',
-          label: 'GitHub',
-          position: 'right',
-        } ],
-        title: 'Hedera Strato JS',
+        items: [
+          {
+            href: '/',
+            label: 'Hedera Strato JS',
+            position: 'left',
+          },
+          {
+            href: 'https://github.com/buidler-labs/hedera-strato-js',
+            label: 'GitHub',
+            position: 'right',
+          }
+        ],
       },
       prism: {
         additionalLanguages: ['solidity'],
