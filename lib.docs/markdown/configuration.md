@@ -32,7 +32,7 @@ Following is a table detailing all the object-parameters along with their enviro
 | HEDERAS_DEFAULT_CONTRACT_TRANSACTION_GAS   | session.defaults.contractTransactionGas          | No  | number  | 169000     | The default amount given when executing a contract transaction
 | HEDERAS_DEFAULT_EMIT_CONSTRUCTOR_LOGS      | session.defaults.emitConstructorLogs             | No  | boolean | `true`    | `true` to emit the constructor logs at contract-creation time, `false` otherwise
 | HEDERAS_DEFAULT_EMIT_LIVE_CONTRACT_RECEIPTS     | session.defaults.emitLiveContractReceipts   | No  | boolean | `false`   | `true` to ask for and emit the receipts originating from live-contract calls, `false` otherwise
-| HEDERAS_DEFAULT_PAYMENT_FOR_CONTRACT_QUERY      | session.defaults.paymentForContractQuery    | No  | number  | 0   | The default amount payed for doing a contract query call
+| HEDERAS_DEFAULT_PAYMENT_FOR_CONTRACT_QUERY      | session.defaults.paymentForContractQuery    | No  | number  | -   | The default amount payed for doing a contract query call. If not specified, relies on an upper limit given by the Hedera's SDK which is, currently, 1ℏ
 | HEDERAS_NETWORK      | network.name             | Yes  | `previewnet`, `testnet`, `mainnet`, `customnet` | -   | The network profile to use
 | HEDERAS_NODES | network.nodes | [^customnet-hedera-network] | [^customnet-nodes] | - | A condensed address-book representation of the network nodes (see[^customnet-nodes])
 | HEDERAS_OPERATOR_ID  | client.hedera.operatorId | [^client-type-hedera] | - | - | The account-id of the operator running a `HederaClient`

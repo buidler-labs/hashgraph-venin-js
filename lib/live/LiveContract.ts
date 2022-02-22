@@ -201,7 +201,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
     const request = fDescription.constant ? new ContractCallQuery(constructorArgs) : new ContractExecuteTransaction(constructorArgs);
       
     // Inject session-configurable defaults
-    if (isContractQueryRequest(request)) {
+    if (isContractQueryRequest(request) && this.session.defaults.paymentForContractQuery > 0) {
       const queryPaymentInHbar = new Hbar(this.session.defaults.paymentForContractQuery);
 
       request.setQueryPayment(queryPaymentInHbar);
