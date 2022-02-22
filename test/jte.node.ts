@@ -1,6 +1,6 @@
 // Jest Test Environment (JTE) for the hedera-api library
-import NodeEnvironment from 'jest-environment-node';
 import { ApiSession } from '../lib/ApiSession';
+import NodeEnvironment from 'jest-environment-node';
 
 export default class JestTestEnvironment extends NodeEnvironment {
   async setup() {
@@ -11,8 +11,8 @@ export default class JestTestEnvironment extends NodeEnvironment {
       // Also make sure to turn off logging so as to not over-polute the console
       await ApiSession.default({
         logger: {
-          enabled: false
-        }
+          enabled: false,
+        },
       });
     } catch (e) {
       throw new Error (

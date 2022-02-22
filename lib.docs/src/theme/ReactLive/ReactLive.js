@@ -23,7 +23,10 @@ const wrapAsync = (code, containerKey) => {
                     let _parsed = _arg.toString();
                     
                     if(_arg._isBigNumber){
-                        _parsed += ' (BigNumber)';    
+                        _parsed = <span>
+                            {_parsed}
+                            <span className={ \`${clsx(styles.playgroundLogItem, styles.internal, styles.logHint)}\` }>(BigNumber)</span>
+                        </span>;    
                     }
                     
                     return _parsed
@@ -91,10 +94,11 @@ const wrapAsync = (code, containerKey) => {
             }
             
             const LogLevelBadge = ({text}) => {
-                const itemStyle = '${styles.playgroundLogItem}';
-                const badgeStyle = itemStyle.replace(itemStyle.substring(0, itemStyle.indexOf('_')), text);
+                const _styles = ${JSON.stringify(styles)};
+                const logClassName = _styles.playgroundLogItem;
+                const logBadgeClassName = _styles[text];
                 
-                return <span className={itemStyle + ' ' + badgeStyle}>{text}</span>
+                return <span className={logClassName + ' ' + logBadgeClassName}>{text}</span>
             }
             
             render(<div className={'${styles.playgroundLogsContainer}'}>

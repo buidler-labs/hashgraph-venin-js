@@ -1,6 +1,6 @@
-import { ContractExecuteTransaction, ContractId, Query } from "@hashgraph/sdk";
+import { ContractExecuteTransaction, ContractId } from "@hashgraph/sdk";
 import {
-  describe, expect, it, jest
+  describe, expect, it, jest,
 } from '@jest/globals';
 import BigNumber from "bignumber.js";
 
@@ -10,6 +10,7 @@ import { Contract } from "../../../lib/static/upload/Contract";
 import { LiveContract } from "../../../lib/live/LiveContract";
 
 describe('LiveContract', () => {
+
   it("emitting an event during contract construction time should be returned following a successfull upload", async () => {
     const { liveContract, logs } = await load('constructor_event');
 
@@ -18,8 +19,8 @@ describe('LiveContract', () => {
     expect(logs[0]).toEqual({
       name: "Log",
       payload: {
-        message: "Hello World!"
-      }
+        message: "Hello World!",
+      },
     });
   });
 
@@ -58,7 +59,6 @@ describe('LiveContract', () => {
     const { session } = await ApiSession.default();
     const naiveOwnerCheckContract = await Contract.newFrom({ code: read({ contract: 'naive_owner_check' }) });
     const liveContract = await session.upload(naiveOwnerCheckContract);
-
     const contractInfo = await liveContract.getLiveEntityInfo();
     
     await expect(contractInfo.contractId).toBeInstanceOf(ContractId);
@@ -67,9 +67,7 @@ describe('LiveContract', () => {
   it("calling a live contract to emit receipts only on one of the calls, no duplicate receipts are emitted", async () => {
     const { session } = await ApiSession.default();
     const contract = await Contract.newFrom({ code: read({ contract: 'change_state_with_return' }) });
-    
     const liveContract = await session.upload(contract);
-
     const spiedReceiptCallback = jest.fn();
     const receiptsSubscription = session.subscribeToReceiptsWith(spiedReceiptCallback);
 

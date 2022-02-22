@@ -23,6 +23,22 @@ function read(what: ResourceReadOptions) {
 }
 
 describe('LiveContract.Solidity-by-Example', () => {
+  
+  // Requires: https://github.com/buidler-labs/hedera-strato-js/issues/11
+  it.skip("not setting a query-payment should default to using the upper limit given by the maximum-query-payment available on the client which should allow the query to successfully resolve", async () => {
+    const { session } = await ApiSession.default({
+      session: {
+        defaults: {
+          paymentForContractQuery: 0,
+        },
+      },
+    });
+    const contract = await Contract.newFrom({ code: read({ contract: 'hello_world' }) });
+    const liveContract = await session.upload(contract);
+    
+    await liveContract.greet();
+  });
+
   it("creating a contract should allow its live-address to be convertable to the underlying model", async () => {
     const { session } = await ApiSession.default();
     const hapiSessionOwnerAddress = session.getSolidityAddress();

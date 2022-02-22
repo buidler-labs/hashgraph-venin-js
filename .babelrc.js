@@ -1,7 +1,17 @@
-const sharedPresets = ['@babel/typescript'];
+const sharedPresets = ['@babel/preset-typescript'];
 const shared = {
   ignore: ['test/**/*.spec.ts'],
-  presets: sharedPresets
+  presets: sharedPresets,
+  plugins: [
+    [
+      "@babel/plugin-transform-runtime", {
+        "absoluteRuntime": false,
+        "corejs": false,
+        "helpers": true,
+        "regenerator": true
+      }
+    ]
+  ]
 };
 
 module.exports = {

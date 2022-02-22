@@ -5,8 +5,8 @@
     "node": ">=14.8"
   },
   "exports": {
-    "require": "./lib.cjs/index.js",
-    "import": "./lib.esm/index.js"
+    "node": "./lib.cjs/index.js",
+    "default": "./lib.esm/index.js"
   },
   "files": [
     "lib.cjs",
@@ -22,8 +22,9 @@
     "build:bundle-docs": "rollup -c ./lib.docs/src/strato/rollup.config.js",
     "build:bundle-test-browser": "rollup -c ./test/browser/rollup.config.js",
     "build:declarations": "tsc",
-    "build:docs": "run-s build:bundle-docs build:docs-docusaurus",
+    "build:docs": "run-s build:install-bundle-docs-deps build:bundle-docs build:docs-docusaurus",
     "build:docs-docusaurus": "docusaurus build --out-dir=docs lib.docs",
+    "build:install-bundle-docs-deps": "cd ./lib.docs/src/strato && npm install",
     "clean": "run-s clean:bundle-test-browser clean:cjs clean:esm && docusaurus clear lib.docs",
     "clean:bundle-test-browser": "rm -fr test/browser/lib.esm",
     "clean:cjs": "rm -fr lib.cjs",
@@ -50,6 +51,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@babel/runtime": "^7.17.2",
     "@ethersproject/abi": "^5.5.0",
     "@hashgraph/sdk": "2.7.0",
     "dotenv": "^10.0.0",
@@ -112,5 +114,5 @@
     "url": "https://github.com/buidler-labs/hedera-strato-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.7.1"
+  "version": "0.7.3"
 }

@@ -76,6 +76,12 @@
   color: #989898;
 }
 
+.playgroundLogItem.internal.logHint {
+  margin: 0 0.5rem;
+  font-weight: normal;
+  color: #989898;
+}
+
 .playgroundLogItem.userInput {
   font-weight: bold;
 }
