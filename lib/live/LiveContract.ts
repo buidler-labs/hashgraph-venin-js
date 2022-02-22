@@ -202,7 +202,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
       
     // Inject session-configurable defaults
     if (isContractQueryRequest(request) && this.session.defaults.paymentForContractQuery > 0) {
-      const queryPaymentInHbar = new Hbar(this.session.defaults.paymentForContractQuery);
+      const queryPaymentInHbar = Hbar.fromTinybars(this.session.defaults.paymentForContractQuery);
 
       request.setQueryPayment(queryPaymentInHbar);
     }

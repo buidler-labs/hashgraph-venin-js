@@ -1,6 +1,6 @@
 import { ContractExecuteTransaction, ContractId } from "@hashgraph/sdk";
 import {
-  describe, expect, it, jest
+  describe, expect, it, jest,
 } from '@jest/globals';
 import BigNumber from "bignumber.js";
 
@@ -10,19 +10,6 @@ import { Contract } from "../../../lib/static/upload/Contract";
 import { LiveContract } from "../../../lib/live/LiveContract";
 
 describe('LiveContract', () => {
-  it("not setting a query-payment should default to using the upper limit given by the maximum-query-payment available on the client which should allow the query to successfully resolve", async () => {
-    const { session } = await ApiSession.default({
-      session: {
-        defaults: {
-          paymentForContractQuery: 0,
-        },
-      },
-    });
-    const contract = await Contract.newFrom({ code: read({ contract: 'naive_owner_check' }) });
-    const liveContract = await session.upload(contract);
-    
-    await liveContract.isOwnedBy(session);
-  });
 
   it("emitting an event during contract construction time should be returned following a successfull upload", async () => {
     const { liveContract, logs } = await load('constructor_event');
