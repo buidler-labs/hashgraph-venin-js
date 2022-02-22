@@ -1,4 +1,4 @@
-import { ContractExecuteTransaction, ContractId, Query } from "@hashgraph/sdk";
+import { ContractExecuteTransaction, ContractId } from "@hashgraph/sdk";
 import {
   describe, expect, it, jest
 } from '@jest/globals';
