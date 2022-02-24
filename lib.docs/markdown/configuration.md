@@ -8,7 +8,7 @@ As we [previously saw](./quick-start.md), in order to get a hold on a precious s
 * `ApiSession.default(params?, path?)`
 * `ApiSession.buildFrom(StratoContext)`
 
-Both of them return a Promise which, when resolved, give back the `ApiSession` instance to play with. In fact, `ApiSession.buildFrom(StratoContext)` is wrapped by it's `default` sibling which, we could argue, will most likey probabily end up to beeing used the most. 
+Both of them return a Promise which, when resolved, give back the `ApiSession` instance to play with. In fact, `ApiSession.buildFrom(StratoContext)` is wrapped by it's `default` sibling which, we could argue, will most likey probabily end up to being used the most. 
 
 This section describes the arguments of `ApiSession.default` and how they can be used to obtain a session to operate on.
 
@@ -54,7 +54,7 @@ Following is a table detailing all the object-parameters along with their enviro
 The default context parameters are being resolved in the following order:
 * First, the runtime object-argument is checked and if a config property is present there, that's the one being used _otherwise_
 * If `process.env` (nodejs-case) contains that equivalent environment variable, that is the one which will be used _else_
-* If the `HEDERAS_ENV_PATH` environment file path has been supplied, exists and contains the same keyes expected in `process.env`, it will be used _else_
+* If the `HEDERAS_ENV_PATH` environment file path has been supplied, exists and contains the same keys expected in `process.env`, it will be used _else_
 * If a `.env` file exists and it contains the same key expected in `process.env`, that's one is being used.
 
 If none of the above conditions are true and the parameter is not mandatory, the default value is loaded or an error eventually propagates.

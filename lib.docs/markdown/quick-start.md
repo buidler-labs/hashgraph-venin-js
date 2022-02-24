@@ -12,7 +12,7 @@ npm install @buidlerlabs/hedera-strato-js
 will suffice.
 
 ## Hello Strato
-As we've seen in our introductory page, firing up your first Strato smart-contract example should be straight forward but let's kick it up a notch to make things a little more interesting. Suppose you have a trimmed down version (comments & no `dec` method stripped) of [the following contract](https://solidity-by-example.org/first-app/):
+As we've seen in our introductory page, firing up your first Strato smart-contract example should be straight forward but let's kick it up a notch to make things a little more interesting. Suppose you have a trimmed down version (comments & `dec` method stripped) of [the following contract](https://solidity-by-example.org/first-app/):
 
 ```sol title="./increment.sol"
 // SPDX-License-Identifier: MIT
@@ -33,7 +33,7 @@ contract Counter {
 
 Instead of having a value that we read from the contract, we have state-mutating methods and a way to query the inner state which is much closer to production scenarios and, therefore, much more useful for our learning journey.
 
-Interacting with it via Strato would be as simple as 
+Interacting with it via Strato would be as simple as:
 
 ```js live=true containerKey=increment_from_path
 const { session } = await ApiSession.default();
@@ -51,7 +51,7 @@ We need the `.toNumber` call since the returned value of calling the `get` metho
 
 By convention, when calling `Contract.newFrom` passing it a `path`, Strato expects to find the solidity contract code in the `contracts` folder. This is configurable via the `HEDERAS_CONTRACTS_RELATIVE_PATH` environment variable.
 
-If you were to run this code snippet, you would end up with a complaint issued by `ApiSession.default` saying something about a network not avaiable issue. That's because Strato does not know, out of the box, to which network you want to connect.
+If you were to run this code snippet, you would end up with a complaint issued by `ApiSession.default` saying something about a network not available issue. That's because Strato does not know, out of the box, to which network you want to connect.
 
 We'll discuss configuration aspects in the upcoming page, but for now, to make this running, just create a `.env` file in your project root directory and have the following values defined:
 ```
@@ -151,8 +151,8 @@ instance = session.newInstance(class)
 with `instance` being the `live`, hedera-deployed, runtime object and `class` being the blueprint of whatever needs to be constructed on the network (eg. Token or Contract).
 
 Having said that, depending on the Hedera targeted service, there are 2 types of entities in the library:
-* static entities - which are further down differentiatable into `CreatableEntity`s and `UploadableEntity`s 
+* static entities - which are further down differentiable into `CreatableEntity`s and `UploadableEntity`s 
 * live entities - which are the "resulting instances" of having the _static entities_ deployed
 
 ## Next up
-Now that we've discussed a bit about installing and running some Strato code as well as the overall design vesion of the library, it's high time we have a look at configuring/customizing a runtime `ApiSession`.
+Now that we've discussed a bit about installing and running some Strato code as well as the overall design vision of the library, it's high time we have a look at configuring/customizing a runtime `ApiSession`.

@@ -29,7 +29,7 @@ const liveJson = await session.upload({ theAnswer: 42 }, { _file: { memo: "my js
 
 :::note
 
-The `_file` property is needed when `upload`-ing a file to distinguish it from `upload`ing contract meta-arguments which also allow for fine-tweaking the [`ContractCreateTransaction` call](https://docs.hedera.com/guides/docs/sdks/smart-contracts/create-a-smart-contract) parameters through their own `_contract` property object.
+The `_file` property is needed when `upload`ing a file to distinguish it from `upload`ing contract meta-arguments which also allow for fine-tweaking the [`ContractCreateTransaction` call](https://docs.hedera.com/guides/docs/sdks/smart-contracts/create-a-smart-contract) parameters through their own `_contract` property object.
 
 :::
 

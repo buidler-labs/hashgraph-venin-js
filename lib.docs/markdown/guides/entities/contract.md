@@ -21,9 +21,9 @@ Once an `ApiSession` and a `Contract` is available, deploying the code on the ne
 #### Transaction meta-arguments
 Going into more depth with this method, if one wants to tweak the [Hedera File Service - Create File Transaction](https://docs.hedera.com/guides/docs/sdks/file-storage/create-a-file) step with extra-arguments, just pass in a second param to the `upload` call which is a object of the form `{_file: {...}}` containing any required options. For example, to attach a "Hello Strato" memo to the uploaded contract code, the resulting call would end up being: `session.upload(contract, {_file: {fileMemo: "Hello Strato"}})`. 
 
-To pass [Create Smart Contract Transaction](https://docs.hedera.com/guides/docs/sdks/smart-contracts/create-a-smart-contract) parameters, have the second object parameter contain a property called `_contract` with the same rationale in mind: set values that you wish to send to the `ContractCreateTransaction` constructor. For instance, if you would like to set a `gas` contract-creation limit to 100000ℏ, your end `upload` call would be: `session.upload(contract, {_contract: {gas: 100_000}})`. By the way, the default `gas` set for contract-creation transaction [can be tweaked by the `HEDERAS_DEFAULT_CONTRACT_TRANSACTION_GAS` environment variable](../../configuration.md) and is currently set to `169_000`.
+To pass [Create Smart Contract Transaction](https://docs.hedera.com/guides/docs/sdks/smart-contracts/create-a-smart-contract) parameters, have the second object parameter contain a property called `_contract` with the same rationale in mind: set values that you wish to send to the `ContractCreateTransaction` constructor. For instance, if you would like to set a `gas` contract-creation limit to 100,000tℏ, your end `upload` call would be: `session.upload(contract, {_contract: {gas: 100_000}})`. By the way, the default `gas` set for contract-creation transaction [can be tweaked by the `HEDERAS_DEFAULT_CONTRACT_TRANSACTION_GAS` environment variable](../../configuration.md) and is currently set to `169_000`.
 
-You can, of course, pass in both `_file` and `_contract` options. Merging the above 2 examples, `session.upload(contract, {_contract: {gas: 100_000}, _file: {fileMemo: "Hello Strato"}})` would end up uploading a `Contract.byteCode` to Hedera and have a memo attached to the resulting file called "Hello Strato". It would then set a `gas` limit of 100000ℏ to create the contract. A working example of this, could look as follows:
+You can, of course, pass in both `_file` and `_contract` options. Merging the above 2 examples, `session.upload(contract, {_contract: {gas: 100_000}, _file: {fileMemo: "Hello Strato"}})` would end up uploading a `Contract.byteCode` to Hedera and have a memo attached to the resulting file called "Hello Strato". It would then set a `gas` limit of 100,000tℏ to create the contract. A working example of this, could look as follows:
 
 ```js live=true containerKey=contract_and_file_options
 const { session } = await ApiSession.default();
@@ -59,11 +59,11 @@ const liveContract = await session.upload(contract , {_contract: {gas: 100000}},
 
 console.log(await liveContract.message());
 ```
-This uploads a `contract` with a `gas` create-contract transaction set to 100000ℏ and calling the `contract`'s constructor passing in the string `Strato is amazing!`.
+This uploads a `contract` with a `gas` create-contract transaction set to 100,000tℏ and calling the `contract`'s constructor passing in the string `Strato is amazing!`.
 
 ### Interacting with deployed contracts
 #### Calling methods
-As you've probably seen so many times now, following a succesfull deployment, _await_-ing a `ApiSession.upload` call returns a `LiveContract` instance which has the solidity's contract functions dinamically attached to it and available for calling. This means that if a contract `A` has a method `foo` on it, the resulting `LiveContract` will also have a function `foo` defined on it.
+As you've probably seen so many times now, following a successful deployment, _await_-ing a `ApiSession.upload` call returns a `LiveContract` instance which has the solidity's contract functions dynamically attached to it and available for calling. This means that if a contract `A` has a method `foo` on it, the resulting `LiveContract` will also have a function `foo` defined on it.
 
 So if, for example, we were to upload [solidity-by-example](https://solidity-by-example.org/)'s [First App](https://solidity-by-example.org/first-app/) Contract via a `session.upload` call, that will eventually resolve to a `LiveContract` instance which would have a `get`, an `inc` and a `dec` [defined on it as one might expect](https://github.com/buidler-labs/hedera-strato-js/blob/90bc1075892844bc46bf6e3fd191817622ee675d/test/LiveContract.spec.ts#L87).
 
@@ -110,7 +110,7 @@ await liveContract.test();
 #### Transaction meta-arguments
 Similar to when uploading a _Smart Contract_, calling any of its methods follows the same meta-arguments passing logic: if the first argument is a JS object which has certain properties of interest, those properties are unpacked and used inside the transaction. One such property is the `maxQueryPayment` which makes for a good example: lets say that we would like to set a maximum query payment of 0.001ℏ for calling the [solidity-by-example's State Variable > get method](https://solidity-by-example.org/state-variables/). In this case, you would simply do a `liveContract.get({maxQueryPayment: 100000})` and it would suffice.
 
-Of course, similar to the "upload contract operation" detailed above, any argument following the the meta-arguments object would be passed to the method itself. In this regards, using the same _State Variable_ contract, doing a `liveContract.set({maxTransactionFee: 100000}, 42)` would call the `set` method passing in integer `42` as parameter and setting the `maxTransactionFee` for the transaction to 100000 which is 0.001ℏ.
+Of course, similar to the "upload contract operation" detailed above, any argument following the the meta-arguments object would be passed to the method itself. In this regards, using the same _State Variable_ contract, doing a `liveContract.set({maxTransactionFee: 100000}, 42)` would call the `set` method passing in integer `42` as parameter and setting the `maxTransactionFee` for the transaction to 100,000tℏ which is 0.001ℏ.
 
 ```js live=true containerKey=transaction_meta_arguments
 const { session } = await ApiSession.default();
