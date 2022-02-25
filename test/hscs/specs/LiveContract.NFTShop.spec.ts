@@ -17,7 +17,8 @@ function read(what: ResourceReadOptions) {
 
 describe('LiveContract.NFTShop', () => {
 
-  it("Given an NFT Shop, a user is able to mint", async () => {
+  // Requires: https://github.com/hashgraph/hedera-sdk-js/pull/953 merged into hedera-sdk-js
+  it.skip("Given an NFT Shop, a user is able to mint", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
 

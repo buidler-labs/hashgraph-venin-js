@@ -20,7 +20,7 @@ describe('LiveAccount', () => {
   it("a session should allow for the creation of accounts with ECSDA key types if explicitly requested", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account({
-      keyType: KeyType.ECDSA
+      keyType: KeyType.ECDSA,
     }));
 
     expect(account).toBeInstanceOf(LiveAccountWithPrivateKey);
@@ -31,7 +31,7 @@ describe('LiveAccount', () => {
     const { session } = await ApiSession.default();
     const privKey = PrivateKey.generateECDSA();
     const account = await session.create(new Account({
-      key: privKey
+      key: privKey,
     }));
 
     const accountInfo = await account.getLiveEntityInfo();
