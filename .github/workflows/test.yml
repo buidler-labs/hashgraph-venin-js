@@ -1,4 +1,4 @@
-name: Test
+name: Test NodeJs and JSDOM
 
 on: 
   pull_request:
