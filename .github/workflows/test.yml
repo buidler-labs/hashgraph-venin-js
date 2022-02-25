@@ -1,9 +1,14 @@
-name: Test NodeJs and JSDOM
+name: Test NodeJs, JsDOM and Smoke Browser
 
-on: 
+on:
+  push:
+    branches:
+      - main
+      - develop
   pull_request:
     branches:
       - main
+      - develop
   workflow_dispatch:
     inputs:
       branch:
@@ -26,9 +31,7 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     strategy:
       matrix:
-        # test:browser should also be included, but this relies on a headless chrome instance being present which public github runners don't have
-        #              we will need to have this available as part of a self-hosted runner ( see issue #17 )
-        npm_test_script: [ test:node, test:jsdom ]    
+        npm_test_script: [ test:node, test:jsdom, test:browser ]    
     steps:
       - uses: actions/checkout@v2
         with:
