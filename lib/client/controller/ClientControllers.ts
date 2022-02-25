@@ -1,9 +1,9 @@
-import { StratoContext } from "../../StratoContext";
 import { ClientController } from "./ClientController";
+import { DefaultPrivateKeyClientController } from "./DefaultPrivateKeyClientController";
 import { HederaClientController } from "./HederaClientController";
 import { ImpotentClientController } from "./ImpotentClientController";
-import { DefaultPrivateKeyClientController } from "./DefaultPrivateKeyClientController";
 import { NamedValue } from "../../core/UsefulTypes";
+import { StratoContext } from "../../StratoContext";
 
 export class ClientControllers {
   private readonly impotentClientController: ImpotentClientController;
@@ -14,7 +14,7 @@ export class ClientControllers {
 
     this.knownControllers = [
       { name: "Hedera", value: new HederaClientController(ctx) },
-      { name: "DefaultPrivateKey", value: new DefaultPrivateKeyClientController(ctx) }
+      { name: "DefaultPrivateKey", value: new DefaultPrivateKeyClientController(ctx) },
     ];
   }
 

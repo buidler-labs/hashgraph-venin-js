@@ -1,6 +1,6 @@
 import { AccountId } from "@hashgraph/sdk";
-import { Subscription } from "../../core/Subscription";
 import { HederaNetwork } from "../../HederaNetwork";
+import { Subscription } from "../../core/Subscription";
 
 export interface ClientController<A = any> extends ClientControllerEvents<A> {
     changeAccount(account: string|AccountId, ...args: any[]): void;

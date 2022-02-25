@@ -42,13 +42,13 @@ export class ClientTypes {
           try {
             return {
               accountId: AccountId.fromString(params.client.hedera.operatorId),
-              privateKey: PrivateKey.fromString(params.client.hedera.operatorKey)
+              privateKey: PrivateKey.fromString(params.client.hedera.operatorKey),
             }
           } catch(e) {
             throw new CredentialsInvalidError(e.message);
           }
         }
-      )
+      ),
     ];
   }
 
