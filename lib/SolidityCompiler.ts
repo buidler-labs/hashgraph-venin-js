@@ -8,7 +8,12 @@ export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = '__contract__.sol';
 export class SolidityCompiler {
   public static async compile({ code, path }: { code?: string, path?: string }) {
     const basePath = sdkPath.resolve(process.env.HEDERAS_CONTRACTS_RELATIVE_PATH || 'contracts');
-    const content = (code ? code : fs.readFileSync(sdkPath.join(basePath, path), 'utf8'));
+    const content = code ? 
+      code : 
+      fs.readFileSync(
+        sdkPath.isAbsolute(path) ? path : sdkPath.join(basePath, path), 
+        'utf8'
+      );
     // Note: Further options and info is available 
     //       here https://docs.soliditylang.org/en/v0.8.10/using-the-compiler.html#input-description and
     //       here https://docs.soliditylang.org/en/v0.8.10/using-the-compiler.html#compiler-input-and-output-json-description
