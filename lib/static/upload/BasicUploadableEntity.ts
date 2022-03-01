@@ -1,11 +1,11 @@
+import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
+import { ArgumentsForUpload, UploadableEntity } from "../../core/UploadableEntity";
 import {
   FileAppendTransaction,
   FileCreateTransaction,
   Status,
   TransactionReceipt,
 } from "@hashgraph/sdk";
-import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
-import { ArgumentsForUpload, UploadableEntity } from "../../core/UploadableEntity";
 import { LiveEntity } from "../../live/LiveEntity";
 
 export type ArgumentsOnFileUploaded = { 
