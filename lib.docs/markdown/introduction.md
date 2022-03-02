@@ -12,32 +12,9 @@ title: 👋 Welcome to Strato! 🌌
   <a href="#license"><img src="https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square" /> </a>
 </p>
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-
-export const OperatorId = () => (
-  <BrowserOnly fallback={<code>unknown</code>}>
-    {() => 
-      window.StratoOperator.network === 'testnet' ? 
-      <a href={ "https://testnet.dragonglass.me/hedera/accounts/" + window.StratoOperator.accountId }>
-        <code>
-          {window.StratoOperator.accountId}
-        </code>
-      </a> 
-      : 
-      <code>
-        {window.StratoOperator.accountId}
-      </code>
-    }
-  </BrowserOnly>
-);
-
-export const OperatorNetwork = () => (
-  <BrowserOnly fallback={<code>unknown</code>}>
-    {() => <code> {window.StratoOperator.network} </code> }
-  </BrowserOnly>
-);
+import { OperatorId, OperatorNetwork } from '@site/src/components/OperatorCoordinates';
 
 ... because it's time we start writing [Hedera](https://hedera.com/) smart-contract dApps[^dapp] frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
 
