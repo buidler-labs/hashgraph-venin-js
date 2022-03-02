@@ -49,14 +49,6 @@ This project is not an official Hedera project and, as such, it is not affiliate
 
 :::
 
-:::info
-
-Currently, the library is mostly available for NodeJS runtime environments since there is where most of the bulk development effort occurs. Efforts are underway to have it deployable and working in web browsers as well. 
-
-These docs are using such an ad-hoc bundled to power the live-coding widgets. If you eager to see how this can be done, have a look over our [rollup config that bundled strato to make live-code available](https://github.com/buidler-labs/hedera-strato-js/blob/main/lib.docs/src/strato/rollup.config.js) for inspiration.
-
-:::
-
 :::caution
 
 Please keep in mind that, although core features are extensively tested and appear to be working, this is still currently under _heavy-active_ development and, as such, we don't recommend this just yet for production use. The API is also very likely to change before we reach there!
