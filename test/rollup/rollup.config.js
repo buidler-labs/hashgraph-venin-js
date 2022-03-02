@@ -13,6 +13,9 @@ import { terser } from "rollup-plugin-terser";
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Make sure we use the contracts defined for this bundle
+process.env.HEDERAS_CONTRACTS_RELATIVE_PATH = './test/rollup/contracts';
+
 const extensions = ['.js', '.ts' ];
 
 function getPathOf(file) {

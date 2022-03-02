@@ -13,6 +13,9 @@ import { terser } from "rollup-plugin-terser";
 import strato from '@buidlerlabs/hedera-strato-js/rollup-plugin';
 dotenv.config({ path: getPathOf('./.env') });
 
+// Make sure we use the contracts defined for this bundle
+process.env.HEDERAS_CONTRACTS_RELATIVE_PATH = './lib.docs/src/strato/contracts';
+
 const extensions = ['.js', '.ts' ];
 
 function getPathOf(file) {

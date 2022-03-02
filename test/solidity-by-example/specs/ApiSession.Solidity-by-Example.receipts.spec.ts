@@ -13,7 +13,7 @@ import {
   ResourceReadOptions,
   read as readResource, 
 } from '../../utils';
-import { ApiSession } from '../../../lib/index';
+import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 
 function read(what: ResourceReadOptions) {

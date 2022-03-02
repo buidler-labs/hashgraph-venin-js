@@ -29,7 +29,7 @@ export default function strato(options: StratoRollupOptions = {}) {
     environment = process.env,
     includeCompiler = false, 
     sourceMap = false, 
-  } = options;
+  } = Object.assign({ contracts: {} }, options);
   const replacer = new SimpleReplacer({
     // don't take away the HEDERAS_ENV_PATH otherwise ApiSession.default definition will fail
     "process.env": JSON.stringify(getHederasSettingsFrom(environment)),
@@ -58,11 +58,11 @@ export default function strato(options: StratoRollupOptions = {}) {
 
       if (CONTRACT_REGISTRY_ID === id || CONTRACTS_IN_FILE_STORAGE_ID === id) {
         const relativeSolFiles = await getSolFiles(contractsPath, recurseInContractsPath);
-        const solFilePaths = relativeSolFiles.map(solFileName => `${contractsPath}/${solFileName.name}`);
+        const solFilePaths = relativeSolFiles.map(solFileName => `${solFileName.name}`);
 
         source = await (CONTRACT_REGISTRY_ID === id ? getRegistryCodeFor(solFilePaths) : getStorageCodeFor(contractsPath, relativeSolFiles));
       } else if (SOLIDITY_COMPILER_ID === id) {
-        const solCompilerEntryPoint = `./lib.esm/bundler/polies/compiler/${ includeCompiler ? 'worker' : 'none' }/SolidityCompiler.js`;
+        const solCompilerEntryPoint = getPoliePathOf(`compiler/${ includeCompiler ? 'worker' : 'none' }/SolidityCompiler.js`);
 
         source = await getSolidityCompilerCode(solCompilerEntryPoint, sourceMap);
       }
@@ -115,7 +115,13 @@ async function getRegistryCodeFor(solPaths: string[]) {
 }
 
 async function getSolFiles(path: string, recurse = false) {
-  const filesInPath = await fs.readdir(path, { withFileTypes: true });
+  let filesInPath = [];
+  try {
+    filesInPath = await fs.readdir(path, { withFileTypes: true });
+  } catch(e) {
+    console.warn(`Could not read contracts from '${path}': ${e.message} Skipping ...`);
+  }
+
   const solFilesInPath = filesInPath.filter(potentialSolFile => potentialSolFile.isFile() && potentialSolFile.name.endsWith(".sol"));
   const directoriesInPath = recurse ? filesInPath.filter(potentialDirectory => potentialDirectory.isDirectory())
     .map(filteredEntry => filteredEntry.name) : [];
