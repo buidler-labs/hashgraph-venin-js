@@ -1,4 +1,4 @@
-name: Test
+name: Test NodeJs and JSDOM
 
 on: 
   pull_request:
@@ -9,31 +9,42 @@ on:
       branch:
         description: 'The branch to run the tests against'
         required: true
-        default: 'main'
+        default: main
       environment:
         description: 'Hedera network to run the tests on'
         required: true
         type: environment
-        default: hedera-previewnet
+        default: hedera-testnet
 
 env:
   HEDERAS_CONTRACTS_RELATIVE_PATH: test
-  HEDERAS_CONTRACTS_INCLUDED_PREFIXES: general/contracts,general/contracts/import_resolution/node_modules,taskbar/contracts,hedera/contracts
+  HEDERAS_CONTRACTS_INCLUDED_PREFIXES: general/contracts,general/contracts/import_resolution/node_modules,solidity-by-example/contracts,taskbar/contracts,hedera/contracts
 
 jobs:
-  tests:
-    runs-on: self-hosted
+  test:
+    runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
+    strategy:
+      matrix:
+        # test:browser should also be included, but this relies on a headless chrome instance being present which public github runners don't have
+        #              we will need to have this available as part of a self-hosted runner ( see issue #17 )
+        npm_test_script: [ test:node, test:jsdom ]    
     steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.branch }}
 
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: 16
 
       - run: npm install
 
-      - run: npm test
+      - run: npm run ${{ matrix.npm_test_script }}
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          name: codecov-${{ matrix.npm_test_script }}
+          verbose: true

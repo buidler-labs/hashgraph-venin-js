@@ -6,13 +6,14 @@ module.exports = {
   moduleFileExtensions: ['js', 'ts'],
   preset: "ts-jest",
   setupFiles: [
-    'dotenv/config'
+    'dotenv/config',
   ],
   testMatch: [
-    "**/?(*.)+(spec|test).ts"
+    "**/?(*.)+(spec|test).ts",
   ],
+  testRunner: "./test/hedera-test-runner.ts",
   testTimeout: 300000,
   transform: {
-    "^.+\\.ts?$": "ts-jest"
+    "^.+\\.ts?$": "ts-jest",
   },
 };

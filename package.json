@@ -41,7 +41,7 @@
     "test:node": "jest --env=./test/jte.node.ts",
     "test:node-previewnet": "PORTAL_NETWORK=previewnet node ./script/test-online.mjs",
     "test:node-testnet": "PORTAL_NETWORK=testnet node ./script/test-online.mjs",
-    "test:jsdom": "jest --env=./test/jte.web.ts --setupFilesAfterEnv core-js",
+    "test:jsdom": "jest --env=./test/jte.web.ts --setupFilesAfterEnv core-js ./test/setup.web.ts",
     "test:smoke-browser": "karma start ./test/browser/karma.smoke.conf.js"
   },
   "keywords": [
@@ -72,6 +72,7 @@
     "@docusaurus/remark-plugin-npm2yarn": "^2.0.0-beta.15",
     "@docusaurus/theme-live-codeblock": "^2.0.0-beta.15",
     "@openzeppelin/contracts": "^4.4.2",
+    "@peculiar/webcrypto": "^1.3.0",
     "@rollup/plugin-alias": "^3.1.9",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^21.0.1",
