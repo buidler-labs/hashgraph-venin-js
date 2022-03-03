@@ -4,10 +4,10 @@ import {
 import { Interface } from '@ethersproject/abi';
 
 import { ArgumentsOnFileUploaded, BasicUploadableEntity } from "./BasicUploadableEntity";
-import { CompileIssues } from '../../errors/CompileIssues';
 import { LiveContract, LiveContractWithLogs } from '../../live/LiveContract';
-import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
 import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../../SolidityCompiler';
+import { CompileIssues } from '../../errors/CompileIssues';
+import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
 
 type AllContractOptions = {
   /**
@@ -84,7 +84,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     }
 
     const rawCompileResult = await SolidityCompiler.compile({ code, path });
-    const compileResult = Contract._tryParsingCompileResultFrom({ rawCompileResult, ignoreWarnings });
+    const compileResult = Contract._tryParsingCompileResultFrom({ ignoreWarnings, rawCompileResult });
     const compiledContractsInfo = compileResult.contracts[VIRTUAL_SOURCE_CONTRACT_FILE_NAME];
     const contracts = [];
 
@@ -93,9 +93,9 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
 
       contracts.push(
         new Contract({
-          name: contractName,
           abi: solo.abi,
-          byteCode: solo.evm.bytecode.object
+          byteCode: solo.evm.bytecode.object,
+          name: contractName,
         })
       );
     }
@@ -173,9 +173,9 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
    */
   public serialize(): string {
     return JSON.stringify({
-      name: this.name,
+      abi: this.interface.format(),
       byteCode: this.byteCode,
-      abi: this.interface.format()
+      name: this.name,
     });
   }
 
@@ -191,14 +191,14 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
    * are passed to the Contract constructor.
    */
   protected override async onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
-    const { createContractOptions, emitConstructorLogs } = await this._getContractCreateOptionsFor({ session, receipt, args });
+    const { createContractOptions, emitConstructorLogs } = await this._getContractCreateOptionsFor({ args, receipt, session });
     const createContractTransaction = new ContractCreateTransaction(createContractOptions);
 
     return await LiveContract.newFollowingUpload({
-      session,
       contract: this,
       emitConstructorLogs,
-      transaction: createContractTransaction
+      session,
+      transaction: createContractTransaction,
     });
   }
 
@@ -221,14 +221,14 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
       args = args.slice(1);
     }
     return {
-      emitConstructorLogs,
       createContractOptions: Object.assign({}, {
         adminKey: session.publicKey,
         bytecodeFileId: contractFileId,
         constructorParameters: await ContractFunctionParameters.newFor(constructorDefinition, args),
         gas: session.defaults.contractCreationGas,
-        ...contractCreationOverrides
-      })
+        ...contractCreationOverrides,
+      }),
+      emitConstructorLogs,
     }
   }
 }

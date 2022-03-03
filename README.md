@@ -12,11 +12,7 @@ Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and w
 
 > **Disclaimer:** This project is not an official Hedera project and, as such, it is not affiliated with it in any way, shape or form. It is an independent, community driven, effort to bring clarity and *joy* to developing descentralized apps (dApps) on the Hedera network-chain ecosystem.
 
-> **Note:** Currently, the library is mostly available for NodeJS runtime environments since there is where most of the bulk development effort occurs. Efforts are underway to have it deployable and working in web browsers as well.
->
->These docs are using such an ad-hoc bundled to power the live-coding widgets. If you eager to see how this can be done, have a look over our browser smoke-test rollup config for inspiration.
-
-> **Note #2:** Please keep in mind that, although core features are extensively tested and appear to be working, this is still currently under _heavy-active_ development and, as such, we don't recommend this just yet for production use. The API is also very likely to change before we reach there!
+> **Note:** Please keep in mind that, although core features are extensively tested and appear to be working, this is still currently under _heavy-active_ development and, as such, we don't recommend this just yet for production use. The API is also very likely to change before we reach there!
 >
 >Having said that, we will continue to use it "as is" in production even at this initial stage just because we can and are quick to solve any issues that we might encounter.
 
@@ -32,8 +28,8 @@ Strato already supports a lot of stuff:
 * [x] Create a Hedera account
 * [x] Ready to be plugged into a web3 wallet (_when such will exist_)
 * [x] End to end tested sourcing multiple contracts for the test-base from places such as [solidity-by-example](https://solidity-by-example.org/) and the [hedera-sdk-js repo](https://github.com/hashgraph/hedera-sdk-js/tree/main/examples)
+* [x] Bundling via [Rollup](https://rollupjs.org/) with the aid of a custom defined plugin
 #### ... with more planned for development:
-* [ ] Be able to _seamlessly_ run it in browser (even the contract compilation part if required)
 * [ ] Update/delete/_other_ token operations
 * [ ] Hedera Consensus Service support
 * [ ] Other account operations

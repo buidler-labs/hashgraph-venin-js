@@ -28,13 +28,13 @@ module.exports = async function () {
             exclude: [
               "**/src/**",
             ],
+            path: '.',
             remarkPlugins: [
               remarkGfm,
               remarkMermaid,
               [ remarkNpm2Yarn, { sync: true } ],
               remarkNumberedFootnoteLabels,
             ],
-            path: '.',
             routeBasePath: '/',
             showLastUpdateAuthor: true,
             showLastUpdateTime: true,
@@ -64,7 +64,7 @@ module.exports = async function () {
     tagline: "Write Hedera dApps like a boss because why not?",
     themeConfig: {
       footer: {
-        copyright: `Copyright © ${new Date().getFullYear()} <a href='https://github.com/buidler-labs'>BuiDler Labs</a>. Built with ❤️ in <a href='https://docusaurus.io/'>Docusaurus</a>.`,
+        copyright: `Copyright © ${new Date().getFullYear()} <a href='https://github.com/buidler-labs'>Buidler Labs</a>. Built with ❤️ in <a href='https://docusaurus.io/'>Docusaurus</a>.`,
         logo: {
           alt: 'BuiDler Labs Logo',
           src: 'img/logos/buidler-labs.png',

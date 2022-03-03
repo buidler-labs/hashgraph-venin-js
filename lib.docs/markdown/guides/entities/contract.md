@@ -81,7 +81,7 @@ Of course, function arguments are also supported so if we have such a live-contr
 
 ```js live=true containerKey=function_arguments
 const { session } = await ApiSession.default();
-const contract = await Contract.newFrom({ path: './state-variables.sol' });
+const contract = await Contract.newFrom({ path: './state_variables.sol' });
 const liveContract = await session.upload(contract);
 
 await liveContract.set(42);
@@ -114,7 +114,7 @@ Of course, similar to the "upload contract operation" detailed above, any argume
 
 ```js live=true containerKey=transaction_meta_arguments
 const { session } = await ApiSession.default();
-const contract = await Contract.newFrom({ path: './state-variables.sol' });
+const contract = await Contract.newFrom({ path: './state_variables.sol' });
 const liveContract = await session.upload(contract);
 
 await liveContract.set({maxTransactionFee: 100000}, 
