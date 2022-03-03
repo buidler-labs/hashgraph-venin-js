@@ -28,7 +28,7 @@ Strato already supports a lot of stuff:
 * [x] Create a Hedera account
 * [x] Ready to be plugged into a web3 wallet (_when such will exist_)
 * [x] End to end tested sourcing multiple contracts for the test-base from places such as [solidity-by-example](https://solidity-by-example.org/) and the [hedera-sdk-js repo](https://github.com/hashgraph/hedera-sdk-js/tree/main/examples)
-* [x] Bunddling via [Rollup](https://rollupjs.org/) with the aid of a custom defined plugin
+* [x] Bundling via [Rollup](https://rollupjs.org/) with the aid of a custom defined plugin
 #### ... with more planned for development:
 * [ ] Update/delete/_other_ token operations
 * [ ] Hedera Consensus Service support

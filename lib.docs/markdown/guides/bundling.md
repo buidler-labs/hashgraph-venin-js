@@ -8,7 +8,7 @@ Currently we offer support for bundling strato via [rollup](https://rollupjs.org
 ### General considerations
 Strato is delivered in both `es-module` and `common-js` formats. The challenge with bundling the library boils down to whether or not you wish to use the `SolidityCompiler` function in-browser. If you wish in-browser compilation, a web-worker is provided which fetches the appropriate solidity-compiler binary before carring out the compilation itself via calling any of the `Contract.newFrom`/`Contract.allFrom` familiy of functions. 
 
-Compiling `path` variants of the same `Contract.newFrom`/`Contract.allFrom` familiy of functions is made possible via a synthetically injected `ContractsInFileStorage` class which is basically a dictionary mapping the path of each solidity file from a given folder (default `contracts`) to its content. 
+Compiling `path` variants of the same `Contract.newFrom`/`Contract.allFrom` family of functions is made possible via a synthetically injected `ContractsInFileStorage` class which is basically a dictionary mapping the path of each solidity file from a given folder (default `contracts`) to its content. 
 
 :::note
 You don't have to manually deal with `ContractsInFileStorage` in code. The bundler ties everything up for you so that, for example, if you have a file `a.sol` in a `contracts` folder situated in the root of your repo, `ContractsInFileStorage` would be generated holding something approximating: 

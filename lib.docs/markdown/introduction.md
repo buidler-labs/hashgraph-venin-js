@@ -18,7 +18,7 @@ import { OperatorId, OperatorNetwork } from '@site/src/components/OperatorCoordi
 
 ... because it's time we start writing [Hedera](https://hedera.com/) smart-contract dApps[^dapp] frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
 
-[^dapp]: descentralized application
+[^dapp]: decentralized application
 
 :::note Disclaimer
 
