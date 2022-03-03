@@ -57,8 +57,6 @@
   "dependencies": {
     "@babel/runtime": "^7.17.2",
     "@ethersproject/abi": "^5.5.0",
-    "@hashgraph/sdk": "2.7.0",
-    "@hashgraph/sdk-web": "npm:@hashgraph/sdk@^2.9.1",
     "@rollup/plugin-commonjs": "^21.0.2",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.1.3",
@@ -83,6 +81,7 @@
     "@docusaurus/preset-classic": "^2.0.0-beta.15",
     "@docusaurus/remark-plugin-npm2yarn": "^2.0.0-beta.15",
     "@docusaurus/theme-live-codeblock": "^2.0.0-beta.15",
+    "@hashgraph/sdk-web": "npm:@hashgraph/sdk@^2.9.1",
     "@openzeppelin/contracts": "^4.4.2",
     "@peculiar/webcrypto": "^1.3.0",
     "@rollup/plugin-babel": "^5.3.0",
@@ -119,5 +118,8 @@
     "url": "https://github.com/buidler-labs/hedera-strato-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.7.3"
+  "version": "0.7.3",
+  "peerDependencies": {
+    "@hashgraph/sdk": ">=2.7.0 <2.8"
+  }
 }

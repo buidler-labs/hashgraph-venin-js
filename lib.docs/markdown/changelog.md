@@ -7,6 +7,7 @@ title: Changelog
 * Added the [bundling guide](./guides//bundling.md) that makes use of a custom defined `@buidlerlabs/hedera-strato-js/rollup-plugin` export
 
 ## 0.7.3
+* Supports `@hashgraph/sdk@2.7.0`
 * Added support for creating `Token`s
 * Added support for creating `Account`s
 * Added more config options with sensible defaults to control behaviour and expenses
