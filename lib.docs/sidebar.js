@@ -6,16 +6,24 @@ module.exports = {
     label: 'Introduction',
     type: 'doc',
   }, {
-    id: 'markdown/quick-start',
-    label: 'Quick Start',
-    type: 'doc',
+    collapsible: true,
+    items: [ {
+      id: 'markdown/quick-start',
+      label: "Quick Start",
+      type: 'doc',
+    }, {
+      id: 'markdown/configuration',
+      label: "Configuring",
+      type: 'doc',
+    }, {
+      id: 'markdown/playground',
+      label: 'Playground',
+      type: 'doc',
+    }],
+    label: 'Getting Started',
+    type: 'category',
   }, {
-    id: 'markdown/configuration',
-    label: 'Configuring',
-    type: 'doc',
-  }, {
-    collapsed: false,
-    collapsible: false,
+    collapsible: true,
     items: [ {
       id: 'markdown/guides/bundling',
       label: "Bundling",
@@ -40,10 +48,6 @@ module.exports = {
   }, {
     id: 'markdown/changelog',
     label: 'Changelog',
-    type: 'doc',
-  }, {
-    id: 'markdown/playground',
-    label: 'Playground',
     type: 'doc',
   }],
 };
