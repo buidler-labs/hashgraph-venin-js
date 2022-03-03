@@ -1,11 +1,12 @@
 # Hedera Strato JS
 
-![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square)
+![NodeJS/JSDOM tests](https://img.shields.io/github/workflow/status/buidler-labs/hedera-strato-js/Test%20NodeJs%20and%20JSDOM?style=flat-square&label=tests&color=yellowgreen)
+[![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hedera-strato-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hedera-strato-js)
 ![node version](https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square)
-![tested with jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?style=flat-square)
 ![contributions](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
 ![license](https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square)
 
+![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square)
 [![NPM](https://nodei.co/npm/@buidlerlabs/hedera-strato-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-strato-js/)
 
 Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
