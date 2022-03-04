@@ -5,11 +5,16 @@ title: 👋 Welcome to Strato! 🌌
 ---
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@buidlerlabs/hedera-strato-js"><img src="https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square" alt="npm version" /> </a>
-  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square"/> </a>
-  <a href="https://github.com/facebook/jest"><img src="https://img.shields.io/badge/tested_with-jest-99424f.svg?style=flat-square" alt="Tested with Jest" /> </a>
-  <a href="#contributions"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome" /> </a>
-  <a href="#license"><img src="https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square" /> </a>
+
+  ![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hedera-strato-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
+  [![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hedera-strato-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hedera-strato-js)
+  [![Discord support channel](https://img.shields.io/discord/949250301792239686?style=flat-square)](https://discord.com/invite/4mYCre869F)
+  ![contributions](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
+  ![license](https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square)
+  ![node version](https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square)
+  ![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square)
+  
+  [![NPM](https://nodei.co/npm/@buidlerlabs/hedera-strato-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-strato-js/)
 </p>
 
 import Tabs from '@theme/Tabs';
