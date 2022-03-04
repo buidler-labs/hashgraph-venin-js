@@ -31,7 +31,9 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     strategy:
       matrix:
-        npm_test_script: [ test:node, test:jsdom, test:browser ]    
+        # test:browser should also be included, but this relies on a headless chrome instance being present which public github runners don't have
+        #              we will need to have this available as part of a self-hosted runner ( see issue #17 )
+        npm_test_script: [ 'test:node', 'test:jsdom' ]    
     steps:
       - uses: actions/checkout@v2
         with:
@@ -44,7 +46,12 @@ jobs:
 
       - run: npm install
 
-      - run: npm run ${{ matrix.npm_test_script }}
+      - name: Testing
+        env: 
+          HEDERAS_NETWORK: ${{ secrets.HEDERAS_NETWORK }}
+          HEDERAS_OPERATOR_ID: ${{ secrets.HEDERAS_OPERATOR_ID }}
+          HEDERAS_OPERATOR_KEY: ${{ secrets.HEDERAS_OPERATOR_KEY }}
+        run: npm run ${{ matrix.npm_test_script }}
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
