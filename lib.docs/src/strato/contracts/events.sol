@@ -8,6 +8,10 @@ contract Event {
   event Log(address indexed sender, string message);
   event AnotherLog();
 
+  constructor() {
+    emit Log(msg.sender, "Event contract constructed!");
+  }
+
   function test() public {
     emit Log(msg.sender, "Hello World!");
     emit Log(msg.sender, "Hello EVM!");

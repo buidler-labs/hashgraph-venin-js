@@ -107,6 +107,26 @@ liveContract.onEvent("Log", ({ sender, message }) => {
 await liveContract.test();
 ```
 
+Logs can also be emitted from within contract constructors provided that either [the `HEDERAS_DEFAULT_EMIT_CONSTRUCTOR_LOGS` parameter is set](../../configuration.md) to true or that `emitConstructorLogs` meta-arg is set to true in the `_contract` object when `upload`-ing the contract. 
+
+To get access to the constructor logs, you would need to destructure the live-contract `upload` result like so:
+```js live=true containerKey=dealing_with_constructor_events
+const { session } = await ApiSession.default();
+const contract = await Contract.newFrom({ path: './events.sol' });
+const { liveContract, logs } = await session.upload(contract, {_contract: {emitConstructorLogs: true}});
+
+console.log(JSON.stringify(logs));
+```
+
+As you can see from runing the above snippet, the resulting `logs` are an array of objects which adhere to the following schema:
+```ts
+{
+    name: string,
+    payload: any
+}
+```
+`name` is the name of the event while `payload` is a JS object with keys named after the arguments of the event and values being the actual data passed when emit-ing that particular event.
+
 #### Transaction meta-arguments
 Similar to when uploading a _Smart Contract_, calling any of its methods follows the same meta-arguments passing logic: if the first argument is a JS object which has certain properties of interest, those properties are unpacked and used inside the transaction. One such property is the `maxQueryPayment` which makes for a good example: lets say that we would like to set a maximum query payment of 0.001ℏ for calling the [solidity-by-example's State Variable > get method](https://solidity-by-example.org/state-variables/). In this case, you would simply do a `liveContract.get({maxQueryPayment: 100000})` and it would suffice.
 
