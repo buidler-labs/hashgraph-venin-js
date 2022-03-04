@@ -12,48 +12,17 @@ title: 👋 Welcome to Strato! 🌌
   <a href="#license"><img src="https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square" /> </a>
 </p>
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-
-export const OperatorId = () => (
-  <BrowserOnly fallback={<code>unknown</code>}>
-    {() => 
-      window.StratoOperator.network === 'testnet' ? 
-      <a href={ "https://testnet.dragonglass.me/hedera/accounts/" + window.StratoOperator.accountId }>
-        <code>
-          {window.StratoOperator.accountId}
-        </code>
-      </a> 
-      : 
-      <code>
-        {window.StratoOperator.accountId}
-      </code>
-    }
-  </BrowserOnly>
-);
-
-export const OperatorNetwork = () => (
-  <BrowserOnly fallback={<code>unknown</code>}>
-    {() => <code> {window.StratoOperator.network} </code> }
-  </BrowserOnly>
-);
+import { OperatorId, OperatorNetwork } from '@site/src/components/OperatorCoordinates';
 
 ... because it's time we start writing [Hedera](https://hedera.com/) smart-contract dApps[^dapp] frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
 
-[^dapp]: descentralized application
+[^dapp]: decentralized application
 
 :::note Disclaimer
 
 This project is not an official Hedera project and, as such, it is not affiliated with it in any way, shape or form. It is an independent, community driven, effort to bring clarity and *joy* to developing smart-contract applications on the Hedera network-chain ecosystem.
-
-:::
-
-:::info
-
-Currently, the library is mostly available for NodeJS runtime environments since there is where most of the bulk development effort occurs. Efforts are underway to have it deployable and working in web browsers as well. 
-
-These docs are using such an ad-hoc bundled to power the live-coding widgets. If you eager to see how this can be done, have a look over our [rollup config that bundled strato to make live-code available](https://github.com/buidler-labs/hedera-strato-js/blob/main/lib.docs/src/strato/rollup.config.js) for inspiration.
 
 :::
 

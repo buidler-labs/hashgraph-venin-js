@@ -3,30 +3,7 @@ id: playground
 title: Playground
 ---
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
-
-export const OperatorId = () => (
-  <BrowserOnly fallback={<code>unknown</code>}>
-    {() => 
-      window.StratoOperator.network === 'testnet' ? 
-      <a href={ "https://testnet.dragonglass.me/hedera/accounts/" + window.StratoOperator.accountId }>
-        <code>
-          {window.StratoOperator.accountId}
-        </code>
-      </a> 
-      : 
-      <code>
-        {window.StratoOperator.accountId}
-      </code>
-    }
-  </BrowserOnly>
-);
-
-export const OperatorNetwork = () => (
-  <BrowserOnly fallback={<code>unknown</code>}>
-    {() => <code> {window.StratoOperator.network} </code> }
-  </BrowserOnly>
-);
+import { OperatorId, OperatorNetwork } from '@site/src/components/OperatorCoordinates';
 
 Want to give it a in-browser spin, now you can. Type in your code and press the `Run` button and you should be set to go.
 

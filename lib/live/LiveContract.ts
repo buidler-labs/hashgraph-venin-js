@@ -25,7 +25,7 @@ import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters
 import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber';
 import { LiveAddress } from "./LiveAddress";
 import { LiveEntity } from "./LiveEntity";
-import { encodeToHex } from '../core/encoding/Hex';
+import { encodeToHex } from '../core/Hex';
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
