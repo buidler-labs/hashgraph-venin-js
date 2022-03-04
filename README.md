@@ -1,6 +1,6 @@
 # Hedera Strato JS
 
-![NodeJS/JSDOM tests](https://img.shields.io/github/workflow/status/buidler-labs/hedera-strato-js/Test%20NodeJs%20and%20JSDOM?style=flat-square&label=tests&color=yellowgreen)
+![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hedera-strato-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
 [![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hedera-strato-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hedera-strato-js)
 ![node version](https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square)
 ![contributions](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)

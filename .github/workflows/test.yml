@@ -1,4 +1,4 @@
-name: Test NodeJs and JSDOM
+name: test-nodejs-jsdom-browser
 
 on: 
   pull_request:
@@ -15,9 +15,7 @@ jobs:
     environment: hedera-testnet
     strategy:
       matrix:
-        # test:browser should also be included, but this relies on a headless chrome instance being present which public github runners don't have
-        #              we will need to have this available as part of a self-hosted runner ( see issue #17 )
-        npm_test_script: [ 'test:node', 'test:jsdom' ]    
+        npm_test_script: [ 'test:node', 'test:jsdom', 'test:browser' ]    
     steps:
       - uses: actions/checkout@v2
 
