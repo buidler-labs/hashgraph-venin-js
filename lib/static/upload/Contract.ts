@@ -222,7 +222,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     }
     return {
       createContractOptions: Object.assign({}, {
-        adminKey: session.publicKey,
+        adminKey: session.wallet.account.publicKey,
         bytecodeFileId: contractFileId,
         constructorParameters: await ContractFunctionParameters.newFor(constructorDefinition, args),
         gas: session.defaults.contractCreationGas,

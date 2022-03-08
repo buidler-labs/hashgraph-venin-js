@@ -1,63 +1,61 @@
 import * as dotenv from 'dotenv';
 
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
-
 import { AVAILABLE_NETWORK_NAMES, NetworkDefaults } from './HederaNetwork';
-import { ClientType, ClientTypes } from './client/ClientType';
-import { ClientController } from './client/controller/ClientController';
-import { ClientControllers } from './client/controller/ClientControllers';
+import { WalletType, WalletTypes } from './wallet/WalletType';
 import { HederaNetwork } from './HederaNetwork';
 import { RecursivePartial } from './core/UsefulTypes';
 import { SessionDefaults } from './ApiSession';
-import { StratoClient } from './client/StratoClient';
 import { StratoLogger } from './StratoLogger';
+import { StratoWallet } from './core/wallet/StratoWallet';
+import { WalletController } from './core/wallet/WalletController';
+import { WalletControllers } from './wallet/controller/WalletControllers';
 
-export type ControlledClient = {
-    controller: ClientController,
-    client: StratoClient
+export type ControlledWallet = {
+  controller: WalletController,
+  wallet: StratoWallet
 };
-export type ClientColdStartData = { accountId: AccountId, privateKey: PrivateKey };
-export type ClientControllerParameters = {
-    type: string,
-    default: {
-        operatorKey: string
-    }
+export type WalletControllerParameters = {
+  type: string,
+  default: {
+    operatorKey: string
+  }
 };
-type ClientRuntimeParameters = {
-    controller: ClientControllerParameters,
-    savedState: string,
-    type: ClientType,
-    hedera: {
-        operatorId: string,
-        operatorKey: string
-    }
+type WalletRuntimeParameters = {
+  controller: WalletControllerParameters,
+  type: WalletType,
+  sdk: {
+    operatorId: string,
+    operatorKey: string
+  },
+  window: {
+    propName: string,
+  },
 };
-export type HederaNodesAddressBook = { [key: string]: string | AccountId };
 export type LoggerRuntimeParameters = { 
-    level: string,
-    enabled: boolean
+  level: string,
+  enabled: boolean
 };
 export type SessionRuntimeParameters = {
-    defaults: SessionDefaults
+  defaults: SessionDefaults
 };
 export type NetworkRuntimeParameters = {
-    defaults: NetworkDefaults,
-    name: string,
-    nodes: string
+  defaults: NetworkDefaults,
+  name: string,
+  nodes: string
 };
 export type StratoParameters = {
-    client: ClientRuntimeParameters,
-    logger: LoggerRuntimeParameters,
-    network: NetworkRuntimeParameters,
-    session: SessionRuntimeParameters
+  wallet: WalletRuntimeParameters,
+  logger: LoggerRuntimeParameters,
+  network: NetworkRuntimeParameters,
+  session: SessionRuntimeParameters
 };
 
 export type StratoContextSource = {
-    params?: RecursivePartial<StratoParameters>,
-    /**
-     * The file path where the `dotenv`-like file resides which is sourced for library params. If not provided, it usually is expected to default to `.env`.
-     */
-    path?: string 
+  params?: RecursivePartial<StratoParameters>,
+  /**
+   * The file path where the `dotenv`-like file resides which is sourced for library params. If not provided, it usually is expected to default to `.env`.
+   */
+  path?: string 
 };
 
 // Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
@@ -84,8 +82,8 @@ const DefinedNetworkDefaults: { [k: string]: NetworkDefaults } = {
 export class StratoContext {
   public readonly params: StratoParameters;
 
-  public readonly clientControllers: ClientControllers;
-  public readonly clientTypes: ClientTypes;
+  public readonly walletControllers: WalletControllers;
+  public readonly walletTypes: WalletTypes;
   public readonly log: StratoLogger;
   public readonly network: HederaNetwork;
 
@@ -106,9 +104,8 @@ export class StratoContext {
     // Parse and extract the managed values
     const networkName = rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? 'unspecified';
 
-    this.clientTypes = new ClientTypes();
+    this.walletTypes = new WalletTypes();
     this.params = {
-      client: this.computeClientSpecsFrom(rParams, eParams),
       logger: {
         enabled: (rParams.logger?.enabled ?? eParams.HEDERAS_LOGGER_ENABLED ?? 'false') === 'true',
         level: rParams.logger?.level ?? eParams.HEDERAS_LOGGER_LEVEL ?? 'info',
@@ -121,59 +118,58 @@ export class StratoContext {
       session: {
         defaults: this.parseSessionDefaultsFrom(networkName, rParams, eParams),
       },
+      wallet: this.computeWalletSpecsFrom(rParams, eParams),
     };
-    this.clientControllers = new ClientControllers(this);
+    this.walletControllers = new WalletControllers(this);
     this.log = new StratoLogger(this.params.logger);
     this.network = HederaNetwork.newFrom(this.params.network);
   }
 
-  public async getClient(controller?: ClientController): Promise<ControlledClient> {
-    let client: StratoClient;
+  public async getWallet(controller?: WalletController): Promise<ControlledWallet> {
+    const walletType = this.params.wallet.type;
     const resolvedController = controller ?? 
-            this.clientControllers.getBy({ name: this.params.client.controller.type }) ?? 
-            new this.params.client.type.defaultController(this);
-    const provider = new this.params.client.type.providerHaving(this, resolvedController);
-    const coldStartData = this.params.client.type.computeColdStartOptionsFrom(this.params);
+      this.walletControllers.getBy({ name: this.params.wallet.controller.type }) ?? 
+      new walletType.defaultController(this);
+    const provider = new walletType.providerHaving(this, resolvedController);
+    const coldStartData = walletType.computeColdStartOptionsFrom(this.params);
 
-    if(this.params.client.savedState) {
-      client = await provider.buildRestoring(this.params.client.savedState);
-    } else if (coldStartData) {
-      client = await provider.buildColdFor(coldStartData);
+    if (coldStartData) {
+      return {
+        controller: resolvedController,
+        wallet: await provider.buildFor(coldStartData),
+      }
     } else {
-      throw new Error("Please provide either the cold-start data or a saved-state from where to create the bounded underlying Client with.");
-    }
-
-    return {
-      client,
-      controller: resolvedController,
+      throw new Error("Please provide either the cold-start data or a saved-state from where to create the bounded underlying Wallet with.");
     }
   }
 
-  private computeClientSpecsFrom(rParams: RecursivePartial<StratoParameters>, eParams: { [k: string]: string }): ClientRuntimeParameters {
-    const clientControllerDefaultPrivateKey = rParams.client?.controller?.default?.operatorKey ?? eParams.HEDERAS_CLIENT_CONTROLLER_DEFAULT_PRIVATE_KEY;
-    const clientControllerType = rParams.client?.controller?.type ?? eParams.HEDERAS_CLIENT_CONTROLLER ?? "Hedera";
-    const clientType =  this.clientTypes.getBy({ name : 
-            typeof rParams.client?.type === 'string' ? rParams.client?.type : 
-              eParams.HEDERAS_CLIENT_TYPE ? eParams.HEDERAS_CLIENT_TYPE : "Hedera",
+  private computeWalletSpecsFrom(rParams: RecursivePartial<StratoParameters>, eParams: { [k: string]: string }): WalletRuntimeParameters {
+    const walletControllerDefaultPrivateKey = rParams.wallet?.controller?.default?.operatorKey ?? eParams.HEDERAS_WALLET_CONTROLLER_DEFAULT_PRIVATE_KEY;
+    const walletControllerType = rParams.wallet?.controller?.type ?? eParams.HEDERAS_WALLET_CONTROLLER ?? "Hedera";
+    const walletType =  this.walletTypes.getBy({ 
+      name : typeof rParams.wallet?.type === 'string' ? 
+        rParams.wallet?.type : eParams.HEDERAS_WALLET_TYPE ? eParams.HEDERAS_WALLET_TYPE : "Sdk",
     });
-    const savedState = rParams.client?.savedState ?? eParams.HEDERAS_CLIENT_SAVED_STATE ?? null;
+    const walletWindowPropName = rParams.wallet?.window?.propName ?? eParams.HEDERAS_WALLET_WINDOW_PROPERTY_NAME ?? "hedera";
 
-    if (!this.clientTypes.isKnown(clientType)) {
-      throw new Error("Only 'hedera' client type is currently supported. This is also the default value if not specified.");
+    if (!this.walletTypes.isKnown(walletType)) {
+      throw new Error("Only 'hedera' wallet type is currently supported. This is also the default value if not specified.");
     }
     return {
       controller: {
         default: {
-          operatorKey: clientControllerDefaultPrivateKey,
+          operatorKey: walletControllerDefaultPrivateKey,
         },
-        type: clientControllerType,
+        type: walletControllerType,
       },
-      hedera: {
-        operatorId: rParams.client?.hedera?.operatorId ?? eParams.HEDERAS_OPERATOR_ID,
-        operatorKey: rParams.client?.hedera?.operatorKey ?? eParams.HEDERAS_OPERATOR_KEY,
+      sdk: {
+        operatorId: rParams.wallet?.sdk?.operatorId ?? eParams.HEDERAS_OPERATOR_ID,
+        operatorKey: rParams.wallet?.sdk?.operatorKey ?? eParams.HEDERAS_OPERATOR_KEY,
       },
-      savedState,
-      type: clientType,
+      type: walletType,
+      window: {
+        propName: walletWindowPropName,
+      },
     };
   }
 

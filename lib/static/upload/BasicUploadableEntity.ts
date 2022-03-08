@@ -52,9 +52,9 @@ export abstract class BasicUploadableEntity<T extends LiveEntity<R, I>, R = any,
       args = args.slice(1);
     }
     return this.onFileUploaded({ 
-      session,  
+      args,
       receipt: transactionReceipt,
-      args
+      session,  
     });
   }
 
@@ -71,7 +71,7 @@ export abstract class BasicUploadableEntity<T extends LiveEntity<R, I>, R = any,
     // Start off with a file-create transaction
     fileTransactions.push(new FileCreateTransaction(Object.assign(
       {}, 
-      { keys: [session.publicKey], ...fileCreationOverrides }, 
+      { keys: [session.wallet.account.publicKey], ...fileCreationOverrides }, 
       { contents: content.length > fileChunkSize ? content.slice(0, fileChunkSize) : content }
     )));
 
@@ -87,7 +87,7 @@ export abstract class BasicUploadableEntity<T extends LiveEntity<R, I>, R = any,
     
     return {
       areOverridesProvided: Object.keys(fileCreationOverrides).length !== 0,
-      fileTransactions
+      fileTransactions,
     };
   }
 

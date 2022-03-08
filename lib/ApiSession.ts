@@ -12,7 +12,7 @@ import {
   TransactionReceipt,
   TransactionRecord,
   TransactionRecordQuery,
-  TransactionResponse 
+  TransactionResponse,
 } from '@hashgraph/sdk';
 import { EventEmitter } from "events";
 import { Interface } from '@ethersproject/abi';
@@ -20,26 +20,26 @@ import { Interface } from '@ethersproject/abi';
 import { ContractFunctionCall, LiveContract } from './live/LiveContract';
 import { StratoContext, StratoContextSource, StratoParameters } from "./StratoContext";
 import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
-import { ClientController } from "./client/controller/ClientController";
 import { CreatableEntity } from "./core/CreatableEntity";
 import { HederaNetwork } from './HederaNetwork';
 import { Json } from './static/upload/Json';
 import { LiveEntity } from './live/LiveEntity';
 import { LiveJson } from './live/LiveJson';
 import { RecursivePartial } from "./core/UsefulTypes";
-import { Saver } from "./core/Persistance";
 import { SolidityAddressable } from './core/SolidityAddressable';
-import { StratoClient } from "./client/StratoClient";
 import { StratoLogger } from "./StratoLogger";
+import { StratoWallet } from "./core/wallet/StratoWallet";
 import { Subscription } from "./core/Subscription";
 import { UploadableEntity } from "./core/UploadableEntity";
+import { WalletController } from "./core/wallet/WalletController";
+import { WalletInfo } from './core/wallet/WalletInfo';
 
 type ApiSessionConstructorArgs = {
   ctx: StratoContext,
-  client: StratoClient
+  client: StratoWallet
 };
 type ControlledSession = {
-  controller: ClientController,
+  controller: WalletController,
   session: ApiSession
 };
 type SessionExecutable<R> = Query<R>|Transaction;
@@ -84,8 +84,10 @@ const TRANSACTION_ON_RECEIPT_EVENT_NAME = "__TransactionOnReceiptAvailable_Event
  * Should only be instantiable through the {@link SessionBuilder} or through direct {@link ApiSession} factory methods such as {@link ApiSession.default} (to load from a .env-like file/runtime process.env)
  * or {@link ApiSession.buildFrom} to construct an {@link ApiSession} from a manually-built {@link StratoParametersSource} instance.
  */
-export class ApiSession implements SolidityAddressable, Saver<string> {
+export class ApiSession implements SolidityAddressable {
   /**
+   * TODO: revisit this doc
+   * 
    * Builds and retrieves the default {@link ApiSession} associated with this runtime. There are currently 2 ways of providing the parameters requried for the api-session to be built:
    * - either pass them through the {@param source.env} parameter property (defaults to the `process.env` for node environments) or 
    * - give the path to a [dotenv](https://www.npmjs.com/package/dotenv) like file (defaults to `.env`) from which they are loaded by the library (the {@link source.path} parameter)
@@ -127,18 +129,18 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    * @returns {Promise<ApiSession>}
    */
   public static async buildFrom(ctx: StratoContext): Promise<ControlledSession> {
-    const { client, controller } = await ctx.getClient();
+    const { wallet, controller } = await ctx.getWallet();
 
     return {
       controller,
-      session: new ApiSession(SESSION_CONSTRUCTOR_GUARD, { client, ctx })
+      session: new ApiSession(SESSION_CONSTRUCTOR_GUARD, { client: wallet, ctx }),
     };
   }
 
   private readonly events: EventEmitter;
   public readonly log: StratoLogger;
   public readonly network: HederaNetwork;
-  private readonly client: StratoClient;
+  private readonly client: StratoWallet;
   public readonly defaults: SessionDefaults;
 
   /**
@@ -157,17 +159,10 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 
   /**
-   * Retrieves the operator {@link AccountId} for this {@link ApiSession}.
+   * Retrieves the wallet-info structure portaing both account and current signer info for this {@link ApiSession}.
    */
-  public get accountId() {
-    return this.client.account.id;
-  }
-
-  /**
-   * Retrieves the operator's public-key.
-   */
-  public get publicKey() {
-    return this.client.account.publicKey;
+  public get wallet(): WalletInfo {
+    return this.client;
   }
 
   /**
@@ -243,7 +238,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     return {
       [TypeOfExecutionReturn.Record]: txRecord,
       [TypeOfExecutionReturn.Receipt]: txReceipt,
-      [TypeOfExecutionReturn.Result]: executionResult
+      [TypeOfExecutionReturn.Result]: executionResult,
     }[returnType];
   }
 
@@ -251,7 +246,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    * Retrieves the solidity-address of the underlying {@link AccountId} that's operating this session.
    */
   getSolidityAddress(): string {
-    return this.accountId.toSolidityAddress();
+    return this.wallet.account.id.toSolidityAddress();
   }
 
   /**
@@ -272,9 +267,9 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
       throw new Error("Please provide a valid Hedera contract id in order try to lock onto an already-deployed contract.");
     }
     return new LiveContract({ 
-      session: this,
+      cInterface: abi instanceof Interface ? abi : new Interface(abi),
       id: targetedContractId,
-      cInterface: abi instanceof Interface ? abi : new Interface(abi)
+      session: this,
     });
   }
 
@@ -298,9 +293,9 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     
     // TODO: use file Memo to store hash of file-contents and only return LiveJson instance if the 2 values match
     return new LiveJson({ 
-      session: this,
+      data: JSON.parse(fileContents),
       id: targetedFileId,
-      data: JSON.parse(fileContents)
+      session: this,
     });
   }
 
@@ -313,18 +308,6 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    */
   public subscribeToReceiptsWith(clb: {(receipt: TransactionedReceipt<any>): any}): Subscription<TransactionedReceipt<any>> {
     return new Subscription(this.events, TRANSACTION_ON_RECEIPT_EVENT_NAME, clb);
-  }
-
-  /**
-   * Marshals the current session {@link Client} allowing for it to be restored in the future via the {@link SessionBuilder} if provided back alongside the 
-   * {@link HederaNetwork} and the {@link ClientType}.
-   * 
-   * Note: This API might change in the following, subsequent, releases
-   * 
-   * @returns {string} - a serialized represetantion of the underlying client
-   */
-  public save(): Promise<string> {
-    return this.client.save();
   }
 
   /**
@@ -375,7 +358,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
 
     this.log.info(`Uploading a new ${uploadableWhat.nameOfUpload} to Hedera File Service (HFS).`);
 
-    const createdLiveEntity = await uploadableWhat.uploadTo({ session: this, args });
+    const createdLiveEntity = await uploadableWhat.uploadTo({ args, session: this });
 
     this.log.info(`Successfully created a ${uploadableWhat.nameOfUpload} id ${createdLiveEntity.id}.`);
     return createdLiveEntity;

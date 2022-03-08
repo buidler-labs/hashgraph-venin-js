@@ -62,19 +62,20 @@ export class Token extends BasicCreatableEntity<LiveToken> {
   }
 
   public async createVia({ session }: ArgumentsForCreate): Promise<LiveToken> {
+    const sessionPublicKey = session.wallet.account.publicKey;
     const constructorArgs = {
       // First map to expected properties
-      adminKey: this.info.keys?.admin !== null ? this.info.keys?.admin ?? session.publicKey : undefined,
-      feeScheduleKey: this.info.keys?.feeSchedule !== null ? this.info.keys?.feeSchedule ?? session.publicKey : undefined,
-      freezeKey: this.info.keys?.freeze !== null ? this.info.keys?.freeze ?? session.publicKey : undefined,
-      kycKey: this.info.keys?.kyc !== null ? this.info.keys?.kyc ?? session.publicKey : undefined,
-      pauseKey: this.info.keys?.pause !== null ? this.info.keys?.pause ?? session.publicKey : undefined,
-      supplyKey: this.info.keys?.supply !== null ? this.info.keys?.supply ?? session.publicKey : undefined,
+      adminKey: this.info.keys?.admin !== null ? this.info.keys?.admin ?? sessionPublicKey : undefined,
+      feeScheduleKey: this.info.keys?.feeSchedule !== null ? this.info.keys?.feeSchedule ?? sessionPublicKey : undefined,
+      freezeKey: this.info.keys?.freeze !== null ? this.info.keys?.freeze ?? sessionPublicKey : undefined,
+      kycKey: this.info.keys?.kyc !== null ? this.info.keys?.kyc ?? sessionPublicKey : undefined,
+      pauseKey: this.info.keys?.pause !== null ? this.info.keys?.pause ?? sessionPublicKey : undefined,
+      supplyKey: this.info.keys?.supply !== null ? this.info.keys?.supply ?? sessionPublicKey : undefined,
       tokenName: this.info.name,
       tokenSymbol: this.info.symbol,
       tokenType: this.info.type.hTokenType ?? HederaTokenType.FungibleCommon,
-      treasuryAccountId: session.accountId,
-      wipeKey: this.info.keys?.wipe !== null ? this.info.keys?.wipe ?? session.publicKey : undefined,
+      treasuryAccountId: session.wallet.account.id,
+      wipeKey: this.info.keys?.wipe !== null ? this.info.keys?.wipe ?? sessionPublicKey : undefined,
 
       // Merge everything with what's provided
       ...this.info,

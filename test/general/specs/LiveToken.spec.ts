@@ -37,13 +37,14 @@ describe('LiveToken', () => {
 
   it("getting info of newly created token, info is correct", async () => {
     const info = await liveToken.getLiveEntityInfo();
-    const accPubKey = session.publicKey.toString();
+    const sessionAccount = session.wallet.account;
+    const accPubKey = sessionAccount.publicKey.toString();
     expect(info.adminKey.toString()).toEqual(accPubKey);
     expect(info.supplyKey.toString()).toEqual(accPubKey);
     expect(info.freezeKey.toString()).toEqual(accPubKey);
     expect(info.wipeKey.toString()).toEqual(accPubKey);
     expect(info.pauseKey.toString()).toEqual(accPubKey);
-    expect(info.treasuryAccountId.toString()).toEqual(session.accountId.toString());
+    expect(info.treasuryAccountId.toString()).toEqual(sessionAccount.id.toString());
     expect(info.name).toEqual(defaultTokenFeatures.name);
     expect(info.symbol).toEqual(defaultTokenFeatures.symbol);
     expect(defaultTokenFeatures.type.equals(info.tokenType)).toBeTruthy();

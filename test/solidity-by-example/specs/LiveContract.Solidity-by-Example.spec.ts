@@ -158,7 +158,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     // TODO: activate this once secp is working on Hedera (and available through SDK ?)
     const liveContract = await load('signature');
     const { session } = await ApiSession.default();
-    const signer = session.accountId.toSolidityAddress();
+    const signer = session.wallet.account.id.toSolidityAddress();
     const to = AccountId.fromString('0.0.3').toSolidityAddress();
     const amount = 123;
     const message = "coffee and donuts";

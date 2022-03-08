@@ -1,11 +1,11 @@
 import { AccountId } from "@hashgraph/sdk";
-import { HederaClientAccount } from "../HederaClient";
 import { PrivateKey } from "@hashgraph/sdk";
+
+import { BasicWalletController } from "./BasicWalletController";
+import { HederaClientAccount } from "../local/SdkWallet";
 import { StratoContext } from "../../StratoContext";
 
-import { BasicClientController } from "./BasicClientController";
-
-export class HederaClientController extends BasicClientController<HederaClientAccount> {
+export class HederaWalletController extends BasicWalletController<HederaClientAccount> {
 
   public constructor (ctx: StratoContext) {
     super(ctx);

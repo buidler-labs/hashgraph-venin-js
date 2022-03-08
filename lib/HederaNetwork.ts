@@ -1,14 +1,15 @@
 import { 
   AccountId, 
-  Client
+  Client,
 } from "@hashgraph/sdk";
 import { NetworkName } from "@hashgraph/sdk/lib/client/Client";
 
-import { 
-  HederaNodesAddressBook, 
-  NetworkRuntimeParameters 
-} from "./StratoContext";
 import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
+import { 
+  NetworkRuntimeParameters, 
+} from "./StratoContext";
+
+export type HederaNodesAddressBook = { [key: string]: string | AccountId };
 
 /**
  * The Hedera Network label value used in library configurations (such as the {@link HederaNetwork.defaultApiSession} method) to signify 
@@ -37,7 +38,7 @@ export const AVAILABLE_NETWORK_NAMES = {
   CustomNet: HEDERA_CUSTOM_NET_NAME, 
   MainNet: "mainnet",
   PreviewNet: "previewnet", 
-  TestNet: "testnet"
+  TestNet: "testnet",
 };
 
 export type NetworkDefaults = { 

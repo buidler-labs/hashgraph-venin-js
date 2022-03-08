@@ -23,9 +23,10 @@ Following is a table detailing all the object-parameters along with their enviro
 ## Big table o' parameters
 | Environment Variable | Parameter Property | Required  | Type | Default | Description |
 | ---                  | ---                      | ---  | ---                                  | --- | ---                       |
-| HEDERAS_CLIENT_CONTROLLER_DEFAULT_PRIVATE_KEY | client.controller.default.operatorKey | [^default-operatorKey] | - | - | The private-key used by the operators when switching accounts on a `HederaClient` using a `DefaultPrivateKeyClientController`
-| HEDERAS_CLIENT_CONTROLLER_TYPE | client.controller.type | - | `Hedera`, `DefaultPrivateKey` | `Hedera` | The type of client-controller deployed. It's basically laying out the foundation of wallet-integration since a `controller` can propagate either an account-change or a network change.
-| HEDERAS_CLIENT_TYPE | client.type | No | `Hedera` | `Hedera` | The network-client type used for the underlying session
+| HEDERAS_WALLET_CONTROLLER_DEFAULT_PRIVATE_KEY | wallet.controller.default.operatorKey | [^default-operatorKey] | - | - | The private-key used by the operators when switching accounts on a `Sdk` wallet using a `DefaultPrivateKeyWalletController`
+| HEDERAS_WALLET_CONTROLLER | wallet.controller.type | - | `Hedera`, `DefaultPrivateKey` | `Hedera` | The type of wallet-controller deployed. It's basically laying out the foundation of wallet-integration since a `controller` can propagate either an account-change or a network change.
+| HEDERAS_WALLET_TYPE | wallet.type | No | `Sdk` | `Sdk` | The wallet type used for the underlying session interactions (see [wallets](./guides/wallet.md) guide)
+| HEDERAS_WALLET_WINDOW_PROPERTY_NAME | wallet.window.propName | No | string | `hedera` | When bundling, the property location of the [`HIP-338 compliant` wallet definition](https://hips.hedera.com/hip/hip-338) available on the global, `window` object
 | HEDERAS_CONTRACTS_INCLUDED_PREFIXES | - | No | [^relative-path-prefixes] | `contracts` | The places to search for imported contract paths from within a solidity code. The contract's parent folder is the first one being searched, followed by the project's `node_modules` and then, if nothing matches, the rest of the included prefixes are looked at in the order in which they are defined
 | HEDERAS_CONTRACTS_RELATIVE_PATH | - | No | path | `contracts` | The name of the folder relative to the project root directory where all the solidity contracts are expected to reside. This is used when Strato is doing the contract compiling of a given relative-pathed contract
 | HEDERAS_DEFAULT_CONTRACT_CREATION_GAS      | session.defaults.contractCreationGas             | No  | number  | 150000     | The default amount spent for creating a contract on the network
@@ -35,20 +36,19 @@ Following is a table detailing all the object-parameters along with their enviro
 | HEDERAS_DEFAULT_PAYMENT_FOR_CONTRACT_QUERY      | session.defaults.paymentForContractQuery    | No  | number  | 1000000  | The default amount of tinybars payed for doing a contract query call. ~~If not specified, relies on an upper limit given by the Hedera's SDK which is, currently, 1ℏ~~ ( might change in the future, see [#11](https://github.com/buidler-labs/hedera-strato-js/issues/11) )
 | HEDERAS_NETWORK      | network.name             | Yes  | `previewnet`, `testnet`, `mainnet`, `customnet` | -   | The network profile to use
 | HEDERAS_NODES | network.nodes | [^customnet-hedera-network] | [^customnet-nodes] | - | A condensed address-book representation of the network nodes (see[^customnet-nodes])
-| HEDERAS_OPERATOR_ID  | client.hedera.operatorId | [^client-type-hedera] | - | - | The account-id of the operator running a `HederaClient`
-| HEDERAS_OPERATOR_KEY | client.hedera.operatorKey | [^client-type-hedera] | - | - | The operator private-key of the operator running a `HederaClient`
+| HEDERAS_OPERATOR_ID  | wallet.hedera.operatorId | [^wallet-type-hedera] | - | - | The account-id of the operator running a `Sdk` wallet
+| HEDERAS_OPERATOR_KEY | wallet.hedera.operatorKey | [^wallet-type-hedera] | - | - | The operator private-key of the operator running a `Sdk` wallet
 | HEDERAS_LOGGER_LEVEL | logger.level | No | `error`, `warn`, `info`, `verbose`, `debug`, `silly` | `info` | The logger sensitivity [^winston-logger-github]
 | HEDERAS_LOGGER_ENABLED | logger.enabled | No | boolean | `false` | `true` to enable the logger, `false` otherwise
-| HEDERAS_CLIENT_SAVED_STATE | client.saved | No | base64 string | - | Used to recover a previous ongoing session with the purpose of some day having some sort of wallet token here to work with. Can be obtained via a `ApiSession.save()` call
 | HEDERAS_ENV_PATH | - | No | path | `.env` | The path of the `.env` like file used to source the config parameters from
 
 <!-- Be careful with the order of the generated footnotes! Rendering them always maintains the same order and markdown has to be aligned with this otherwise the reference links won't work -->
 [^winston-logger-github]: see https://github.com/winstonjs/winston#logging
-[^client-type-hedera]: required if `HEDERAS_CLIENT_TYPE`/`client.type` is `Hedera` (the default)
+[^wallet-type-hedera]: required if `HEDERAS_WALLET_TYPE`/`wallet.type` is `Sdk` (the default)
 [^customnet-nodes]: a comma separated string of node-network addreses having the following format : `<ip>:<port>#<account_id>` eg `127.0.0.2:52111#3` to make an address-book of one node located at `127.0.0.1`, port `52111` having account-id `0.0.3` 
 [^customnet-hedera-network]: required if `HEDERAS_NETWORK`/`network.name` is `customnet`
 [^relative-path-prefixes]: a comma separated list of relative folder paths to look at when importing a relative solidity contract-file from within one of the contracts that we wish to compile
-[^default-operatorKey]: required if `HEDERAS_CLIENT_CONTROLLER_TYPE` is `DefaultPrivateKey`
+[^default-operatorKey]: required if `HEDERAS_WALLET_CONTROLLER_TYPE` is `DefaultPrivateKey`
 
 ## Parameters resolution
 The default context parameters are being resolved in the following order:

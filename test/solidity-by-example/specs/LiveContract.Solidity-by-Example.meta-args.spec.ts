@@ -18,8 +18,8 @@ describe('LiveContract.Solidity-by-Example.meta-arguments', () => {
     const metaArgs = {
       gas: 50_969,
       maxQueryPayment: new Hbar(1),
-      paymentTransactionId: TransactionId.generate(liveContract.session.accountId),
-      queryPayment: new Hbar(2)
+      paymentTransactionId: TransactionId.generate(liveContract.session.wallet.account.id),
+      queryPayment: new Hbar(2),
     };
 
     // Do the actual live-contract query passing in the meta-arguments
@@ -43,9 +43,9 @@ describe('LiveContract.Solidity-by-Example.meta-arguments', () => {
     const metaArgs = {
         amount: new Hbar(42),
         maxTransactionFee: new Hbar(2),
-        transactionId: TransactionId.generate(liveContract.session.accountId),
+        transactionId: TransactionId.generate(liveContract.session.wallet.account.id),
         transactionMemo: "Custom memo",
-        transactionValidDuration: 69
+        transactionValidDuration: 69,
     };
 
     // When

@@ -44,7 +44,7 @@ describe('LiveAccount', () => {
     const account = await session.create(new Account());
 
     const transaction = new TransferTransaction()
-      .setTransactionId(TransactionId.generate(session.accountId))
+      .setTransactionId(TransactionId.generate(session.wallet.account.id))
       .setNodeAccountIds([new AccountId(2)])
       .freeze();
 
