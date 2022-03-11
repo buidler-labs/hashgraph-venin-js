@@ -20,9 +20,23 @@ console.log(`Wallet account id used: ${session.wallet.account.id.toString()}`);
 console.log(`Json is stored at ${liveJson.id.toString()}`);
 console.log(`The answer is: ${liveJson.theAnswer}`);
 ```
+:::note
+We need here to intentionally specify the `{ wallet: { type: 'Browser' } }` object argument to `ApiSession.default` otherwise, [fallowing normal parameters resolution](../configuration.md#parameters-resolution), the strato bundle would have defaulted to using the implicit `Sdk` wallet type. This is actually the case for other live-code edits present on other pages.
+:::
 
 ## Under the hood
-### Hedera's [SDK implementation](https://github.com/hashgraph/hedera-sdk-js/pull/960)mersi Ș-
+### Hedera's [SDK implementation](https://github.com/hashgraph/hedera-sdk-js/pull/960)
+A `LocalWallet` and a `LocalProvider` have been developed by Hedera to wrap the traditional `Client` account-operated instance. As of `hedera-sdk-js`'s `v2.11.0`, the only way to instantiate such a wallet is through the following environmental variables:
+
+| Variable | Description |
+| ---      | ---         |
+| HEDERA_NETWORK | The name of the official[^local-provider-hedera-network] network used by this wallet instance. Can be one of: `testnet`, `previewnet` or `mainnet` |
+| OPERATOR_ID | The `AccountId` of the operator paying for the wallet's transactions |
+| OPERATOR_KEY | The operator's private key |
+
+[^local-provider-hedera-network]: as of `v2.11.0` of the `hedera-sdk-js`, custom network definitions (such as local ones) are not supported. 
+
+Following is a architecture diagram portaing the initial wallet-signer-provider implementation:
 
 ```mermaid
  classDiagram
@@ -85,10 +99,29 @@ console.log(`The answer is: ${liveJson.theAnswer}`);
   }
 ```
 
+A couple of sumarizing points here:
+* `Wallet` is an interface extending a `Signer` and having a `Provider` associated. It's basically the _glue_ that ties everything up
+* As such `Wallet`s are the objects that are meant to be hooked into in order to operate a Hedera session
+* The associated wallet account id information is something bound to the `Wallet` and made available through the `Signer` interface
+* `Provider`s should only bridge the implementation with the data-source (which is most likely network based)
+* `Provider`s should not have hard-coded account-ids on their instance and should, with respect to this data, be stateless 
+
+For a more detailed analysis, please have a [look at the original HIP](https://hips.hedera.com/hip/hip-338).
+
 ### Strato's take
 :::caution
 This feature is currently in active development. As such, it is verry likely that the final API, once the stable release hits the streets, will differ.
 :::
+
+Based on the original HIP-338 proposal, we went on and simplified the overall `Wallet` interface to a `StratoWallet` which only currently knows 2 operations: 
+* executing `Transaction`s and `Query`s
+* getting a `TransactionReceipt` for a `TransactionResponse` 
+
+:::note
+`Sign`-ing mechanics are still being designed and considered and will probably see the light of day in a future release.
+:::
+
+We then extracted away the `Signer` query calls and isolated them into their own `SignerInfo` interface. `WalletInfo` glues everything up nicely and is made available on every session at `ApiSession.wallet`.
 
 ```mermaid
  classDiagram
@@ -120,3 +153,14 @@ This feature is currently in active development. As such, it is verry likely tha
     +getReceipt(TransactionResponse) Promise(TransactionReceipt)
   }
 ```
+
+## Configuring
+As seen above, there are currently 2 types of `wallet` backends:
+* a, default, `Sdk` one which uses a reimplemented version of Hedera's `LocalWallet` and `LocalProvider` to also work with `customnet` networks
+* a `Browser` one which, when selected, looks at a global `window.hedera` object and uses that as the `Wallet` sync for all transactions of that particular session
+
+:::note
+For `Browser` wallets, property names can be changed via the `HEDERAS_WALLET_WINDOW_PROPERTY_NAME`/`wallet.window.propName` config.
+:::
+
+The code for the HashPack HIP-338 wallet-bridge used in this page can be [found here](https://github.com/buidler-labs/hedera-strato-js/tree/va/hip-338/lib.docs/src/hashconnect). In the future, this will most likely be contained within the hashconnect codebase for abvious reasons.
