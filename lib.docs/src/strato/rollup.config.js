@@ -25,10 +25,14 @@ function getPathOf(file) {
 export default async function getConfig() {
   return {
     context: 'window',
+    external: [ '@hashgraph/sdk' ],
     input: './lib/index.ts',
     output: [ {
-      file: getPathOf('./lib.esm/hedera-strato.js'),
+      file: getPathOf('../../static/js/hedera-strato.js'),
       format: 'esm',
+      paths: {
+        '@hashgraph/sdk': '/js/hashgraph-sdk.js',
+      },
       plugins: [terser()],
       sourcemap: true,
     } ],

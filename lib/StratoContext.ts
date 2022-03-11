@@ -153,7 +153,7 @@ export class StratoContext {
     const walletWindowPropName = rParams.wallet?.window?.propName ?? eParams.HEDERAS_WALLET_WINDOW_PROPERTY_NAME ?? "hedera";
 
     if (!this.walletTypes.isKnown(walletType)) {
-      throw new Error("Only 'hedera' wallet type is currently supported. This is also the default value if not specified.");
+      throw new Error("Only 'Sdk' and 'Browser' wallet types are currently supported. If not specified, it defaults to 'Sdk'.");
     }
     return {
       controller: {

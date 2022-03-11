@@ -4,7 +4,7 @@ id: introduction
 title: 👋 Welcome to Strato! 🌌
 ---
 
-<p align="center">
+<div align="center">
 
   ![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hedera-strato-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
   [![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hedera-strato-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hedera-strato-js)
@@ -15,7 +15,7 @@ title: 👋 Welcome to Strato! 🌌
   ![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square)
   
   [![NPM](https://nodei.co/npm/@buidlerlabs/hedera-strato-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-strato-js/)
-</p>
+</div>
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -35,7 +35,7 @@ This project is not an official Hedera project and, as such, it is not affiliate
 
 Please keep in mind that, although core features are extensively tested and appear to be working, this is still currently under _heavy-active_ development and, as such, we don't recommend this just yet for production use. The API is also very likely to change before we reach there!
 
-Having said that, we will continue to use it "as is" in production even at this initial stage just because we can and are quick to solve any issues that we might encounter.
+Having said that, we will continue to use it "as is" in production even in this initial stage just because we can and are quick to solve any issues that we might encounter.
 
 :::
 

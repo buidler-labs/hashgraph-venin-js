@@ -29,6 +29,10 @@ module.exports = {
       label: "Bundling",
       type: 'doc',
     }, {
+      id: 'markdown/guides/wallet',
+      label: "Wallet",
+      type: 'doc',
+    }, {
       id: 'markdown/guides/session',
       label: "Session",
       type: 'doc',

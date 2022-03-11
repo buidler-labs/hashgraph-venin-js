@@ -3,11 +3,11 @@ import { StratoContext } from "../StratoContext";
 import { WalletControllerEvents } from "../core/wallet/WalletController";
 import { WalletProvider } from "./WalletProvider";
 
-export type WindowWalletColdStartData = { 
+export type BrowserWalletColdStartData = { 
   propName: string
 };
 
-export class WindowWalletProvider extends WalletProvider<WindowWallet, WindowWalletColdStartData> {
+export class BrowserWalletProvider extends WalletProvider<BrowserWallet, BrowserWalletColdStartData> {
 
   public constructor(
       ctx: StratoContext,
@@ -15,12 +15,12 @@ export class WindowWalletProvider extends WalletProvider<WindowWallet, WindowWal
     super(ctx);
   }
 
-  protected override async _buildCold(data: WindowWalletColdStartData): Promise<WindowWallet> {
-    return new WindowWallet(this.controller, data.propName);
+  protected override async _buildCold(data: BrowserWalletColdStartData): Promise<BrowserWallet> {
+    return new BrowserWallet(this.controller, data.propName);
   }
 }
 
-class WindowWallet extends BasicStratoWallet {
+class BrowserWallet extends BasicStratoWallet {
   public constructor(
       controller: WalletControllerEvents,
       windowPropName: string,

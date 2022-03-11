@@ -3,11 +3,11 @@ import { AccountId, PrivateKey } from "@hashgraph/sdk";
 import { NotSupportedWalletProvider, WalletProvider } from "./WalletProvider";
 import { StratoContext, StratoParameters } from "../StratoContext";
 import { WalletController, WalletControllerEvents } from "../core/wallet/WalletController";
+import { BrowserWalletProvider } from './BrowserWallet';
 import { CredentialsInvalidError } from "../errors/CredentialsInvalidError";
 import { HederaLocalWalletProvider } from "./local/SdkWallet";
 import { HederaWalletController } from "./controller/HederaWalletController";
 import { ImpotentWalletController } from "./controller/ImpotentWalletController";
-import { WindowWalletProvider } from './WindowWallet';
 
 const WALLET_TYPE_CONSTRUCTOR_GUARD = {};
 
@@ -51,9 +51,9 @@ export class WalletTypes {
         }
       ),
       new WalletType(WALLET_TYPE_CONSTRUCTOR_GUARD,
-        "Window",
+        "Browser",
         ImpotentWalletController,               // No WalletController
-        WindowWalletProvider,                   // Associated WalletProvider
+        BrowserWalletProvider,                   // Associated WalletProvider
         params => {                             // ColdStart options parser for pre-configured runtime parameters
           return {
             propName: params.wallet.window.propName,
