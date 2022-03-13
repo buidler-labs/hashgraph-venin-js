@@ -18,6 +18,10 @@ import { EventEmitter } from "events";
 import { Interface } from '@ethersproject/abi';
 
 import { ContractFunctionCall, LiveContract } from './live/LiveContract';
+import { 
+  Promised, 
+  RecursivePartial, 
+} from "./core/UsefulTypes";
 import { StratoContext, StratoContextSource, StratoParameters } from "./StratoContext";
 import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
 import { CreatableEntity } from "./core/CreatableEntity";
@@ -25,7 +29,6 @@ import { HederaNetwork } from './HederaNetwork';
 import { Json } from './static/upload/Json';
 import { LiveEntity } from './live/LiveEntity';
 import { LiveJson } from './live/LiveJson';
-import { RecursivePartial } from "./core/UsefulTypes";
 import { SolidityAddressable } from './core/SolidityAddressable';
 import { StratoLogger } from "./StratoLogger";
 import { StratoWallet } from "./core/wallet/StratoWallet";
@@ -255,11 +258,13 @@ export class ApiSession implements SolidityAddressable {
    * 
    * @param {object} options
    * @param {ContractId|string} options.id - the {@link ContractId} to load being it string-serialized or already parsed
-   * @param {Interface|Array} options.abi - either the [etherjs contract interface](https://docs.ethers.io/v5/api/utils/abi/interface/) or the [etherjs Interface compatible ABI 
-   *                                        definitions](https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--creating) to use with the resulting live-contract
+   * @param {Promised<Interface>|Promised<Array>} options.abi - either the [etherjs contract interface](https://docs.ethers.io/v5/api/utils/abi/interface/) or 
+   *                                                            the [etherjs Interface compatible ABI definitions](https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--creating) 
+   *                                                            to use with the resulting live-contract. Promises that resolve to any of these 2 types are also accepted.
    */
-  public async getLiveContract({ id, abi = [] }: { id: ContractId|string, abi?: Interface|any[] }): Promise<LiveContract> {
+  public async getLiveContract({ id, abi = [] }: { id: ContractId|string, abi?: Promised<Interface>|Promised<any[]> }): Promise<LiveContract> {
     let targetedContractId: ContractId;
+    const resolutedAbi = await abi;
 
     try {
       targetedContractId = id instanceof ContractId ? id : ContractId.fromString(id)
@@ -267,7 +272,7 @@ export class ApiSession implements SolidityAddressable {
       throw new Error("Please provide a valid Hedera contract id in order try to lock onto an already-deployed contract.");
     }
     return new LiveContract({ 
-      cInterface: abi instanceof Interface ? abi : new Interface(abi),
+      cInterface: resolutedAbi instanceof Interface ? resolutedAbi : new Interface(resolutedAbi),
       id: targetedContractId,
       session: this,
     });

@@ -144,6 +144,8 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
       throw new Error("Please provide a name for the Contract instance.");
     } else if(!abi) {
       throw new Error("Please provide a, valid, EthersProject-compatible, ABI definition for the Contract instance.");
+    } else if(!byteCode || /.*__\$.*\$__.*/.test(byteCode)) {
+      throw new Error("Library linking is not currently supported. Please follow issue #38 for more info.");
     } else if(!byteCode || !/^[0-9a-f]+$/.test(byteCode)) {
       throw new Error("Please provide the valid formatted byte-code definition for the Contract in order to instantiate it.");
     }

@@ -1,12 +1,33 @@
 import {
   describe, expect, it,
 } from '@jest/globals';
+import {
+  AccountId,
+} from '@hashgraph/sdk';
+
 import { load, read } from "../../utils";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 import { LiveAddress } from "../../../lib/live/LiveAddress";
 
 describe('LiveAddress', () => {
+  it("given an all-caps address, the resulting LiveAddress id should be lower-capsed, matching hedera's toSolidityAddress behaviour", async () => {
+    const { session } = await ApiSession.default();
+    const allUperCasedAddress = "0000000000000000000000000000000000000ABC";
+    const liveAddress = new LiveAddress({ address: allUperCasedAddress, session: session });
+
+    expect(liveAddress.id).toEqual(allUperCasedAddress.toLowerCase());
+    expect(liveAddress.equals(allUperCasedAddress)).toBeTruthy();
+  });
+
+  it("given an all-caps address belonging to an AccountId, equal-ing the resulting LiveAddress to that AccountId should result in a match", async () => {
+    const { session } = await ApiSession.default();
+    const allUperCasedAddress = "0000000000000000000000000000000000000ABC";
+    const accountId = AccountId.fromSolidityAddress(allUperCasedAddress);
+    const liveAddress = new LiveAddress({ address: allUperCasedAddress, session: session });
+
+    expect(liveAddress.equals(accountId)).toBeTruthy();
+  });
 
   it("a bytes32 return value should not be interpreted as a LiveAddress", async () => {
     const liveContract = await load('keccak256');
@@ -27,7 +48,7 @@ describe('LiveAddress', () => {
     const contract = await Contract.newFrom({ code: read({ contract: 'naive_owner_check' }) });
     const liveContract = await session.upload(contract);
 
-    const liveAddress = new LiveAddress({ session, address: liveContract.id.toSolidityAddress() });
+    const liveAddress = new LiveAddress({ address: liveContract.id.toSolidityAddress(), session });
 
     const liveContractFromLiveAddress = await liveAddress.toLiveContract(contract.interface);
 
