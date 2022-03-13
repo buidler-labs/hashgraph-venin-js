@@ -7,6 +7,9 @@ import nacl from "tweetnacl";
 
 import { ApiSession } from '../lib/ApiSession';
 import { Contract } from '../lib/static/upload/Contract';
+import { 
+  ContractRegistry, 
+} from '../lib/ContractRegistry';
 import { KeyType } from '../lib/static/create/Account';
 import { LiveContract } from '../lib/live/LiveContract';
 
@@ -29,6 +32,12 @@ export async function load(liveContractPath: string, relativeTo = 'general'): Pr
   const sbeContract = await Contract.newFrom({ code: read({ contract: liveContractPath, relativeTo }) });
   
   return await session.upload(sbeContract);
+}
+
+export function loadContractRegistry(relativeTo = 'general', recurse = true): ContractRegistry {
+  const contractsPath = path.join(__dirname, `${relativeTo}/contracts`);
+
+  return new ContractRegistry(contractsPath, recurse);
 }
 
 export function getKeyTypeFor(privateKey: PrivateKey): KeyType {

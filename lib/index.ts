@@ -1,8 +1,13 @@
-export * from './index.native';
+export * from './ApiSession';
+export * from './HederaNetwork';
+export * from './live/LiveAccount';
+export * from './live/LiveContract';
+export * from './live/LiveJson';
+export * from './live/LiveToken';
+export * from './static/upload/Contract';
+export * from './static/upload/Json';
+export * from './static/create/Account';
+export * from './static/create/Token';
 
-// ContractRegistry is a synthetic object which is generated at bundle-time
-// see: https://github.com/buidler-labs/hedera-strato-js/issues/22
-//
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// Miscelaneous exports
 export { default as ContractRegistry } from './ContractRegistry';

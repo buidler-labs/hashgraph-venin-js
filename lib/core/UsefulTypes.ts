@@ -10,3 +10,8 @@ export type RecursivePartial<T> = {
     T[P] extends object ? RecursivePartial<T[P]> :
     T[P];
 };
+
+/** 
+ * A value which could either be it or a promise to it.
+ */
+export type Promised<T> = T | Promise<T>;
