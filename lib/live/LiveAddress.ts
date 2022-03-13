@@ -1,4 +1,4 @@
-import { ContractId } from "@hashgraph/sdk";
+import { AccountId, ContractId } from "@hashgraph/sdk";
 import { Interface } from "@ethersproject/abi";
 
 import { SolidityAddressable, extractSolidityAddressFrom } from "../core/SolidityAddressable";
@@ -13,7 +13,8 @@ export class LiveAddress extends LiveEntity<string, void> implements SolidityAdd
     if (!matchedSolidityAddress) {
       throw new Error(`The provided address '${addr}' does not appear to be a valid Solidity address.`);
     }
-    return matchedSolidityAddress;
+    // We're lower-caseing this to match Hedera's ".toSolidityAddress" behaviour for consistency
+    return matchedSolidityAddress.toLowerCase();
   }
 
   public constructor({ session, address }: { session: ApiSession, address: string }) {
@@ -31,7 +32,8 @@ export class LiveAddress extends LiveEntity<string, void> implements SolidityAdd
   }
 
   protected override _equals<R>(other: R): boolean {
-    return typeof other === 'string' ? extractSolidityAddressFrom(other) === this.id : false;
+    return typeof other === 'string' ? extractSolidityAddressFrom(other).toLocaleLowerCase() === this.id : 
+      other instanceof AccountId ? other.toSolidityAddress() === this.id : false;
   }
 
   public getLiveEntityInfo(): Promise<void> {

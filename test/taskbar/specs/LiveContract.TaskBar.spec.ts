@@ -7,7 +7,7 @@ import { arrayify } from '@ethersproject/bytes';
 
 import { 
   ResourceReadOptions, 
-  read as readResource
+  read as readResource,
 } from "../../utils";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
@@ -46,7 +46,7 @@ describe('LiveContract.TaskBar', () => {
     );
     expect(gottenTask.disputionTime).not.toBeUndefined();
     expect(gottenTask.needer).toBeInstanceOf(LiveEntity);
-    expect(gottenTask.needer.equals(session.accountId.toSolidityAddress())).toBeTruthy();
+    expect(gottenTask.needer.equals(session.accountId)).toBeTruthy();
     expect(gottenTask.tasker).toBeInstanceOf(LiveEntity);
     expect(gottenTask.tasker.equals("0x0000000000000000000000000000000000000000")).toBeTruthy();
     expect(gottenTask).toMatchObject({
