@@ -42,6 +42,11 @@ module.exports = async function () {
           },
           googleAnalytics: false,
           gtag: false,
+          theme: {
+            customCss: [
+              path.resolve(__dirname, 'static/css/theme.css'),
+            ],
+          },
         },
       ],
     ],
@@ -82,10 +87,11 @@ module.exports = async function () {
             position: 'left',
           },
           {
+            'aria-label': 'GitHub repository',
+            className: 'header-github-link',
             href: 'https://github.com/buidler-labs/hedera-strato-js',
-            label: 'GitHub',
             position: 'right',
-          }
+          },
         ],
       },
       prism: {
