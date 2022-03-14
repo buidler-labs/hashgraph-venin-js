@@ -34,7 +34,11 @@ export abstract class BasicUploadableEntity<T extends LiveEntity<R, I>, R = any,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async uploadTo({ session, args = [] }: ArgumentsForUpload): Promise<T> {
     const whatToUpload = await this.getContent();
-    const { areOverridesProvided, fileTransactions } = await this._getFileTransactionsFor({ content: whatToUpload, session, args });
+    const { 
+      appendTxCount, 
+      areOverridesProvided, 
+      fileTransactions, 
+    } = await this._getFileTransactionsFor({ args, content: whatToUpload, session });
     const transactionReceipt = await session.execute(fileTransactions[0], TypeOfExecutionReturn.Receipt, true);
 
     if (transactionReceipt.status !== Status.Success) {
@@ -42,7 +46,7 @@ export abstract class BasicUploadableEntity<T extends LiveEntity<R, I>, R = any,
     } else {
       session.log.debug(`Uploaded content to HFS resulting in file id ${transactionReceipt.fileId}`);
       if (fileTransactions.length > 1 && fileTransactions[1] instanceof FileAppendTransaction) {
-        session.log.debug(`Appending the remaining content with a total of ${fileTransactions.length - 1} file-append transactions.`);
+        session.log.debug(`Appending the remaining content with a total of ${appendTxCount} file-append transactions.`);
         await session.execute(fileTransactions[1].setFileId(transactionReceipt.fileId), TypeOfExecutionReturn.Result, true);
         session.log.verbose(`Done appending. Content has been successfully uploaded and is available at HFS id ${transactionReceipt.fileId}`);
       }
@@ -76,18 +80,21 @@ export abstract class BasicUploadableEntity<T extends LiveEntity<R, I>, R = any,
     )));
 
     // Add, if necessary, other file-append transactions to consume the rest of the chunks
+    let maxChunks = 0;
     if (content.length > fileChunkSize) {
       const contentToAppend = content.slice(fileChunkSize);
+      maxChunks = Math.ceil(contentToAppend.length / fileChunkSize);
 
       fileTransactions.push(new FileAppendTransaction({
         contents: contentToAppend,
-        maxChunks: Math.ceil(contentToAppend.length / fileChunkSize)
+        maxChunks,
       }));
     }
     
     return {
+      appendTxCount: maxChunks,
       areOverridesProvided: Object.keys(fileCreationOverrides).length !== 0,
-      fileTransactions
+      fileTransactions,
     };
   }
 
