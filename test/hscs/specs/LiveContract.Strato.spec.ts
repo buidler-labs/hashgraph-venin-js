@@ -69,7 +69,7 @@ describe('LiveContract.Strato', () => {
 
     // When
     await liveToken.assignSupplyControlTo(liveContract);
-    const serialNumbers = await liveContract.mintNonFungibleToken({ gas: GasFees.mintToken }, ["ipfs-hash"]);
+    const serialNumbers = await liveContract.mintNonFungibleToken({ gas: GasFees.mintToken }, [Buffer.from("ipfs-hash")]);
     await liveContract.transferNFT({ gas: GasFees.transferToken }, aliceLiveAccount, serialNumbers[0].toNumber());
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
@@ -94,7 +94,11 @@ describe('LiveContract.Strato', () => {
 
     // When
     await liveToken.assignSupplyControlTo(liveContract);
-    const serialNumbers = await liveContract.mintNonFungibleToken({ gas: GasFees.mintToken }, ["ipfs-hash", "another-ipfs-hash"]);
+    const serialNumbers = await liveContract.mintNonFungibleToken(
+      { gas: GasFees.mintToken }, 
+      [Buffer.from("ipfs-hash"), Buffer.from("another-ipfs-hash")]
+    );
+
     await liveContract.transferNFTs({ gas: GasFees.transferToken }, [aliceLiveAccount, benLiveAccount], [serialNumbers[0].toNumber(), serialNumbers[1].toNumber()]);
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();

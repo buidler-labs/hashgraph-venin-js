@@ -1,6 +1,6 @@
 import { ContractExecuteTransaction, ContractFunctionParameters, Hbar, PrivateKey } from "@hashgraph/sdk";
 import {
-  describe, expect, it
+  describe, expect, it,
 } from '@jest/globals';
 
 import { GasFees, defaultNonFungibleTokenFeatures } from "../../constants";
@@ -71,7 +71,7 @@ describe('LiveContract.NFTShop', () => {
   it("Given an NFT Shop, treasury is able to mint for user", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
-    const metadata = "Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy";
+    const metadata = Buffer.from("Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy");
 
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const token = new Token(defaultNonFungibleTokenFeatures);
@@ -103,7 +103,7 @@ describe('LiveContract.NFTShop', () => {
     const serialNumbers = await liveContract.mint(
       {
         amount: new Hbar(nftPrice.toBigNumber().toNumber() * amountToMint),
-        gas: 1_500_000
+        gas: 1_500_000,
       },
       aliceLiveAccount,
       amountToMint

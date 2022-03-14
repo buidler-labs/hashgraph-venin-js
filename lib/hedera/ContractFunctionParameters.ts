@@ -1,5 +1,6 @@
 import { ConstructorFragment, FunctionFragment } from "@ethersproject/abi";
 import BigNumber from "bignumber.js";
+import { arrayify } from "@ethersproject/bytes";
 
 import { Hbar, ContractFunctionParameters as HederaContractFunctionParameters } from "@hashgraph/sdk";
 
@@ -21,6 +22,9 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
       throw new ContractFunctionParametersParser(`The contract expects ${fDescription.inputs.length} arguments yet ${args.length} were provided.`);
     }
 
+    const applyTransformationToArg = (argument: any, transformArg: (arg: any) => any) => 
+      Array.isArray(argument) ? argument.map(transformArg) : transformArg(argument)
+    
     const toReturn = new ContractFunctionParameters();
 
     for (const id in args) {
@@ -31,11 +35,10 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
 
       if (fInputDescription.type.startsWith('address')) {
         const considerMappingSolidityAddressableToAddress = (arg: any): string => isSolidityAddressable(arg) ? arg.getSolidityAddress() : arg;
-        if (Array.isArray(argToAdd)) {
-          argToAdd = argToAdd.map(considerMappingSolidityAddressableToAddress);
-        } else {
-          argToAdd = considerMappingSolidityAddressableToAddress(argToAdd);
-        }
+        argToAdd = applyTransformationToArg(argToAdd, considerMappingSolidityAddressableToAddress);
+      } else if (fInputDescription.type.startsWith('bytes') && !(argToAdd instanceof Uint8Array)) {
+        const considerArrayifying = (arg: any): Uint8Array => arrayify(arg);
+        argToAdd = applyTransformationToArg(argToAdd, considerArrayifying);
       } else if (shouldUseBigNumbers) {
         const toBigNumber = (arg: any): BigNumber => {
           if(arg instanceof Hbar) {
@@ -43,11 +46,7 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
           }
           return arg instanceof BigNumber ? arg : new BigNumber(arg);
         }
-        if (Array.isArray(argToAdd)) {
-          argToAdd = argToAdd.map(toBigNumber);
-        } else {
-          argToAdd = toBigNumber(argToAdd);
-        }
+        argToAdd = applyTransformationToArg(argToAdd, toBigNumber);
       }
       toReturn[fctCallName](argToAdd);
     }

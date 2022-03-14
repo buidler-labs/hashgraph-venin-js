@@ -79,4 +79,14 @@ describe('LiveContract', () => {
     expect(spiedReceiptCallback.mock.calls.length).toBe(1);
     expect((spiedReceiptCallback.mock.calls[0][0] as any).transaction).toBeInstanceOf(ContractExecuteTransaction);
   });
+
+  it("calling a live contract method containing bytes32 as a parameter, calling the contract with a hex string is successful", async () => {
+    const { session } = await ApiSession.default();
+    const bytesContract = await Contract.newFrom({ code: read({ contract: 'bytes' }) });
+    const liveContract = await session.upload(bytesContract);
+
+    const testedHexString = "0x252ea5c5f95e9085d1cd6b85f35a83a2df722cd5e0c7609b5205a36076a61b14";
+
+    await expect(liveContract.setBytes32(testedHexString)).resolves.not.toThrow();
+  })
 });
