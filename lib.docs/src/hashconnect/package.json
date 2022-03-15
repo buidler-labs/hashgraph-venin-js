@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "hashconnect": "^0.1.2"
+    "hashconnect": "^0.1.3"
   }
 }

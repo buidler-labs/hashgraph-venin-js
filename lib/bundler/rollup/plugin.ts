@@ -119,7 +119,7 @@ async function getSolFiles(path: string, recurse = false) {
   try {
     filesInPath = await fs.readdir(path, { withFileTypes: true });
   } catch(e) {
-    console.warn(`Could not read contracts from '${path}': ${e.message} Skipping ...`);
+    console.warn(`StratoRollup - Could not read contracts from '${path}': ${e.message} Skipping ...`);
   }
 
   const solFilesInPath = filesInPath.filter(potentialSolFile => potentialSolFile.isFile() && potentialSolFile.name.endsWith(".sol"));

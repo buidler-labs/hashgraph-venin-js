@@ -20,11 +20,6 @@ export class HashConnectSender {
       topic: this.topicId,
     };
     
-    return new Promise<MessageTypes.TransactionResponse>(accept => {
-      this.hashConnect.transactionResponseEvent.once((response) => {
-        accept(response);
-      });
-      this.hashConnect.sendTransaction(this.topicId, transaction);
-    });
+    return this.hashConnect.sendTransaction(this.topicId, transaction);
   }
 }

@@ -8,6 +8,7 @@ import {
   Client,
   Provider,
   PublicKey,
+  Query,
   SignerSignature,
   Transaction,
   TransactionId,
@@ -115,6 +116,7 @@ export class HashPackWallet extends Wallet {
     const hcSender = new HashConnectSender(hashConnect, topicId);
 
     this.client = Client.forName(networkName);
+    this.client.setOperator('0.0.2908307', '302e020100300506032b657004220420261b8e33bc1c3258ce166b8577548462149b422f60f699495eef744368808dee');
     this.accountId = accountId;
     this.accountKey = accountKey;
     this.provider = new HashConnectProvider(hcSender, networkName);
@@ -189,11 +191,21 @@ export class HashPackWallet extends Wallet {
   }
 
   async sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
-    request._setOperatorWith(this.accountId, this.accountKey, this.signer.sign);
-    if (request instanceof Transaction) {
+    const shouldForwardToExtension = request instanceof Transaction;
+    
+    // Prepare request for most use-cases which will end up being routed to the browser wallet
+    if (shouldForwardToExtension) {
       this.populateTransaction(request);
       request.freezeWith(this.client);
+      request._setOperatorWith(this.accountId, this.accountKey, this.signer.sign);
+
+      return this.provider.sendRequest(request as Executable<RequestT, ResponseT, OutputT>);
     }
-    return this.provider.sendRequest(request);
+
+    // Transaction is not supported by provider/extension link
+    if (request instanceof Query) {
+      return request.execute(this.client);
+    }
+    return Promise.reject("Request is not yet supported by this wallet.");
   }
 }

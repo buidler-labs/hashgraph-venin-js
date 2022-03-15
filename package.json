@@ -23,6 +23,7 @@
   "module": "./lib.esm/index.js",
   "name": "@buidlerlabs/hedera-strato-js",
   "scripts": {
+    "build:4-publish": "run-s build:cjs build:esm build:declarations",
     "build:cjs": "BABEL_ENV=cjs babel lib --extensions '.ts' --out-dir 'lib.cjs' --source-maps",
     "build:esm": "BABEL_ENV=esm babel lib --extensions '.ts' --out-dir 'lib.esm' --source-maps",
     "build:bundle-docs": "run-s build:bundle-docs-hedera-sdk build:bundle-docs-hashconnect build:bundle-docs-strato build:bundle-docs-app",
@@ -32,16 +33,18 @@
     "build:bundle-docs-strato": "rollup -c ./lib.docs/src/strato/rollup.config.js",
     "build:bundle-test-rollup": "rollup -c ./test/rollup/rollup.config.js",
     "build:declarations": "tsc",
-    "build:docs": "run-s build:bundle-docs build:docs-docusaurus",
+    "build:docs": "run-s build:docs-install-hashconnect build:bundle-docs build:docs-docusaurus",
     "build:docs-docusaurus": "docusaurus build --out-dir=docs lib.docs",
-    "clean": "run-s clean:bundle-test-rollup clean:cjs clean:esm && docusaurus clear lib.docs",
+    "build:docs-install-hashconnect": "cd ./lib.docs/src/hashconnect && npm i",
+    "clean": "run-s clean:bundle-test-rollup clean:cjs clean:esm clean:declarations && docusaurus clear lib.docs",
     "clean:bundle-test-rollup": "rm -fr test/rollup/lib.esm",
     "clean:cjs": "rm -fr lib.cjs",
+    "clean:declarations": "rm -fr types",
     "clean:esm": "rm -fr lib.esm",
     "deploy:docs": "docusaurus deploy",
     "docusaurus-swizzle": "docusaurus swizzle",
     "lint": "eslint . --ext ts",
-    "publish:npm": "run-s clean build:cjs build:declarations build:esm && npm publish --access public",
+    "publish:npm": "run-s clean build:4-publish && npm publish --access public",
     "start:docs": "docusaurus start lib.docs",
     "test": "run-s test:node test:jsdom test:rollup",
     "test:ci": "run-s lint test test:rollup",
@@ -85,7 +88,7 @@
     "@docusaurus/preset-classic": "2.0.0-beta.15",
     "@docusaurus/remark-plugin-npm2yarn": "2.0.0-beta.15",
     "@docusaurus/theme-live-codeblock": "2.0.0-beta.15",
-    "@hashgraph/sdk-web": "npm:@hashgraph/sdk@^2.9.1",
+    "@hashgraph/sdk-web": "npm:@hashgraph/sdk@2.11.0-beta.1",
     "@openzeppelin/contracts": "^4.4.2",
     "@peculiar/webcrypto": "^1.3.0",
     "@rollup/plugin-babel": "^5.3.0",
@@ -124,6 +127,6 @@
   "types": "./types/index.d.ts",
   "version": "0.7.3",
   "peerDependencies": {
-    "@hashgraph/sdk": ">=2.7.0 <2.8"
+    "@hashgraph/sdk": "2.11.0-beta.1"
   }
 }

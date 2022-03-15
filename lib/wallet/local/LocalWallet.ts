@@ -133,10 +133,16 @@ export class LocalWallet extends Wallet {
       this.provider.client._network.getNodeAccountIdsForExecute()
     );
 
-    return Promise.resolve(transaction);
+    return Promise.resolve(transaction.freeze());
   }
 
   sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
+    // Note: don't know if this is generic enough. Are web-browsers ok with this?
+    if (request instanceof Transaction) {
+      request.freezeWithSigner(this);
+      request.signWithSigner(this); 
+    }
+
     return this.provider.sendRequest(
       request._setOperatorWith(
         this.accountId,
