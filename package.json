@@ -24,8 +24,8 @@
   "name": "@buidlerlabs/hedera-strato-js",
   "scripts": {
     "build:4-publish": "run-s build:cjs build:esm build:declarations",
-    "build:cjs": "BABEL_ENV=cjs babel lib --extensions '.ts' --out-dir 'lib.cjs' --source-maps",
-    "build:esm": "BABEL_ENV=esm babel lib --extensions '.ts' --out-dir 'lib.esm' --source-maps",
+    "build:cjs": "babel --env-name cjs lib --extensions .ts --out-dir lib.cjs --source-maps",
+    "build:esm": "babel --env-name esm lib --extensions .ts --out-dir lib.esm --source-maps",
     "build:bundle-docs": "run-s build:bundle-docs-hedera-sdk build:bundle-docs-hashconnect build:bundle-docs-strato build:bundle-docs-app",
     "build:bundle-docs-app": "rollup -c ./lib.docs/src/app/rollup.config.js",
     "build:bundle-docs-hashconnect": "rollup -c ./lib.docs/src/hashconnect/rollup.config.js",

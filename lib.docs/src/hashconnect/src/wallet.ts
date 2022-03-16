@@ -1,8 +1,8 @@
 /* eslint-env browser */
 
-import { 
+import {
   AccountBalanceQuery,
-  AccountId, 
+  AccountId,
   AccountInfoQuery,
   AccountRecordsQuery,
   Client,
@@ -14,7 +14,7 @@ import {
   TransactionId,
   Wallet,
 } from '@hashgraph/sdk';
-import { 
+import {
   HashConnect,
   HashConnectTypes,
 } from 'hashconnect';
@@ -23,8 +23,6 @@ import Executable from '@hashgraph/sdk/lib/Executable';
 import { HashConnectProvider } from './provider';
 import { HashConnectSender } from './sender';
 import { HashPackSigner } from './signer';
-
-let wallet = null;
 
 const MirrorNetwork = {
   "mainet": "https://mainnet-public.mirrornode.hedera.com",
@@ -42,67 +40,87 @@ function loadLocalData() {
 }
 
 export class HashPackWallet extends Wallet {
-  static async initialize({ networkName = "testnet", debug = false, appMetadata }: { networkName: string, debug: boolean, appMetadata: HashConnectTypes.AppMetadata }) {
-    if (!wallet) {
+  static async getConnection({ networkName = "testnet", debug = false, appMetadata }: { networkName: string, debug: boolean, appMetadata: HashConnectTypes.AppMetadata }) {
+    const { coldStart, storedData } = loadLocalData();
+
+    if(coldStart) {
+      return {
+        connected: false,
+        payload: storedData
+      };
+    }else {
       const hashConnect = new HashConnect(debug);
-      const { coldStart, storedData } = loadLocalData();
+      await hashConnect.init(appMetadata, storedData.privateKey);
+      await hashConnect.connect(storedData.topic, storedData.pairedWalletData);
 
-      if (coldStart) {
-        const initData = await hashConnect.init(appMetadata);
-        storedData.privateKey = initData.privKey;
+      const wallet = new HashPackWallet({
+        accountId: AccountId.fromString(storedData.accountId),
+        accountKey: PublicKey.fromString(storedData.accountKey),
+        hashConnect, networkName,
+        topicId: storedData.topic,
+      });
 
-        const state = await hashConnect.connect();
-        storedData.topic = state.topic;
-          
-        storedData.pairingString = hashConnect.generatePairingString(state, networkName, true);
-        console.log(`Generated a new paring string: ${storedData.pairingString}`);
-        hashConnect.foundExtensionEvent.once(_ => {
-          hashConnect.connectToLocalWallet(storedData.pairingString);
-        });
-        hashConnect.findLocalWallets();
-      } else {
-        await hashConnect.init(appMetadata, storedData.privateKey);
-        await hashConnect.connect(storedData.topic, storedData.pairedWalletData);
+      return {
+        connected: true,
+        payload: wallet
+      };
+    }
+  }
 
-        wallet = new HashPackWallet({ 
-          accountId: AccountId.fromString(storedData.accountId), 
-          accountKey: PublicKey.fromString(storedData.accountKey),
-          hashConnect, networkName, 
-          topicId: storedData.topic,
-        });
-        return wallet;
-      }
+  static async initialize({ networkName = "testnet", debug = false, appMetadata }: { networkName: string, debug: boolean, appMetadata: HashConnectTypes.AppMetadata }) {
+    const {connected, payload} = await this.getConnection({networkName, debug, appMetadata});
+
+    if (!connected) {
+      const hashConnect = new HashConnect(debug);
+
+      const initData = await hashConnect.init(appMetadata);
+      payload.privateKey = initData.privKey;
+
+      const state = await hashConnect.connect();
+      payload.topic = state.topic;
+
+      payload.pairingString = hashConnect.generatePairingString(state, networkName, true);
+
+      console.log(`Generated a new paring string: ${payload.pairingString}`);
+      hashConnect.foundExtensionEvent.once(_ => {
+        hashConnect.connectToLocalWallet(payload.pairingString);
+      });
+
+      hashConnect.findLocalWallets();
 
       return new Promise((accept, reject) => {
         hashConnect.pairingEvent.once(pairingData => {
           if (pairingData.accountIds && pairingData.accountIds.length > 0) {
             const accountId = AccountId.fromString(pairingData.accountIds[0]);
-            
-            fetch(`${MirrorNetwork[networkName]}/api/v1/accounts?account.id=${accountId}`)
-              .then(response => response.json())
-              .then(jResponse => {
-                const accountKey = PublicKey.fromString(jResponse.accounts[0].key.key);
 
-                localStorage.setItem("hashconnectData", JSON.stringify({
-                  ...storedData,
-                  accountId: accountId.toString(), accountKey: accountKey.toStringDer(),
-                  networkName,
-                  pairedWalletData: pairingData.metadata,
-                }));
-                wallet = new HashPackWallet({ 
-                  accountId, accountKey,
-                  hashConnect, networkName, 
-                  topicId: storedData.topic,
+            fetch(`${MirrorNetwork[networkName]}/api/v1/accounts?account.id=${accountId}`)
+                .then(response => response.json())
+                .then(jResponse => {
+                  const accountKey = PublicKey.fromString(jResponse.accounts[0].key.key);
+
+                  localStorage.setItem("hashconnectData", JSON.stringify({
+                    ...payload,
+                    accountId: accountId.toString(), accountKey: accountKey.toStringDer(),
+                    networkName,
+                    pairedWalletData: pairingData.metadata,
+                  }));
+
+                  const wallet = new HashPackWallet({
+                    accountId, accountKey,
+                    hashConnect, networkName,
+                    topicId: payload.topic,
+                  });
+
+                  accept(wallet);
                 });
-                accept(wallet);
-              });
           } else {
             reject("Did not receive back any paired accounts.");
           }
         });
       });
     }
-    return wallet;
+
+    return payload;
   }
 
   private readonly client: Client;
@@ -110,7 +128,7 @@ export class HashPackWallet extends Wallet {
   private readonly accountKey: PublicKey;
   private readonly provider: Provider;
   private readonly signer: HashPackSigner;
-  
+
   private constructor({ accountId, accountKey, topicId, hashConnect, networkName }) {
     super();
     const hcSender = new HashConnectSender(hashConnect, topicId);
@@ -134,7 +152,7 @@ export class HashPackWallet extends Wallet {
   getLedgerId() {
     return this.provider.getLedgerId();
   }
-  
+
   getAccountId() {
     return this.accountId;
   }
@@ -169,7 +187,7 @@ export class HashPackWallet extends Wallet {
   getAccountInfo() {
     return this.sendRequest(new AccountInfoQuery().setAccountId(this.accountId));
   }
-  
+
   getAccountRecords() {
     return this.sendRequest(new AccountRecordsQuery().setAccountId(this.accountId));
   }
@@ -192,7 +210,7 @@ export class HashPackWallet extends Wallet {
 
   async sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
     const shouldForwardToExtension = request instanceof Transaction;
-    
+
     // Prepare request for most use-cases which will end up being routed to the browser wallet
     if (shouldForwardToExtension) {
       this.populateTransaction(request);
@@ -207,5 +225,13 @@ export class HashPackWallet extends Wallet {
       return request.execute(this.client);
     }
     return Promise.reject("Request is not yet supported by this wallet.");
+  }
+
+  wipePairingData() {
+    try {
+      localStorage.removeItem('hashconnectData');
+    }catch (e) {
+      console.error(e);
+    }
   }
 }
