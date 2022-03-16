@@ -2,17 +2,17 @@
 
 import { default as merge } from 'lodash-es/merge';
 
-import { 
-  Account, 
-  ApiSession, 
+import {
+  Account,
+  ApiSession,
   Contract,
-  Json, 
+  Json,
   KeyType,
-  Token, 
+  Token,
   TokenTypes,
 } from '@buidlerlabs/hedera-strato-js';
 
-import { 
+import {
   HashPackWallet,
 } from 'hashconnect-hip-338';
 
@@ -28,15 +28,7 @@ window["StratoOperator"] = {
   network: 'unknown',
 };
 
-window["connectWallet"] = async (networkName) => {
-  if (!window["hedera"]) {
-    window["hedera"] = await HashPackWallet.initialize({ appMetadata: hpAppMetaData, debug: false, networkName });
-  } else {
-    console.log("Browser wallet is already connected. Skipping ...");
-  }
-}
-
-(async function() {
+async function fetchDocsOperator() {
   try {
     const docsOperatorResponse = await fetch('https://eu2.contabostorage.com/963797152a304f4bb7f75cc0af884bd7:buidler-labs/projects/hedera-strato-js/docs-operator.json');
     const { value: uint8ArrayDocsOperator } = await docsOperatorResponse.body.getReader().read();
@@ -72,7 +64,8 @@ window["connectWallet"] = async (networkName) => {
       },
       ... ApiSession,
     };
-    window["StratoOperator"] = {
+
+    return {
       accountId: docsOperator.accountId,
       network: docsOperator.network,
     };
@@ -86,5 +79,41 @@ window["connectWallet"] = async (networkName) => {
     window["KeyType"] = KeyType;
     window["Token"] = Token;
     window["TokenTypes"] = TokenTypes;
+  }
+}
+
+(async function () {
+  const stratoOperator = await fetchDocsOperator();
+
+  if (stratoOperator) {
+    window["StratoOperator"] = stratoOperator;
+
+    const {connected, payload} = await HashPackWallet.getConnection({
+      appMetadata: hpAppMetaData,
+      debug: false,
+      networkName: stratoOperator.network
+    })
+
+    window['hedera'] = connected && payload;
+
+    window["connectWallet"] = async (networkName) => {
+      const wallet = await HashPackWallet.initialize({
+        appMetadata: hpAppMetaData,
+        debug: false,
+        networkName
+      });
+
+      window['hedera'] = wallet;
+      return wallet;
+    };
+
+    window['disconnectWallet'] = () => {
+      let wallet = window['hedera'];
+
+      if(wallet) {
+        wallet.wipePairingData();
+        wallet = null;
+      }
+    }
   }
 })();
