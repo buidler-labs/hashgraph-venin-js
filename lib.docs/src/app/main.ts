@@ -91,7 +91,7 @@ async function fetchDocsOperator() {
     const {connected, payload} = await HashPackWallet.getConnection({
       appMetadata: hpAppMetaData,
       debug: false,
-      networkName: stratoOperator.network
+      networkName: stratoOperator.network,
     })
 
     window['hedera'] = connected && payload;
@@ -100,7 +100,7 @@ async function fetchDocsOperator() {
       const wallet = await HashPackWallet.initialize({
         appMetadata: hpAppMetaData,
         debug: false,
-        networkName
+        networkName,
       });
 
       window['hedera'] = wallet;
@@ -108,11 +108,9 @@ async function fetchDocsOperator() {
     };
 
     window['disconnectWallet'] = () => {
-      let wallet = window['hedera'];
-
-      if(wallet) {
-        wallet.wipePairingData();
-        wallet = null;
+      if(window['hedera']) {
+        window['hedera'].wipePairingData();
+        window['hedera'] = null;
       }
     }
   }
