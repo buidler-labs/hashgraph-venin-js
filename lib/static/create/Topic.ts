@@ -29,12 +29,12 @@ export class Topic extends BasicCreatableEntity<LiveTopic> {
       adminKey: this.topicFeatures.keys?.admin,
       autoRenewAccountId: this.topicFeatures.autoRenewAccountId,
       autoRenewPeriod: this.topicFeatures.autoRenewPeriod,
-      memo: this.topicFeatures.memo,
       submitKey: this.topicFeatures.keys?.submit,
+      topicMemo: this.topicFeatures.memo,
     }
     const createTopicTransaction = new TopicCreateTransaction(constructorArgs);
     const creationReceipt = await session.execute(createTopicTransaction, TypeOfExecutionReturn.Receipt, true);
-    return new LiveTopic(session, creationReceipt.topicId);
+    return new LiveTopic({session, topicId: creationReceipt.topicId});
   }
 
 }
