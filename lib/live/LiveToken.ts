@@ -36,4 +36,12 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo> implements Solidit
     const tokenInfoQuery = new TokenInfoQuery().setTokenId(this.id);
     return this.session.execute(tokenInfoQuery, TypeOfExecutionReturn.Result, false);
   }
+
+  public deleteEntity<R>(args?: R): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+
+  public updateEntity<R>(args?: R): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 }

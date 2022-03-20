@@ -1,4 +1,4 @@
-import { AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
+import { AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Status, Status, Transaction } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveEntity } from "./LiveEntity";
@@ -11,6 +11,12 @@ type LiveAccountConstructorArgs = {
 };
 
 export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements SolidityAddressable {
+  public deleteEntity<R>(args?: R): Promise<number | Status> {
+    throw new Error("Method not implemented.");
+  }
+  public updateEntity<R>(args?: R): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
   
   public readonly publicKey: PublicKey;
 
@@ -34,6 +40,12 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements S
  * Consequently, this is meant to be generated when first {@link ApiSession.create}-ing an {@link Account}.
  */
 export class LiveAccountWithPrivateKey extends LiveAccount {
+  public deleteEntity<R>(args?: R): Promise<number | Status> {
+    throw new Error("Method not implemented.");
+  }
+  public updateEntity<R>(args?: R): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
   public readonly privateKey: PrivateKey;
 
   constructor({ session, id, publicKey, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {

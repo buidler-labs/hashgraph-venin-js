@@ -1,3 +1,4 @@
+import { Status } from "@hashgraph/sdk";
 import { ApiSession } from "../ApiSession";
 
 /**
@@ -5,8 +6,8 @@ import { ApiSession } from "../ApiSession";
  */
 export abstract class LiveEntity<T, I> {
   constructor(
-        public readonly session: ApiSession,
-        public readonly id: T
+    public readonly session: ApiSession,
+    public readonly id: T
   ) { }
 
   protected get log() {
@@ -24,5 +25,9 @@ export abstract class LiveEntity<T, I> {
     return false;
   }
 
-    public abstract getLiveEntityInfo(): Promise<I>;
+  public abstract getLiveEntityInfo(): Promise<I>;
+
+  public abstract deleteEntity<R>(args?: R): Promise<number|Status>;
+
+  public abstract updateEntity<R>(args?: R): Promise<number>;
 }

@@ -11,6 +11,7 @@ import {
   ContractInfoQuery, 
   ContractLogInfo, 
   Hbar, 
+  Status, 
   TransactionId,
 } from "@hashgraph/sdk";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
@@ -73,6 +74,12 @@ function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[
 }
 
 export class LiveContract extends LiveEntity<ContractId, ContractInfo> implements SolidityAddressable {
+  public deleteEntity<R>(args?: R): Promise<number | Status> {
+    throw new Error("Method not implemented.");
+  }
+  public updateEntity<R>(args?: R): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 
   /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.

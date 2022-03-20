@@ -1,3 +1,4 @@
+import { Status } from '@hashgraph/sdk';
 import {
   beforeAll, describe, expect, it,
 } from '@jest/globals';
@@ -78,6 +79,14 @@ describe('LiveTopic', () => {
     const anotherTopicInfo = await anotherLiveTopic.getLiveEntityInfo();
 
     expect(anotherTopicInfo.topicId.toString()).toEqual(liveTopic.id.toString());
+  });
+
+  it("given a topic, deleting it il return status success", async () => {
+    const liveTopic = await session.create(new Topic({keys: {admin: session.publicKey}}));
+
+    const deleteStatus = await liveTopic.deleteEntity();
+
+    expect(deleteStatus).toEqual(Status.Success);
   });
 
 });

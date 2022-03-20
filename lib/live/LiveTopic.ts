@@ -1,4 +1,4 @@
-import { TopicId, TopicInfo, TopicInfoQuery } from "@hashgraph/sdk";
+import { Status, TopicDeleteTransaction, TopicId, TopicInfo, TopicInfoQuery } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveEntity } from "./LiveEntity";
@@ -23,4 +23,15 @@ export class LiveTopic extends LiveEntity<TopicId, TopicInfo> implements Solidit
     return this.id.toSolidityAddress();
   }
 
+  // There are no other arguments other then the topicId for TopicDeleteTransactions
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public deleteEntity<R>(args?: R): Promise<number|Status> {
+    const topicDeleteTransaction = new TopicDeleteTransaction({topicId: this.id})
+    return this.session.execute(topicDeleteTransaction, TypeOfExecutionReturn.Receipt, false)
+      .then(receipt => receipt.status);
+  }
+
+  public updateEntity<R>(args?: R): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 }

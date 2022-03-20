@@ -1,4 +1,4 @@
-import { FileId, FileInfo, FileInfoQuery, } from "@hashgraph/sdk";
+import { FileId, FileInfo, FileInfoQuery, Status, } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveEntity } from "./LiveEntity";
@@ -13,6 +13,12 @@ type LiveJsonConstructorArgs = {
  * Represents a Hedera, HFS-managed Json object
  */
 export class LiveJson extends LiveEntity<FileId, FileInfo> {
+  public deleteEntity<R>(args?: R): Promise<number | Status> {
+    throw new Error("Method not implemented.");
+  }
+  public updateEntity<R>(args?: R): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 
   public readonly id: FileId;
   readonly [k: string]: any;

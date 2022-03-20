@@ -1,4 +1,4 @@
-import { AccountId, ContractId } from "@hashgraph/sdk";
+import { AccountId, ContractId, Status } from "@hashgraph/sdk";
 import { Interface } from "@ethersproject/abi";
 
 import { SolidityAddressable, extractSolidityAddressFrom } from "../core/SolidityAddressable";
@@ -7,6 +7,14 @@ import { LiveContract } from "./LiveContract";
 import { LiveEntity } from "./LiveEntity";
 
 export class LiveAddress extends LiveEntity<string, void> implements SolidityAddressable {
+  
+  public deleteEntity<R>(args?: R): Promise<number | Status> {
+    throw new Error("Method not implemented.");
+  }
+  public updateEntity<R>(args?: R): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+
   private static getSolidityAddressMatchOrDieTryingFrom(addr: string): string {
     const matchedSolidityAddress = extractSolidityAddressFrom(addr);
     
