@@ -11,20 +11,20 @@ import { Contract } from "../../../lib/static/upload/Contract";
 import { LiveAddress } from "../../../lib/live/LiveAddress";
 
 describe('LiveAddress', () => {
-  it("given an all-caps address, the resulting LiveAddress id should be lower-capsed, matching hedera's toSolidityAddress behaviour", async () => {
+  it("given an all-caps address, the resulting LiveAddress id should be lower-capsed, matching hedera's toSolidityAddress behavior", async () => {
     const { session } = await ApiSession.default();
-    const allUperCasedAddress = "0000000000000000000000000000000000000ABC";
-    const liveAddress = new LiveAddress({ address: allUperCasedAddress, session: session });
+    const allUpperCasedAddress = "0000000000000000000000000000000000000ABC";
+    const liveAddress = new LiveAddress({ address: allUpperCasedAddress, session: session });
 
-    expect(liveAddress.id).toEqual(allUperCasedAddress.toLowerCase());
-    expect(liveAddress.equals(allUperCasedAddress)).toBeTruthy();
+    expect(liveAddress.id).toEqual(allUpperCasedAddress.toLowerCase());
+    expect(liveAddress.equals(allUpperCasedAddress)).toBeTruthy();
   });
 
   it("given an all-caps address belonging to an AccountId, equal-ing the resulting LiveAddress to that AccountId should result in a match", async () => {
     const { session } = await ApiSession.default();
-    const allUperCasedAddress = "0000000000000000000000000000000000000ABC";
-    const accountId = AccountId.fromSolidityAddress(allUperCasedAddress);
-    const liveAddress = new LiveAddress({ address: allUperCasedAddress, session: session });
+    const allUpperCasedAddress = "0000000000000000000000000000000000000ABC";
+    const accountId = AccountId.fromSolidityAddress(allUpperCasedAddress);
+    const liveAddress = new LiveAddress({ address: allUpperCasedAddress, session: session });
 
     expect(liveAddress.equals(accountId)).toBeTruthy();
   });

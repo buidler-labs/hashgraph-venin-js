@@ -5,7 +5,7 @@ import {
 
 import { BasicStratoWallet } from "../BasicStratoWallet";
 import { HederaNetwork } from "../../HederaNetwork";
-import { LocalWallet } from "./LocalWallet";
+import { LegacyLocalWallet } from "./LegacyLocalWallet";
 import { StratoContext } from "../../StratoContext";
 import { WalletControllerEvents } from "../../core/wallet/WalletController";
 import { WalletProvider } from "../WalletProvider";
@@ -54,19 +54,20 @@ class SdkWallet extends BasicStratoWallet {
       private operatorKey: PrivateKey
   ) {
     // Start out with what's provided
-    super(new LocalWallet(network, operatorId, operatorKey));
+    // TODO: once hashgraph/hedera-sdk-js#991 gets resolved, remove and replace LegacyLocalWallet with LocalWallet
+    super(new LegacyLocalWallet(network, operatorId, operatorKey));
 
     // Bind to controller events
     controller.onAccountChanged(account => {
       this.operatorKey = PrivateKey.fromString(account.operatorKey);
-      this.wallet = new LocalWallet(network,
+      this.wallet = new LegacyLocalWallet(network,
         AccountId.fromString(account.operatorId), PrivateKey.fromString(account.operatorKey)
       );
       this.operatorId = this.wallet.getAccountId();
     });
     controller.onNetworkChanged(network => {
       this.network = network;
-      this.wallet = new LocalWallet(network, this.wallet.getAccountId(), operatorKey);
+      this.wallet = new LegacyLocalWallet(network, this.wallet.getAccountId(), operatorKey);
     });
   }
 }
