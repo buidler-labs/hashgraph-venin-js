@@ -9,6 +9,10 @@ import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../../Solid
 import { CompileIssues } from '../../errors/CompileIssues';
 import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
 
+export type ContractFeatures = {
+  contract: any,
+}
+
 type AllContractOptions = {
   /**
    * The Solidity full, human-readable, contract code

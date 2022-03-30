@@ -24,14 +24,18 @@ export class Topic extends BasicCreatableEntity<LiveTopic> {
     super("Topic")
   }
 
-  public async createVia({ session }: ArgumentsForCreate): Promise<LiveTopic> {
-    const constructorArgs = {
-      adminKey: this.topicFeatures.keys?.admin,
-      autoRenewAccountId: this.topicFeatures.autoRenewAccountId,
-      autoRenewPeriod: this.topicFeatures.autoRenewPeriod,
-      submitKey: this.topicFeatures.keys?.submit,
-      topicMemo: this.topicFeatures.memo,
+  public static mapTopicFeaturesToTopicArguments(topicFeatures: TopicFeatures): unknown {
+    return {
+      adminKey: topicFeatures.keys?.admin,
+      autoRenewAccountId: topicFeatures.autoRenewAccountId,
+      autoRenewPeriod: topicFeatures.autoRenewPeriod,
+      submitKey: topicFeatures.keys?.submit,
+      topicMemo: topicFeatures.memo,
     }
+  }
+
+  public async createVia({ session }: ArgumentsForCreate): Promise<LiveTopic> {
+    const constructorArgs = Topic.mapTopicFeaturesToTopicArguments(this.topicFeatures);
     const createTopicTransaction = new TopicCreateTransaction(constructorArgs);
     const creationReceipt = await session.execute(createTopicTransaction, TypeOfExecutionReturn.Receipt, true);
     return new LiveTopic({session, topicId: creationReceipt.topicId});

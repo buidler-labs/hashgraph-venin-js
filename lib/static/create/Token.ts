@@ -8,10 +8,10 @@ import {
 } from "@hashgraph/sdk";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
+import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
 import { ArgumentsForCreate } from "../../core/CreatableEntity";
 import { BasicCreatableEntity } from "./BasicCreatableEntity";
 import { LiveToken } from "../../live/LiveToken";
-import { TypeOfExecutionReturn } from "../../ApiSession";
 
 export type TokenFeatures = {
   name: string,
@@ -61,24 +61,28 @@ export class Token extends BasicCreatableEntity<LiveToken> {
     super("Token");
   }
 
-  public async createVia({ session }: ArgumentsForCreate): Promise<LiveToken> {
-    const constructorArgs = {
+  public static mapTokenFeaturesToTokenArguments(tokenFeatures: TokenFeatures, session: ApiSession) {
+    return {
       // First map to expected properties
-      adminKey: this.info.keys?.admin !== null ? this.info.keys?.admin ?? session.publicKey : undefined,
-      feeScheduleKey: this.info.keys?.feeSchedule !== null ? this.info.keys?.feeSchedule ?? session.publicKey : undefined,
-      freezeKey: this.info.keys?.freeze !== null ? this.info.keys?.freeze ?? session.publicKey : undefined,
-      kycKey: this.info.keys?.kyc !== null ? this.info.keys?.kyc ?? session.publicKey : undefined,
-      pauseKey: this.info.keys?.pause !== null ? this.info.keys?.pause ?? session.publicKey : undefined,
-      supplyKey: this.info.keys?.supply !== null ? this.info.keys?.supply ?? session.publicKey : undefined,
-      tokenName: this.info.name,
-      tokenSymbol: this.info.symbol,
-      tokenType: this.info.type.hTokenType ?? HederaTokenType.FungibleCommon,
+      adminKey: tokenFeatures.keys?.admin !== null ? tokenFeatures.keys?.admin ?? session.publicKey : undefined,
+      feeScheduleKey: tokenFeatures.keys?.feeSchedule !== null ? tokenFeatures.keys?.feeSchedule ?? session.publicKey : undefined,
+      freezeKey: tokenFeatures.keys?.freeze !== null ? tokenFeatures.keys?.freeze ?? session.publicKey : undefined,
+      kycKey: tokenFeatures.keys?.kyc !== null ? tokenFeatures.keys?.kyc ?? session.publicKey : undefined,
+      pauseKey: tokenFeatures.keys?.pause !== null ? tokenFeatures.keys?.pause ?? session.publicKey : undefined,
+      supplyKey: tokenFeatures.keys?.supply !== null ? tokenFeatures.keys?.supply ?? session.publicKey : undefined,
+      tokenName: tokenFeatures.name,
+      tokenSymbol: tokenFeatures.symbol,
+      tokenType: tokenFeatures.type.hTokenType ?? HederaTokenType.FungibleCommon,
       treasuryAccountId: session.accountId,
-      wipeKey: this.info.keys?.wipe !== null ? this.info.keys?.wipe ?? session.publicKey : undefined,
-
+      wipeKey: tokenFeatures.keys?.wipe !== null ? tokenFeatures.keys?.wipe ?? session.publicKey : undefined,
+  
       // Merge everything with what's provided
-      ...this.info,
+      ...tokenFeatures,
     };
+  }
+
+  public async createVia({ session }: ArgumentsForCreate): Promise<LiveToken> {
+    const constructorArgs = Token.mapTokenFeaturesToTokenArguments(this.info, session);
     const createTokenTransaction = new TokenCreateTransaction(constructorArgs as unknown);
     const creationReceipt = await session.execute(createTokenTransaction, TypeOfExecutionReturn.Receipt, true);
 

@@ -1,6 +1,7 @@
-import { AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Status, Status, Transaction } from "@hashgraph/sdk";
+import { AccountDeleteTransaction, AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { AccountFeatures } from "../static/create/Account";
 import { LiveEntity } from "./LiveEntity";
 import { SolidityAddressable } from "../core/SolidityAddressable";
 
@@ -10,13 +11,7 @@ type LiveAccountConstructorArgs = {
   publicKey: PublicKey,
 };
 
-export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements SolidityAddressable {
-  public deleteEntity<R>(args?: R): Promise<number | Status> {
-    throw new Error("Method not implemented.");
-  }
-  public updateEntity<R>(args?: R): Promise<number> {
-    throw new Error("Method not implemented.");
-  }
+export class LiveAccount extends LiveEntity<AccountId, AccountInfo, AccountFeatures> implements SolidityAddressable {
   
   public readonly publicKey: PublicKey;
 
@@ -33,6 +28,18 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements S
     const accountInfoQuery = new AccountInfoQuery().setAccountId(this.id);
     return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
   }
+
+  protected _mapFeaturesToArguments(args?: AccountFeatures) {
+    throw new Error("Method not implemented.");
+  }
+
+  protected _getDeleteTransaction(args?: any): Transaction {
+    return new AccountDeleteTransaction({accountId: this.id, ...args});
+  }
+  
+  protected _getUpdateTransaction<R>(args?: R): Transaction {
+    throw new Error("Method not implemented.");
+  }
 }
 
 /**
@@ -40,12 +47,6 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements S
  * Consequently, this is meant to be generated when first {@link ApiSession.create}-ing an {@link Account}.
  */
 export class LiveAccountWithPrivateKey extends LiveAccount {
-  public deleteEntity<R>(args?: R): Promise<number | Status> {
-    throw new Error("Method not implemented.");
-  }
-  public updateEntity<R>(args?: R): Promise<number> {
-    throw new Error("Method not implemented.");
-  }
   public readonly privateKey: PrivateKey;
 
   constructor({ session, id, publicKey, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {

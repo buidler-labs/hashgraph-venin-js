@@ -11,7 +11,7 @@ import {
   ContractInfoQuery, 
   ContractLogInfo, 
   Hbar, 
-  Status, 
+  Transaction, 
   TransactionId,
 } from "@hashgraph/sdk";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
@@ -20,11 +20,11 @@ import { arrayify } from '@ethersproject/bytes';
 import traverse from 'traverse';
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { Contract, ContractFeatures } from "../static/upload/Contract";
 import { SolidityAddressable, extractSolidityAddressFrom  } from "../core/SolidityAddressable";
-import { Contract } from "../static/upload/Contract";
+import { Address } from "../static/Address";
 import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
 import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber';
-import { LiveAddress } from "./LiveAddress";
 import { LiveEntity } from "./LiveEntity";
 import { encodeToHex } from '../core/Hex';
 
@@ -73,13 +73,7 @@ function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[
   }).filter(parsedLogCandidate => parsedLogCandidate !== null);
 }
 
-export class LiveContract extends LiveEntity<ContractId, ContractInfo> implements SolidityAddressable {
-  public deleteEntity<R>(args?: R): Promise<number | Status> {
-    throw new Error("Method not implemented.");
-  }
-  public updateEntity<R>(args?: R): Promise<number> {
-    throw new Error("Method not implemented.");
-  }
+export class LiveContract extends LiveEntity<ContractId, ContractInfo, ContractFeatures> implements SolidityAddressable {
 
   /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.
@@ -318,7 +312,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
 
         if (typeof what === 'string' && extractSolidityAddressFrom(what) !== undefined) {
           // most likely, this is a solidity-address
-          f(new LiveAddress({ session: this.session, address: what }), true);
+          f(new Address(this.session, what), true);
           wasMapped = true;
         } else if (EthersBigNumber.isBigNumber(what)) {
           f(new BigNumber(what.toString()), false);
@@ -377,6 +371,19 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
     const contractInfoQuery = new ContractInfoQuery().setContractId(this.id);
     return this.session.execute(contractInfoQuery, TypeOfExecutionReturn.Result, false);
   }
+
+  protected _mapFeaturesToArguments(args?: ContractFeatures) {
+    throw new Error("Method not implemented.");
+  }
+  
+  protected _getDeleteTransaction<R>(args?: R): Transaction {
+    throw new Error("Method not implemented.");
+  }
+
+  protected _getUpdateTransaction<R>(args?: R): Transaction {
+    throw new Error("Method not implemented.");
+  }
+
 }
 
 /**
@@ -384,11 +391,14 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
  * Consequently, this is meant to be generated when first {@link ApiSession.upload}-ing a {@link Contract}.
  */
 export class LiveContractWithLogs extends LiveContract {
+  protected _mapFeaturesToArguments(args?: ContractFeatures) {
+    throw new Error("Method not implemented.");
+  }
   public readonly logs: ParsedEvent[];
   public readonly liveContract: LiveContract;
 
   constructor({ session, id, cInterface, logs }: LiveContractConstructorArgs & { logs: ParsedEvent[] }) {
-    super({ session, id, cInterface });
+    super({ cInterface, id, session });
     this.liveContract = this;
     this.logs = logs;
   }

@@ -179,7 +179,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    * @param what {@link CreatableEntity} - the prototype of the entity of interest 
    * @returns - an interactive {@link LiveEntity} instance which resides on the chain
    */
-  public async create<T extends LiveEntity<R, I>, R, I>(what: CreatableEntity<T>): Promise<T> {
+  public async create<T extends LiveEntity<R, I, P>, R, I, P>(what: CreatableEntity<T>): Promise<T> {
     this.log.info(`Creating a new Hedera ${what.name}`);
 
     const createdLiveEntity = await what.createVia({ session: this });
@@ -303,9 +303,9 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     
     // TODO: use file Memo to store hash of file-contents and only return LiveJson instance if the 2 values match
     return new LiveJson({ 
-      session: this,
+      data: JSON.parse(fileContents),
       id: targetedFileId,
-      data: JSON.parse(fileContents)
+      session: this,
     });
   }
 
@@ -341,7 +341,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
    *                         eg. "_file" ({@link UploadableEntity}) or "_contract" ({@link Contract})
    * @returns - An instance of the {@link UploadableEntity} concrete result-type which is a subtype of {@link LiveEntity}.
    */
-  public async upload<T extends LiveEntity<R, I>, R, I>(what: BasicUploadableEntity<T, R, I>, ...args: any[]): Promise<T>;
+  public async upload<T extends LiveEntity<R, I, P>, R, I, P>(what: BasicUploadableEntity<T, R, I>, ...args: any[]): Promise<T>;
 
   /**
   * Given a raw JSON {@link object}, it triest ot upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
@@ -362,7 +362,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   public async upload(what: object, ...args: any[]): Promise<LiveJson>;
 
   // Overload implementation
-  public async upload<T extends LiveEntity<R, I>, R, I>(what: UploadableEntity<T, R>|object, ...args: any[]): Promise<T|LiveJson> {
+  public async upload<T extends LiveEntity<R, I, P>, R, I, P>(what: UploadableEntity<T, R>|object, ...args: any[]): Promise<T|LiveJson> {
     let uploadableWhat: BasicUploadableEntity<T, R, I>;
 
     if (what instanceof BasicUploadableEntity === false) {
@@ -380,7 +380,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
 
     this.log.info(`Uploading a new ${uploadableWhat.nameOfUpload} to Hedera File Service (HFS).`);
 
-    const createdLiveEntity = await uploadableWhat.uploadTo({ session: this, args });
+    const createdLiveEntity = await uploadableWhat.uploadTo({ args, session: this });
 
     this.log.info(`Successfully created a ${uploadableWhat.nameOfUpload} id ${createdLiveEntity.id}.`);
     return createdLiveEntity;

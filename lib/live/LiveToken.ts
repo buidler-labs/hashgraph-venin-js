@@ -1,21 +1,24 @@
 import {
   Key,
+  TokenDeleteTransaction,
   TokenId,
   TokenInfo,
   TokenInfoQuery,
   TokenUpdateTransaction,
+  Transaction,
 } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { LiveEntity } from "./LiveEntity";
 import { SolidityAddressable } from "../core/SolidityAddressable";
+import { Token, TokenFeatures } from "../static/create/Token";
 
 type LiveTokenConstructorArgs = {
     session: ApiSession,
     id: TokenId
 };
 
-export class LiveToken extends LiveEntity<TokenId, TokenInfo> implements SolidityAddressable {
+export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> implements SolidityAddressable {
 
   public constructor({ session, id }: LiveTokenConstructorArgs) {
     super(session, id);
@@ -25,7 +28,7 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo> implements Solidit
     return this.id.toSolidityAddress();
   }
 
-  public async assignSupplyControlTo<T extends Key, I>(key: Key | LiveEntity<T, I>): Promise<void> {
+  public async assignSupplyControlTo<T extends Key, I, P>(key: Key | LiveEntity<T, I, P>): Promise<void> {
     const tokenUpdateTx = new TokenUpdateTransaction()
       .setTokenId(this.id)
       .setSupplyKey(key instanceof Key ? key : key.id);
@@ -37,11 +40,18 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo> implements Solidit
     return this.session.execute(tokenInfoQuery, TypeOfExecutionReturn.Result, false);
   }
 
-  public deleteEntity<R>(args?: R): Promise<number> {
-    throw new Error("Method not implemented.");
+  protected _mapFeaturesToArguments(args?: TokenFeatures): any {
+    return Token.mapTokenFeaturesToTokenArguments(args, this.session);
   }
 
-  public updateEntity<R>(args?: R): Promise<number> {
-    throw new Error("Method not implemented.");
+  protected _getDeleteTransaction<R>(args?: R): Transaction {
+    return new TokenDeleteTransaction({tokenId: this.id})
+  }
+
+  protected _getUpdateTransaction<R>(args?: R): Transaction {
+    return new TokenUpdateTransaction({
+      ...args,
+      tokenId: this.id,
+    });
   }
 }

@@ -51,27 +51,6 @@ describe('LiveTopic', () => {
     expect(topicInfo.topicMemo).toEqual(memoText);
   });
 
-  it("given a topic, getting info about a topic returns the expected information", async () => {
-    const memoText = "memo";
-    const renewPeriod = 1000;
-    const liveTopic = await session.create(new Topic({
-      autoRenewAccountId: session.accountId,
-      autoRenewPeriod: renewPeriod,
-      keys: {
-        admin: session.publicKey,
-        submit: session.publicKey,
-      },
-      memo: memoText,
-    }));
-    const topicInfo = await liveTopic.getLiveEntityInfo();
-    expect(topicInfo.topicId.toString()).toEqual(liveTopic.id.toString());
-    expect(topicInfo.autoRenewAccountId.toString()).toEqual(session.accountId.toString());
-    expect(topicInfo.autoRenewPeriod.seconds.toString()).toEqual(renewPeriod.toString());
-    expect(topicInfo.adminKey.toString()).toEqual(session.publicKey.toStringDer());
-    expect(topicInfo.submitKey.toString()).toEqual(session.publicKey.toStringDer());
-    expect(topicInfo.topicMemo).toEqual(memoText);
-  });
-
   it("given a topic, creating a live instance using the topicId works as expected", async () => {
     const liveTopic = await session.create(new Topic());
 
@@ -81,12 +60,32 @@ describe('LiveTopic', () => {
     expect(anotherTopicInfo.topicId.toString()).toEqual(liveTopic.id.toString());
   });
 
-  it("given a topic, deleting it il return status success", async () => {
+  it("given a topic, deleting it will return status success", async () => {
     const liveTopic = await session.create(new Topic({keys: {admin: session.publicKey}}));
 
     const deleteStatus = await liveTopic.deleteEntity();
 
     expect(deleteStatus).toEqual(Status.Success);
+  });
+
+  it("given a topic, updating it will return status success and update is successful", async () => {
+    const liveTopic = await session.create(new Topic({keys: {admin: session.publicKey}}));
+
+    const memoText = "memo";
+    const renewPeriod = 1000;
+    const updateStatus = await liveTopic.updateEntity({
+      autoRenewAccountId: session.accountId,
+      autoRenewPeriod: renewPeriod,
+      keys: {
+        admin: session.publicKey,
+        submit: session.publicKey,
+      },
+      memo: memoText,
+    });
+
+    expect(updateStatus).toEqual(Status.Success);
+
+    
   });
 
 });
