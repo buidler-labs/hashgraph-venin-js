@@ -1,6 +1,6 @@
 {
-  "author": "BuiDler Labs Developers <devs@buidlerlabs.com>",
-  "description": "The Hedera unoficial, high-level 'stratospheric' SDK for JS consumption",
+  "author": "Buidler Labs Developers <devs@buidlerlabs.com>",
+  "description": "The Hedera unofficial, high-level 'stratospheric' SDK for JS consumption",
   "engines": {
     "node": ">=14.8"
   },
@@ -88,7 +88,6 @@
     "@docusaurus/preset-classic": "2.0.0-beta.15",
     "@docusaurus/remark-plugin-npm2yarn": "2.0.0-beta.15",
     "@docusaurus/theme-live-codeblock": "2.0.0-beta.15",
-    "@hashgraph/sdk-web": "npm:@hashgraph/sdk@2.11.0-beta.1",
     "@openzeppelin/contracts": "^4.4.2",
     "@peculiar/webcrypto": "^1.3.0",
     "@rollup/plugin-babel": "^5.3.0",
@@ -127,6 +126,6 @@
   "types": "./types/index.d.ts",
   "version": "0.7.3",
   "peerDependencies": {
-    "@hashgraph/sdk": "2.11.0-beta.1"
+    "@hashgraph/sdk": "^2.11.3"
   }
 }
