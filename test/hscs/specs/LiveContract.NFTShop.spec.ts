@@ -34,8 +34,7 @@ describe('LiveContract.NFTShop', () => {
     const tokenOwnerAccount = new LiveAccountWithPrivateKey({
       id: client._operator.accountId,
       privateKey: privKey,
-      publicKey: client._operator.publicKey,
-      session
+      session,
     });
     const liveToken = await session.create(token);
     const liveContract = await session.upload(

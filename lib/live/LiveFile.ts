@@ -1,5 +1,5 @@
 
-import { FileDeleteTransaction, FileId, FileInfo, FileInfoQuery, FileUpdateTransaction, Transaction } from "@hashgraph/sdk";
+import { FileContentsQuery, FileDeleteTransaction, FileId, FileInfo, FileInfoQuery, FileUpdateTransaction, Transaction } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { FileFeatures } from '../static/upload/File';
@@ -9,12 +9,12 @@ import { SolidityAddressable } from "../core/SolidityAddressable";
 export type LiveFileConstructorArgs = {
     session: ApiSession,
     id: string | FileId,
-    data: object
+    data?: string|Uint8Array
 }
 
 export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> implements SolidityAddressable {
 
-  readonly data: object;
+  readonly data: string|Uint8Array;
 
   public constructor({ session, id, data }: LiveFileConstructorArgs) {
     super(session, id instanceof FileId ? id : FileId.fromString(id));
@@ -30,8 +30,8 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> impleme
     return this.id.toSolidityAddress();
   }
 
-  protected _mapFeaturesToArguments(args?: FileFeatures) {
-    return null; //mapFileFeaturesToFileArguments(args);
+  protected _mapFeaturesToArguments(args?: FileFeatures): any {
+    return args;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -44,5 +44,11 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> impleme
       ...args,
       fileId: this.id,
     });
+  }
+
+  public async getContents() {
+    const fileContentsQuery = new FileContentsQuery({fileId: this.id});
+    const queryResponse = await this.session.execute(fileContentsQuery, TypeOfExecutionReturn.Result, false);
+    return queryResponse.toString();
   }
 }

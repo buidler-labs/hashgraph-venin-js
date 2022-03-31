@@ -85,7 +85,13 @@ describe('LiveTopic', () => {
 
     expect(updateStatus).toEqual(Status.Success);
 
-    
   });
 
+  it("given a topic, we can successfully publish messages to it", async () => {
+    const liveTopic = await session.create(new Topic());
+
+    const submitStatus = await liveTopic.submitMessage("Test message");
+
+    expect(submitStatus).toEqual(Status.Success);
+  });
 });

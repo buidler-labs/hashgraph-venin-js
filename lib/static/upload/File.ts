@@ -1,18 +1,22 @@
 import { ArgumentsOnFileUploaded, BasicUploadableEntity } from "./BasicUploadableEntity";
+import { Key, KeyList } from "@hashgraph/sdk";
 import { LiveFile } from "../../live/LiveFile";
 
 export type FileFeatures = {
-    file: any,
+  keys?: KeyList | Key[],
+  expirationTime?: Date,
+  contents?: string | Uint8Array,
+  fileMemo?: string,
 }
 
 export class File extends BasicUploadableEntity<LiveFile> {
 
-  public constructor(private readonly info: object) {
+  public constructor(private readonly info: string|Uint8Array) {
     super('File');
   }
 
   protected override async getContent() {
-    return JSON.stringify(this.info);
+    return this.info;
   }
 
   protected override async onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded) {

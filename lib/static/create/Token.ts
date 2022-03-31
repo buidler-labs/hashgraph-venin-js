@@ -14,22 +14,27 @@ import { BasicCreatableEntity } from "./BasicCreatableEntity";
 import { LiveToken } from "../../live/LiveToken";
 
 export type TokenFeatures = {
-  name: string,
-  symbol: string,
-  decimals?: number | Long.Long,
-  initialSupply?: number | Long.Long,
+  name?: string,
+  symbol?: string,
   treasuryAccountId?: string | AccountId,
   keys?: TokenKeys,
-  freezeDefault?: boolean,
   autoRenewAccountId?: string | AccountId,
   expirationTime?: Date | Timestamp,
   autoRenewPeriod?: number | Long.Long | Duration,
   tokenMemo?: string,
-  customFees?: { feeCollectorAccountId?: string | AccountId | undefined }[],
-  type: TokenType,
-  supplyType?: TokenSupplyType,
-  maxSupply?: number | Long.Long
 };
+
+export type CreateTokenFeatures = TokenFeatures & {
+  name: string,
+  symbol: string,
+  type: TokenType,
+  maxSupply?: number | Long.Long,
+  supplyType?: TokenSupplyType,
+  initialSupply?: number | Long.Long,
+  decimals?: number | Long.Long,
+  customFees?: { feeCollectorAccountId?: string | AccountId | undefined }[],
+  freezeDefault?: boolean,
+}
 
 type TokenKeys = {
   admin?: Key,
@@ -57,11 +62,25 @@ export const TokenTypes = {
 
 export class Token extends BasicCreatableEntity<LiveToken> {
 
-  public constructor(private readonly info: TokenFeatures) {
+  public constructor(private readonly info: CreateTokenFeatures) {
     super("Token");
   }
+  public static mapTokenFeaturesToTokenUpgradeArguments(tokenFeatures: TokenFeatures) {
+    const upgradeFeatures = {};
+    tokenFeatures.keys?.admin && (upgradeFeatures['adminKey'] = tokenFeatures.keys?.admin);
+    tokenFeatures.keys?.feeSchedule && (upgradeFeatures['feeScheduleKey'] = tokenFeatures.keys?.feeSchedule);
+    tokenFeatures.keys?.freeze && (upgradeFeatures['freezeKey'] = tokenFeatures.keys?.freeze);
+    tokenFeatures.keys?.kyc && (upgradeFeatures['kycKey'] = tokenFeatures.keys?.kyc);
+    tokenFeatures.keys?.pause && (upgradeFeatures['pauseKey'] = tokenFeatures.keys?.pause);
+    tokenFeatures.keys?.supply && (upgradeFeatures['supplyKey'] = tokenFeatures.keys?.supply);
+    tokenFeatures.keys?.wipe && (upgradeFeatures['wipeKey'] = tokenFeatures.keys?.wipe);
+    tokenFeatures.name && (upgradeFeatures['tokenName'] = tokenFeatures.name);
+    tokenFeatures.symbol && (upgradeFeatures['tokenSymbol'] = tokenFeatures.symbol);
+    tokenFeatures.treasuryAccountId && (upgradeFeatures['treasuryAccountId'] = tokenFeatures.treasuryAccountId);
+    return {...upgradeFeatures, ...tokenFeatures};
+  }
 
-  public static mapTokenFeaturesToTokenArguments(tokenFeatures: TokenFeatures, session: ApiSession) {
+  public static mapTokenFeaturesToTokenArguments(tokenFeatures: CreateTokenFeatures, session: ApiSession) {
     return {
       // First map to expected properties
       adminKey: tokenFeatures.keys?.admin !== null ? tokenFeatures.keys?.admin ?? session.publicKey : undefined,
@@ -73,7 +92,7 @@ export class Token extends BasicCreatableEntity<LiveToken> {
       tokenName: tokenFeatures.name,
       tokenSymbol: tokenFeatures.symbol,
       tokenType: tokenFeatures.type.hTokenType ?? HederaTokenType.FungibleCommon,
-      treasuryAccountId: session.accountId,
+      treasuryAccountId: tokenFeatures.treasuryAccountId ?? session.accountId,
       wipeKey: tokenFeatures.keys?.wipe !== null ? tokenFeatures.keys?.wipe ?? session.publicKey : undefined,
   
       // Merge everything with what's provided

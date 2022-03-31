@@ -1,4 +1,4 @@
-import { ContractExecuteTransaction, ContractId } from "@hashgraph/sdk";
+import { ContractExecuteTransaction, ContractId, Status } from "@hashgraph/sdk";
 import {
   describe, expect, it, jest,
 } from '@jest/globals';
@@ -8,6 +8,7 @@ import { load, read } from "../../utils";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 import { LiveContract } from "../../../lib/live/LiveContract";
+import { Token, TokenTypes } from "../../../lib/static/create/Token";
 
 describe('LiveContract', () => {
 
@@ -88,5 +89,39 @@ describe('LiveContract', () => {
     const testedHexString = "0x252ea5c5f95e9085d1cd6b85f35a83a2df722cd5e0c7609b5205a36076a61b14";
 
     await expect(liveContract.setBytes32(testedHexString)).resolves.not.toThrow();
-  })
+  });
+
+  it("by having an instance of a liveContract, transferring hbar to the liveContract, the balance is as expected", async () => {
+    const { session } = await ApiSession.default();
+    const bytesContract = await Contract.newFrom({ code: read({ contract: 'bytes' }) });
+    const liveContract = await session.upload(bytesContract);
+
+    const status = await liveContract.transferHbarToLiveEntity(1);
+    
+    expect(status).toEqual(Status.Success);
+
+    const balance = await liveContract.getBalanceOfLiveEntity();
+
+    expect(balance.hbars.toBigNumber().toNumber()).toEqual(1);
+  });
+
+  it("by having an instance of a liveContract, associating a token with the liveContract returns status success", async () => {
+    const tokenFeatures = {
+      decimals: 3,
+      initialSupply: 1000,
+      name: "Wrapped HBAR",
+      symbol: "wHBAR",
+      treasuryAccountId: process.env.HEDERAS_OPERATOR_ID,
+      type: TokenTypes.FungibleCommon,
+    }
+
+    const { session } = await ApiSession.default();
+    const bytesContract = await Contract.newFrom({ code: read({ contract: 'bytes' }) });
+    const liveContract = await session.upload(bytesContract);
+
+    const liveToken = await session.create(new Token(tokenFeatures));
+    const status = await liveContract.associateTokensWithLiveEntity([liveToken.id.toString()]);
+    
+    expect(status).toEqual(Status.Success);
+  });
 });

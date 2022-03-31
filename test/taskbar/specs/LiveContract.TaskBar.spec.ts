@@ -11,8 +11,7 @@ import {
 } from "../../utils";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
-import { LiveEntity } from "../../../lib/live/LiveEntity";
-import { Address } from '../../../lib/static/Address';
+import { StratoAddress } from '../../../lib/core/StratoAddress';
 
 function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'taskbar', ...what });
@@ -46,9 +45,9 @@ describe('LiveContract.TaskBar', () => {
       taskId
     );
     expect(gottenTask.disputionTime).not.toBeUndefined();
-    expect(gottenTask.needer).toBeInstanceOf(Address);
+    expect(gottenTask.needer).toBeInstanceOf(StratoAddress);
     expect(gottenTask.needer.equals(session.accountId)).toBeTruthy();
-    expect(gottenTask.tasker).toBeInstanceOf(Address);
+    expect(gottenTask.tasker).toBeInstanceOf(StratoAddress);
     expect(gottenTask.tasker.equals("0x0000000000000000000000000000000000000000")).toBeTruthy();
     expect(gottenTask).toMatchObject({
       disputed: [ false, false ],

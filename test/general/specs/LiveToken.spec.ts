@@ -4,14 +4,15 @@ import {
 
 import { read } from "../../utils";
 
-import { Token, TokenFeatures, TokenTypes } from '../../../lib/static/create/Token';
+import { CreateTokenFeatures, Token, TokenTypes } from '../../../lib/static/create/Token';
+import { PublicKey, Status } from '@hashgraph/sdk';
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 import { LiveToken } from '../../../lib/live/LiveToken';
 
 describe('LiveToken', () => {
-  const defaultTokenFeatures: TokenFeatures = {
+  const defaultTokenFeatures: CreateTokenFeatures = {
     decimals: 3,
     initialSupply: 1000,
     name: "Wrapped HBAR",
@@ -54,10 +55,10 @@ describe('LiveToken', () => {
   it("given a token, assigning the supply control to a new account should work as expected", async () => {
     const account = await session.create(new Account());
 
-    await liveToken.assignSupplyControlTo(account.publicKey);
+    await liveToken.assignSupplyControlTo(account.privateKey.publicKey);
     const info = await liveToken.getLiveEntityInfo();
 
-    expect(account.publicKey.toString()).toEqual(info.supplyKey.toString());
+    expect(account.privateKey.publicKey.toString()).toEqual(info.supplyKey.toString());
   });
 
   it("given a token, assigning the supply control to a new contract should work as expected", async () => {
@@ -71,4 +72,27 @@ describe('LiveToken', () => {
     expect(liveContract.id.toString()).toEqual(info.supplyKey.toString());
   });
 
+  it("given a token, deleting it should return status success", async () => {
+    const status = await liveToken.deleteEntity();
+
+    expect(status).toEqual(Status.Success);
+  });
+
+  it("given a token, updating it should return status success", async () => {
+    const liveAccount = await session.create(new Account());
+    const newName = "newName";
+    const status = await liveToken.updateEntity({
+      keys: {
+        freeze: liveAccount.privateKey.publicKey,
+      },
+      name: newName,
+    });
+
+    expect(status).toEqual(Status.Success);
+
+    const info = await liveToken.getLiveEntityInfo();
+
+    expect(info.name).toEqual(newName);
+    expect((info.freezeKey as PublicKey).toStringDer()).toEqual(liveAccount.privateKey.publicKey.toStringDer());
+  });
 });

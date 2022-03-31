@@ -6,7 +6,7 @@ import { ApiSession } from "../ApiSession";
 import { LiveContract } from "../live/LiveContract";
 import { LiveEntity } from "../live/LiveEntity";
 
-export class Address implements SolidityAddressable {
+export class StratoAddress implements SolidityAddressable {
 
   public readonly id: string;
 
@@ -24,7 +24,7 @@ export class Address implements SolidityAddressable {
     public readonly session: ApiSession,
     address: string
   ) { 
-    this.id = Address.getSolidityAddressMatchOrDieTryingFrom(address);
+    this.id = StratoAddress.getSolidityAddressMatchOrDieTryingFrom(address);
   }
     
   public getSolidityAddress(): string {

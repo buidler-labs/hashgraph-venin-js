@@ -56,9 +56,9 @@ export abstract class BasicUploadableEntity<T extends LiveEntity<R, I, P>, R = a
       args = args.slice(1);
     }
     return this.onFileUploaded({ 
-      session,  
+      args,
       receipt: transactionReceipt,
-      args
+      session,  
     });
   }
 

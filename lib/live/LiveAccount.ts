@@ -1,23 +1,19 @@
-import { AccountDeleteTransaction, AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
+import { AccountDeleteTransaction, AccountId, AccountInfo, AccountInfoQuery, AccountUpdateTransaction, PrivateKey, Transaction } from "@hashgraph/sdk";
 
+import { Account, AccountFeatures } from "../static/create/Account";
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { AccountFeatures } from "../static/create/Account";
-import { LiveEntity } from "./LiveEntity";
+import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 import { SolidityAddressable } from "../core/SolidityAddressable";
 
 type LiveAccountConstructorArgs = {
   session: ApiSession,
   id: AccountId,
-  publicKey: PublicKey,
 };
 
-export class LiveAccount extends LiveEntity<AccountId, AccountInfo, AccountFeatures> implements SolidityAddressable {
-  
-  public readonly publicKey: PublicKey;
+export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInfo, AccountFeatures> implements SolidityAddressable {
 
-  constructor({ session, id, publicKey }: LiveAccountConstructorArgs) {
+  constructor({ session, id }: LiveAccountConstructorArgs) {
     super(session, id);
-    this.publicKey = publicKey;
   }
   
   public getSolidityAddress(): string {
@@ -29,17 +25,23 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo, AccountFeatu
     return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
   }
 
-  protected _mapFeaturesToArguments(args?: AccountFeatures) {
-    throw new Error("Method not implemented.");
+  protected _mapFeaturesToArguments(args?: AccountFeatures): Promise<any> {
+    return Account.considerGenerateKeyFromAccountFeatures(this.session.log, args);
   }
 
   protected _getDeleteTransaction(args?: any): Transaction {
-    return new AccountDeleteTransaction({accountId: this.id, ...args});
+    args = this._getEntityWithBalanceDeleteArguments(args);
+    return new AccountDeleteTransaction({ accountId: this.id, ...args });
   }
   
   protected _getUpdateTransaction<R>(args?: R): Transaction {
-    throw new Error("Method not implemented.");
+    return new AccountUpdateTransaction(args);
   }
+
+  protected _getBalancePayload(): object {
+    return { accountId: this.id };
+  }
+
 }
 
 /**
@@ -49,14 +51,27 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo, AccountFeatu
 export class LiveAccountWithPrivateKey extends LiveAccount {
   public readonly privateKey: PrivateKey;
 
-  constructor({ session, id, publicKey, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {
-    super({ id, publicKey, session });
+  constructor({ session, id, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {
+    super({ id, session });
     this.privateKey = privateKey;
   }
 
   public tryToSign(transaction: Transaction): void {
     const signature = this.privateKey.signTransaction(transaction);
 
-    transaction.addSignature(this.publicKey, signature);
+    transaction.addSignature(this.privateKey.publicKey, signature);
+  }
+
+  protected _getUpdateTransaction<R>(args?: R): Transaction {
+    const updateTransaction = super._getUpdateTransaction(args);
+    this.tryToSign(updateTransaction);
+    return updateTransaction;
+  }
+
+  protected _getDeleteTransaction(args?: any): Transaction {
+    const deleteTransaction = super._getDeleteTransaction(args);
+    //TODO: freeze with signer once HIP-338 branch is merged
+    this.tryToSign(deleteTransaction);
+    return deleteTransaction;
   }
 }

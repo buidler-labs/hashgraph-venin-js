@@ -1,8 +1,9 @@
 
 import { Hbar, TokenSupplyType } from "@hashgraph/sdk";
-import { TokenFeatures, TokenTypes } from "../lib/static/create/Token";
 
-export const defaultFungibleTokenFeatures: TokenFeatures = {
+import { CreateTokenFeatures, TokenTypes } from "../lib/static/create/Token";
+
+export const defaultFungibleTokenFeatures: CreateTokenFeatures = {
   decimals: 0,
   initialSupply: 1000,
   keys: {
@@ -13,7 +14,7 @@ export const defaultFungibleTokenFeatures: TokenFeatures = {
   type: TokenTypes.FungibleCommon,
 }
 
-export const defaultNonFungibleTokenFeatures: TokenFeatures = {
+export const defaultNonFungibleTokenFeatures: CreateTokenFeatures = {
   decimals: 0,
   initialSupply: 0,
   keys: {

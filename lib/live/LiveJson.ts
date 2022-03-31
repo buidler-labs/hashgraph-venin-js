@@ -9,7 +9,9 @@ export class LiveJson extends LiveFile {
 
   constructor({ session, id, data }: LiveFileConstructorArgs) {
     super({data, id, session});
-
+    if(typeof data === 'string'){
+      data = JSON.parse(data);
+    }
     // Dynamically bind jData properties to instance
     Object.keys(data).forEach(jDataKey => Object.defineProperty(this, jDataKey, {
       enumerable: true,

@@ -12,13 +12,12 @@ import {
   load as loadResource, 
   read as readResource,
 } from "../../utils";
-import { Address } from "../../../lib/static/Address";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 import { 
   ContractRegistry,
 } from '../../../lib/ContractRegistry';
-import { LiveEntity } from "../../../lib/live/LiveEntity";
+import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 function load(contractPath: string) {
   return loadResource(contractPath, 'solidity-by-example');
@@ -63,7 +62,7 @@ describe('LiveContract.Solidity-by-Example', () => {
 
     const { carAddr } = await liveCarFactoryContract.getCar(0);
 
-    expect(carAddr).toBeInstanceOf(Address);
+    expect(carAddr).toBeInstanceOf(StratoAddress);
 
     const liveCar = await carAddr.toLiveContract(carContract.interface);
 
@@ -77,7 +76,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     const liveContract = await session.upload(immutableContract, uintArgForConstructor);
     const returnedMyAddress = await liveContract.MY_ADDRESS();
 
-    expect(returnedMyAddress).toBeInstanceOf(Address);
+    expect(returnedMyAddress).toBeInstanceOf(StratoAddress);
     expect(returnedMyAddress.equals(session.getSolidityAddress())).toBeTruthy();
     await expect(liveContract.MY_UINT()).resolves.toEqual(uintArgForConstructor);
   });

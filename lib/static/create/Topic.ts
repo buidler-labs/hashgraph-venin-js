@@ -24,7 +24,7 @@ export class Topic extends BasicCreatableEntity<LiveTopic> {
     super("Topic")
   }
 
-  public static mapTopicFeaturesToTopicArguments(topicFeatures: TopicFeatures): unknown {
+  public static mapTopicFeaturesToTopicArguments(topicFeatures: TopicFeatures): any {
     return {
       adminKey: topicFeatures.keys?.admin,
       autoRenewAccountId: topicFeatures.autoRenewAccountId,

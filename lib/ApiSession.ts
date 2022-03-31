@@ -26,9 +26,11 @@ import { StratoContext, StratoContextSource, StratoParameters } from "./StratoCo
 import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
 import { ClientController } from "./client/controller/ClientController";
 import { CreatableEntity } from "./core/CreatableEntity";
+import { File } from './static/upload/File';
 import { HederaNetwork } from './HederaNetwork';
 import { Json } from './static/upload/Json';
 import { LiveEntity } from './live/LiveEntity';
+import { LiveFile } from './live/LiveFile';
 import { LiveJson } from './live/LiveJson';
 import { Saver } from "./core/Persistance";
 import { SolidityAddressable } from './core/SolidityAddressable';
@@ -344,7 +346,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   public async upload<T extends LiveEntity<R, I, P>, R, I, P>(what: BasicUploadableEntity<T, R, I>, ...args: any[]): Promise<T>;
 
   /**
-  * Given a raw JSON {@link object}, it triest ot upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
+  * Given a raw JSON {@link object}, it tries to upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
   * 
   * `Note:` This is the same as calling the more verbose equivalent of `upload(new Json(what))`.
   * 
@@ -361,13 +363,33 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   */
   public async upload(what: object, ...args: any[]): Promise<LiveJson>;
 
+  /**
+  * Given raw data {@link string|Uint8Array}, it tries to upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
+  * 
+  * `Note:` This is the same as calling the more verbose equivalent of `upload(new File(what))`.
+  * 
+  * Example of usage:
+  * ```js
+  * await apiSession.upload("This is the file content")
+  * ```
+  * 
+  * @param {object} what - The {@link File}-acceptable payload to push through this {@link ApiSession}
+  * @param {*} args - A list of arguments to pass through the upload operation itself.
+  *                   Note: this list has, by convention, at various unpaking stages in the call hierarchy, the capabilities to specify SDK behaviour through
+  *                         eg. "_file" ({@link Uploadable}) or "_contract" ({@link Contract})
+  * @returns - An instance of the associated {@link LiveFile} resulting {@link LiveEntity}.
+  */
+  public async upload(what: string|Uint8Array, ...args: any[]): Promise<LiveFile>;
+
   // Overload implementation
-  public async upload<T extends LiveEntity<R, I, P>, R, I, P>(what: UploadableEntity<T, R>|object, ...args: any[]): Promise<T|LiveJson> {
+  public async upload<T extends LiveEntity<R, I, P>, R, I, P>(what: UploadableEntity<T, R>|object|string|Uint8Array, ...args: any[]): Promise<T> {
     let uploadableWhat: BasicUploadableEntity<T, R, I>;
 
     if (what instanceof BasicUploadableEntity === false) {
       // Try to go with a live-json upload
-      if (Json.isInfoAcceptable(what)) {
+      if(typeof what === 'string' || what instanceof Uint8Array) {
+        uploadableWhat = (new File(what) as unknown) as BasicUploadableEntity<T, R, I>;
+      }else if (Json.isInfoAcceptable(what)) {
         uploadableWhat = (new Json(what) as unknown) as BasicUploadableEntity<T, R, I>;
       } else {
         // There's nothing we can do

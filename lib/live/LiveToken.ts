@@ -9,15 +9,18 @@ import {
 } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { Token, TokenFeatures } from "../static/create/Token";
 import { LiveEntity } from "./LiveEntity";
 import { SolidityAddressable } from "../core/SolidityAddressable";
-import { Token, TokenFeatures } from "../static/create/Token";
 
 type LiveTokenConstructorArgs = {
     session: ApiSession,
     id: TokenId
 };
 
+/**
+ * Represents a native Token on the Hedera Token Service
+ */
 export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> implements SolidityAddressable {
 
   public constructor({ session, id }: LiveTokenConstructorArgs) {
@@ -41,9 +44,10 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> imp
   }
 
   protected _mapFeaturesToArguments(args?: TokenFeatures): any {
-    return Token.mapTokenFeaturesToTokenArguments(args, this.session);
+    return Token.mapTokenFeaturesToTokenUpgradeArguments(args);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected _getDeleteTransaction<R>(args?: R): Transaction {
     return new TokenDeleteTransaction({tokenId: this.id})
   }
@@ -54,4 +58,5 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> imp
       tokenId: this.id,
     });
   }
+  
 }

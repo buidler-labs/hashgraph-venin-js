@@ -25,7 +25,7 @@ export abstract class LiveEntity<T, I, P> {
     return false;
   }
 
-  private executeAndReturnStatus(transaction: Transaction): Promise<Status> {
+  protected executeAndReturnStatus(transaction: Transaction): Promise<Status> {
     return this.session.execute(transaction, TypeOfExecutionReturn.Receipt, false)
       .then(receipt => receipt.status);
   }
@@ -34,7 +34,7 @@ export abstract class LiveEntity<T, I, P> {
 
   public abstract getLiveEntityInfo(): Promise<I>;
 
-  protected abstract _mapFeaturesToArguments(args?: P): any;
+  protected abstract _mapFeaturesToArguments(args?: P): Promise<any>;
 
   protected abstract _getDeleteTransaction(args?: any): Transaction;
 
@@ -45,8 +45,8 @@ export abstract class LiveEntity<T, I, P> {
 
   protected abstract _getUpdateTransaction(args?: any): Transaction;
 
-  public updateEntity(args?: P): Promise<Status> {
-    const entityArgs = this._mapFeaturesToArguments(args);
+  public async updateEntity(args?: P): Promise<Status> {
+    const entityArgs = await this._mapFeaturesToArguments(args);
     const transaction = this._getUpdateTransaction(entityArgs);
     return this.executeAndReturnStatus(transaction);
   }
