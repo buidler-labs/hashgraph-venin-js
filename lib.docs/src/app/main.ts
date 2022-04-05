@@ -88,22 +88,14 @@ async function fetchDocsOperator() {
   if (stratoOperator) {
     window["StratoOperator"] = stratoOperator;
 
-    const {connected, payload} = await HashPackWallet.getConnection({
-      appMetadata: hpAppMetaData,
-      debug: false,
-      networkName: stratoOperator.network,
-    })
-
-    window['hedera'] = connected && payload;
-
     window["connectWallet"] = async (networkName) => {
-      const wallet = await HashPackWallet.initialize({
+      const wallet = await HashPackWallet.newConnection({
         appMetadata: hpAppMetaData,
         debug: false,
         networkName,
       });
 
-      window['hedera'] = wallet;
+      setWallet(wallet);
       return wallet;
     };
 
@@ -113,5 +105,14 @@ async function fetchDocsOperator() {
         window['hedera'] = null;
       }
     }
+
+    setWallet(await HashPackWallet.getConnection(false));
   }
 })();
+
+function setWallet(wallet) {
+  if (wallet) {
+    window['hedera'] = wallet;
+    window.postMessage("WalletLoaded");
+  }
+}

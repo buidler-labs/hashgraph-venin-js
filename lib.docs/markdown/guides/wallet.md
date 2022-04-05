@@ -3,13 +3,14 @@ id: wallet
 title: Wallets
 ---
 
+import BrowserOnly from '@docusaurus/BrowserOnly';
 import { HeadStarterConnectWallet } from '@site/src/components/ConnectWallet';
 
 ## [HIP-338](https://hips.hedera.com/hip/hip-338) compliant
-We might be the first library to support Hedera's standardised wallet proposal and we're damn proud of it.
+We might be the first library to support Hedera's standardized wallet proposal and we're damn proud of it.
 
 Want to give it a spin? Make sure you have [HashPack installed](https://www.hashpack.app/) and then connect to the docs page by clicking 
-<HeadStarterConnectWallet />
+<BrowserOnly fallback={<p>Wallet Button</p>}>{() => <HeadStarterConnectWallet /> }</BrowserOnly>
 
 Then get a hold of [a Session that targets a `Browser` wallet](../configuration.md#HEDERAS_WALLET_TYPE) and use it normally:
 ```js live
@@ -24,6 +25,14 @@ console.log(`The answer is: ${liveJson.theAnswer}`);
 We need here to intentionally specify the `{ wallet: { type: 'Browser' } }` object argument to `ApiSession.default` otherwise, [fallowing normal parameters resolution](../configuration.md#parameters-resolution), the strato bundle would have defaulted to using the implicit `Sdk` wallet type. This is actually the case for other live-code edits present on other pages.
 :::
 
+:::warning
+Due to Hedera's pricing model as well as `Query` mechanics and, in general, overall `Executable` support from wallet extensions, only `Transaction`s are currently supported by our wallet-bridge implementation. 
+
+This means that only `wallet.getAccountBalance()` is supported and that, consequently, `wallet.getAccountInfo()` and `wallet.getAccountRecords()` are not.
+
+This also means that contract creation/querying is not currently supported. We plan on mitigating this with a future Strato release.
+:::
+
 ## Under the hood
 ### Hedera's [SDK implementation](https://github.com/hashgraph/hedera-sdk-js/pull/960)
 A `LocalWallet` and a `LocalProvider` have been developed by Hedera to wrap the traditional `Client` account-operated instance. As of `hedera-sdk-js`'s `v2.11.0`, the only way to instantiate such a wallet is through the following environmental variables:
@@ -36,7 +45,7 @@ A `LocalWallet` and a `LocalProvider` have been developed by Hedera to wrap the 
 
 [^local-provider-hedera-network]: as of `v2.11.0` of the `hedera-sdk-js`, custom network definitions (such as local ones) are not supported. 
 
-Following is a architecture diagram portaing the initial wallet-signer-provider implementation:
+Following is a architecture diagram portraying the initial wallet-signer-provider implementation:
 
 ```mermaid
  classDiagram
@@ -99,7 +108,7 @@ Following is a architecture diagram portaing the initial wallet-signer-provider 
   }
 ```
 
-A couple of sumarizing points here:
+A couple of summarizing points here:
 * `Wallet` is an interface extending a `Signer` and having a `Provider` associated. It's basically the _glue_ that ties everything up
 * As such `Wallet`s are the objects that are meant to be hooked into in order to operate a Hedera session
 * The associated wallet account id information is something bound to the `Wallet` and made available through the `Signer` interface
@@ -110,7 +119,7 @@ For a more detailed analysis, please have a [look at the original HIP](https://h
 
 ### Strato's take
 :::caution
-This feature is currently in active development. As such, it is verry likely that the final API, once the stable release hits the streets, will differ.
+This feature is currently in active development. As such, it is very likely that the final API, once the stable release hits the streets, will differ.
 :::
 
 Based on the original HIP-338 proposal, we went on and simplified the overall `Wallet` interface to a `StratoWallet` which only currently knows 2 operations: 
@@ -156,11 +165,11 @@ We then extracted away the `Signer` query calls and isolated them into their own
 
 ## Configuring
 As seen above, there are currently 2 types of `wallet` backends:
-* a, default, `Sdk` one which uses a reimplemented version of Hedera's `LocalWallet` and `LocalProvider` to also work with `customnet` networks
+* a, default, `Sdk` one which uses a re-implemented version of Hedera's `LocalWallet` and `LocalProvider` to also work with `customnet` networks
 * a `Browser` one which, when selected, looks at a global `window.hedera` object and uses that as the `Wallet` sync for all transactions of that particular session
 
 :::note
 For `Browser` wallets, property names can be changed via the `HEDERAS_WALLET_WINDOW_PROPERTY_NAME`/`wallet.window.propName` config.
 :::
 
-The code for the HashPack HIP-338 wallet-bridge used in this page can be [found here](https://github.com/buidler-labs/hedera-strato-js/tree/va/hip-338/lib.docs/src/hashconnect). In the future, this will most likely be contained within the hashconnect codebase for abvious reasons.
+The code for the HashPack HIP-338 wallet-bridge used in this page can be [found here](https://github.com/buidler-labs/hedera-strato-js/tree/va/hip-338/lib.docs/src/hashconnect). In the future, this will most likely be contained within the hashconnect codebase for obvious reasons.

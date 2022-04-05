@@ -8,7 +8,6 @@ import {
   Client,
   Provider,
   PublicKey,
-  Query,
   SignerSignature,
   Transaction,
   TransactionId,
@@ -24,121 +23,136 @@ import { HashConnectProvider } from './provider';
 import { HashConnectSender } from './sender';
 import { HashPackSigner } from './signer';
 
-const MirrorNetwork = {
-  "mainet": "https://mainnet-public.mirrornode.hedera.com",
-  "previewnet": "https://previewnet.mirrornode.hedera.com",
-  "testnet": "https://testnet.mirrornode.hedera.com",
-};
-
-function loadLocalData() {
-  const foundData = localStorage.getItem("hashconnectData");
-
-  if (foundData) {
-    return { coldStart: false, storedData: JSON.parse(foundData) };
-  }
-  return { coldStart: true, storedData: {} };
+export type PublicAccountInfo = {
+  id: AccountId;
+  publicKey?: PublicKey;
 }
 
+type HashPackConstructorArgs = {
+  account: PublicAccountInfo, 
+  hcSender: HashConnectSender,
+  networkMaturity: string
+};
+
+const HP_LOCAL_STORAGE_KEY = "hashpack-session";
+const HP_WAIT_FOR_EXTENSION_RESPONSE_TIMEOUT = 2000;
+
 export class HashPackWallet extends Wallet {
-  static async getConnection({ networkName = "testnet", debug = false, appMetadata }: { networkName: string, debug: boolean, appMetadata: HashConnectTypes.AppMetadata }) {
-    const { coldStart, storedData } = loadLocalData();
+  static async getConnection(debug = false) {
+    const localWalletData = localStorage.getItem(HP_LOCAL_STORAGE_KEY);
+    let connectionToReturn: null | HashPackWallet = null;
 
-    if(coldStart) {
-      return {
-        connected: false,
-        payload: storedData
-      };
-    }else {
+    if (localWalletData) {
+      const jLocalWalletData = JSON.parse(localWalletData);
       const hashConnect = new HashConnect(debug);
-      await hashConnect.init(appMetadata, storedData.privateKey);
-      await hashConnect.connect(storedData.topic, storedData.pairedWalletData);
 
-      const wallet = new HashPackWallet({
-        accountId: AccountId.fromString(storedData.accountId),
-        accountKey: PublicKey.fromString(storedData.accountKey),
-        hashConnect, networkName,
-        topicId: storedData.topic,
+      await hashConnect.init(jLocalWalletData.appMetadata, jLocalWalletData.privateKey);
+      await hashConnect.connect(jLocalWalletData.topic, jLocalWalletData.pairedWalletData);
+
+      const wallet = await HashPackWallet.newFor({
+        account: {
+          id: AccountId.fromString(jLocalWalletData.accountId),
+          publicKey: PublicKey.fromString(jLocalWalletData.accountPublicKey),
+        },
+        hcSender: new HashConnectSender(hashConnect, jLocalWalletData.topic), 
+        networkMaturity: jLocalWalletData.networkName,
       });
 
-      return {
-        connected: true,
-        payload: wallet
-      };
+      connectionToReturn = wallet;
     }
+    return connectionToReturn;
   }
 
-  static async initialize({ networkName = "testnet", debug = false, appMetadata }: { networkName: string, debug: boolean, appMetadata: HashConnectTypes.AppMetadata }) {
-    const {connected, payload} = await this.getConnection({networkName, debug, appMetadata});
+  static async newConnection({ networkName = "testnet", debug = false, appMetadata }: { networkName: string, debug: boolean, appMetadata: HashConnectTypes.AppMetadata }) {
+    const jLocalWalletData: any = {};
+    const hashConnect = new HashConnect(debug);
+    const initData = await hashConnect.init(appMetadata);
+    const state = await hashConnect.connect();
 
-    if (!connected) {
-      const hashConnect = new HashConnect(debug);
+    jLocalWalletData.privateKey = initData.privKey;
+    jLocalWalletData.topic = state.topic;
 
-      const initData = await hashConnect.init(appMetadata);
-      payload.privateKey = initData.privKey;
+    // First try to see if any browser wallet extension is available with a timeout
+    const extensionCheckWatchdog = new Promise((_, reject) => setTimeout(() => { reject("HashPack browser extension not found."); }, HP_WAIT_FOR_EXTENSION_RESPONSE_TIMEOUT));
+    const extensionFoundEvent = new Promise(accept => hashConnect.foundExtensionEvent.once(_ => {
+      accept(hashConnect.generatePairingString(state, networkName, true));
+    }));
 
-      const state = await hashConnect.connect();
-      payload.topic = state.topic;
+    hashConnect.findLocalWallets();
+    jLocalWalletData.pairingString = await Promise.race([ extensionCheckWatchdog, extensionFoundEvent ]);
 
-      payload.pairingString = hashConnect.generatePairingString(state, networkName, true);
-
-      console.log(`Generated a new paring string: ${payload.pairingString}`);
-      hashConnect.foundExtensionEvent.once(_ => {
-        hashConnect.connectToLocalWallet(payload.pairingString);
-      });
-
-      hashConnect.findLocalWallets();
-
-      return new Promise((accept, reject) => {
-        hashConnect.pairingEvent.once(pairingData => {
-          if (pairingData.accountIds && pairingData.accountIds.length > 0) {
-            const accountId = AccountId.fromString(pairingData.accountIds[0]);
-
-            fetch(`${MirrorNetwork[networkName]}/api/v1/accounts?account.id=${accountId}`)
-                .then(response => response.json())
-                .then(jResponse => {
-                  const accountKey = PublicKey.fromString(jResponse.accounts[0].key.key);
-
-                  localStorage.setItem("hashconnectData", JSON.stringify({
-                    ...payload,
-                    accountId: accountId.toString(), accountKey: accountKey.toStringDer(),
-                    networkName,
-                    pairedWalletData: pairingData.metadata,
-                  }));
-
-                  const wallet = new HashPackWallet({
-                    accountId, accountKey,
-                    hashConnect, networkName,
-                    topicId: payload.topic,
-                  });
-
-                  accept(wallet);
-                });
-          } else {
-            reject("Did not receive back any paired accounts.");
-          }
-        });
-      });
+    // Depending on the execution context, either auto-trigger the extension or dump the pairing string in its console log
+    if (location.protocol !== 'https:') {
+      console.log(`Generated a new paring string: ${jLocalWalletData.pairingString}`);
+    } else {
+      // We can go ahead and trigger the browser wallet extension
+      hashConnect.connectToLocalWallet(jLocalWalletData.pairingString);
     }
 
-    return payload;
+    return new Promise((accept, reject) => {
+      hashConnect.pairingEvent.once(async (pairingData) => {
+        if (pairingData.accountIds && pairingData.accountIds.length > 0) {
+          const accountId = AccountId.fromString(pairingData.accountIds[0]);
+          const wallet = await HashPackWallet.newFor({ 
+            account: {
+              id: accountId,
+            },
+            hcSender: new HashConnectSender(hashConnect, jLocalWalletData.topicId),
+            networkMaturity: networkName,
+          });
+
+          localStorage.setItem(HP_LOCAL_STORAGE_KEY, JSON.stringify({
+            ...jLocalWalletData,
+            accountId: accountId.toString(), accountPublicKey: wallet.getAccountKey().toStringDer(),
+            appMetadata,
+            networkName,
+            pairedWalletData: pairingData.metadata,
+          }));
+          accept(wallet);
+        } else {
+          reject("Did not receive back any paired accounts.");
+        }
+      });
+    });
+  }
+
+  public static async newFor(opts: {
+    account: PublicAccountInfo, 
+    hcSender: HashConnectSender,
+    networkMaturity: string
+  }): Promise<HashPackWallet> {
+    let accountPublicKey = opts.account.publicKey;
+
+    if (!accountPublicKey) {
+      const mirrorSubdomain = (opts.networkMaturity === 'mainnet' ? 'mainnet-public' : 'testnet');
+      const accountInfoFetchUrl = `https://${mirrorSubdomain}.mirrornode.hedera.com/api/v1/accounts/${opts.account.id}`;
+      const accountInfoResponse = await fetch(accountInfoFetchUrl);
+
+      if (!accountInfoResponse.ok) {
+        throw new Error("Account Id could not be retrieved from the network");
+      }
+
+      const jAccountInfo = await accountInfoResponse.json();
+
+      accountPublicKey = PublicKey.fromString(jAccountInfo.key.key);
+    }
+    return new HashPackWallet({
+      ...opts,
+      account: { ...opts.account, publicKey: accountPublicKey },
+    });
   }
 
   private readonly client: Client;
-  private readonly accountId: AccountId;
-  private readonly accountKey: PublicKey;
+  private readonly account: PublicAccountInfo;
   private readonly provider: Provider;
   private readonly signer: HashPackSigner;
-
-  private constructor({ accountId, accountKey, topicId, hashConnect, networkName }) {
+  
+  private constructor(opts: HashPackConstructorArgs) {
     super();
-    const hcSender = new HashConnectSender(hashConnect, topicId);
-
-    this.client = Client.forName(networkName);
-    this.client.setOperator('0.0.2908307', '302e020100300506032b657004220420261b8e33bc1c3258ce166b8577548462149b422f60f699495eef744368808dee');
-    this.accountId = accountId;
-    this.accountKey = accountKey;
-    this.provider = new HashConnectProvider(hcSender, networkName);
-    this.signer = new HashPackSigner(accountId, hcSender);
+    this.client = Client.forName(opts.networkMaturity);
+    this.account = opts.account;
+    this.provider = new HashConnectProvider(opts.hcSender, opts.networkMaturity);
+    this.signer = new HashPackSigner(this.getAccountId(), opts.hcSender);
   }
 
   getProvider() {
@@ -146,7 +160,7 @@ export class HashPackWallet extends Wallet {
   }
 
   getAccountKey() {
-    return this.accountKey;
+    return this.account.publicKey;
   }
 
   getLedgerId() {
@@ -154,7 +168,7 @@ export class HashPackWallet extends Wallet {
   }
 
   getAccountId() {
-    return this.accountId;
+    return this.account.id;
   }
 
   getNetwork() {
@@ -166,34 +180,34 @@ export class HashPackWallet extends Wallet {
   }
 
   async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
-    const sigantures = [];
+    const signatures = [];
 
     for (const message of messages) {
-      sigantures.push(
+      signatures.push(
         new SignerSignature({
-          accountId: this.accountId,
-          publicKey: this.accountKey,
+          accountId: this.getAccountId(),
+          publicKey: this.getAccountKey(),
           signature: await this.signer.sign(message),
         })
       );
     }
-    return sigantures;
+    return signatures;
   }
 
   getAccountBalance() {
-    return this.sendRequest(new AccountBalanceQuery().setAccountId(this.accountId));
+    return this.provider.getAccountBalance(this.getAccountId());
   }
 
   getAccountInfo() {
-    return this.sendRequest(new AccountInfoQuery().setAccountId(this.accountId));
+    return this.provider.getAccountInfo(this.getAccountId());
   }
 
   getAccountRecords() {
-    return this.sendRequest(new AccountRecordsQuery().setAccountId(this.accountId));
+    return this.provider.getAccountRecords(this.getAccountId());
   }
 
   signTransaction(transaction: Transaction) {
-    return transaction.signWith(this.accountKey, this.signer.sign);
+    return transaction.signWith(this.getAccountKey(), this.signer.sign);
   }
 
   async checkTransaction(transaction: Transaction) {
@@ -202,35 +216,28 @@ export class HashPackWallet extends Wallet {
   }
 
   async populateTransaction(transaction: Transaction) {
-    transaction.setTransactionId(TransactionId.generate(this.accountId));
+    transaction.setTransactionId(TransactionId.generate(this.getAccountId()));
     transaction.setNodeAccountIds(Object.values(this.getNetwork()) as AccountId[]);
 
     return transaction;
   }
 
   async sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
-    const shouldForwardToExtension = request instanceof Transaction;
-
     // Prepare request for most use-cases which will end up being routed to the browser wallet
-    if (shouldForwardToExtension) {
+    if (request instanceof Transaction) {
       this.populateTransaction(request);
       request.freezeWith(this.client);
-      request._setOperatorWith(this.accountId, this.accountKey, this.signer.sign);
+      request._setOperatorWith(this.getAccountId(), this.getAccountKey(), this.signer.sign);
 
       return this.provider.sendRequest(request as Executable<RequestT, ResponseT, OutputT>);
     }
-
-    // Transaction is not supported by provider/extension link
-    if (request instanceof Query) {
-      return request.execute(this.client);
-    }
-    return Promise.reject("Request is not yet supported by this wallet.");
+    return Promise.reject("Executable type is not yet supported by this wallet.");
   }
 
-  wipePairingData() {
+  public wipePairingData() {
     try {
-      localStorage.removeItem('hashconnectData');
-    }catch (e) {
+      localStorage.removeItem(HP_LOCAL_STORAGE_KEY);
+    } catch (e) {
       console.error(e);
     }
   }

@@ -37,11 +37,6 @@ export default function strato(options: StratoRollupOptions = {}) {
     'process.env.NODE_ENV': `'${environment.NODE_ENV ?? 'test'}'`,
   }, sourceMap);
   const resolvableIds: { [k:string]: { external: boolean, id: string } } = {
-    // We need to dedupe the sdk itself to forcefully look in the current dir's node_modules to pick up that version of it otherwise, 
-    // due to multiple issues in the SDK code base, the strato runtime might fail in all sorts of ways.
-    // TODO: once sdk is stable, this won't be required.
-    '@hashgraph/sdk': {external: false, id: '@hashgraph/sdk-web'},
-
     'ContractRegistry': {external: false, id: CONTRACT_REGISTRY_ID},
     'ContractsInFileStorage': {external: false, id: CONTRACTS_IN_FILE_STORAGE_ID},
     'SolidityCompiler': {external: false, id: SOLIDITY_COMPILER_ID},

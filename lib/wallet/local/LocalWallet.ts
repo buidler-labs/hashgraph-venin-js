@@ -59,10 +59,10 @@ export class LocalWallet extends Wallet {
   }
 
   async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
-    const sigantures = [];
+    const signatures = [];
 
     for (const message of messages) {
-      sigantures.push(
+      signatures.push(
         new SignerSignature({
           accountId: this.accountId,
           publicKey: this.publicKey,
@@ -70,7 +70,7 @@ export class LocalWallet extends Wallet {
         })
       );
     }
-    return sigantures;
+    return signatures;
   }
 
   getAccountBalance(): Promise<AccountBalance> {
