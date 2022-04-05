@@ -97,7 +97,7 @@ export class HashPackWallet extends Wallet {
             account: {
               id: accountId,
             },
-            hcSender: new HashConnectSender(hashConnect, jLocalWalletData.topicId),
+            hcSender: new HashConnectSender(hashConnect, jLocalWalletData.topic),
             networkMaturity: networkName,
           });
 
