@@ -1,15 +1,25 @@
-import { ContractExecuteTransaction, ContractFunctionParameters, Hbar, PrivateKey } from "@hashgraph/sdk";
+import { 
+  ContractExecuteTransaction, 
+  ContractFunctionParameters, 
+  Hbar, 
+  PrivateKey, 
+  TokenSupplyType, 
+} from "@hashgraph/sdk";
 import {
-  describe, expect, it
+  describe, expect, it,
 } from '@jest/globals';
 
-import { GasFees, defaultNonFungibleTokenFeatures } from "../../constants";
-import { ResourceReadOptions, read as readResource } from "../../utils";
+import { 
+  ResourceReadOptions, 
+  getTokenToTest, 
+  read as readResource, 
+} from "../../utils";
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
+import { GasFees } from "../../constants";
 import { LiveAccountWithPrivateKey } from '../../../lib/live/LiveAccount';
-import { Token } from '../../../lib/static/create/Token';
+import { TokenTypes } from "../../../lib/static/create/Token";
 
 function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'hscs', ...what })
@@ -17,8 +27,7 @@ function read(what: ResourceReadOptions) {
 
 describe('LiveContract.NFTShop', () => {
 
-  // Requires: https://github.com/hashgraph/hedera-sdk-js/pull/953 merged into hedera-sdk-js
-  it.skip("Given an NFT Shop, a user is able to mint", async () => {
+  it("Given an NFT Shop, a user is able to mint", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
 
@@ -27,15 +36,18 @@ describe('LiveContract.NFTShop', () => {
     const contract = await Contract.newFrom({ code: read({ contract: 'NFTShop' }), ignoreWarnings: true });
     const client = session.network.getClient().setOperator(process.env.HEDERAS_OPERATOR_ID, process.env.HEDERAS_OPERATOR_KEY);
     const privKey = PrivateKey.fromString(process.env.HEDERAS_OPERATOR_KEY);
-    const token = new Token(defaultNonFungibleTokenFeatures);
+    const token = getTokenToTest({ 
+      decimals: 0,
+      maxSupply: 10,
+      supplyType: TokenSupplyType.Finite, 
+    }, TokenTypes.NonFungibleUnique, false);
 
     const aliceLiveAccount = await session.create(account);
     const aliceClient = session.network.getClient().setOperator(aliceLiveAccount.id, aliceLiveAccount.privateKey);
     const tokenOwnerAccount = new LiveAccountWithPrivateKey({
       id: client._operator.accountId,
       privateKey: privKey,
-      publicKey: client._operator.publicKey,
-      session
+      session,
     });
     const liveToken = await session.create(token);
     const liveContract = await session.upload(
@@ -44,7 +56,7 @@ describe('LiveContract.NFTShop', () => {
       liveToken,
       client._operator.accountId.toSolidityAddress(),
       nftPrice,
-      "ipfs-hash"
+      "0xbeef"
     );
 
     liveToken.assignSupplyControlTo(liveContract);
@@ -65,16 +77,19 @@ describe('LiveContract.NFTShop', () => {
     expect(aliceInfo.ownedNfts.toNumber()).toEqual(5);
     expect(aliceInfo.balance.toBigNumber().toNumber()).toBeLessThanOrEqual(30);
     expect(contractInfo.balance.toBigNumber().toNumber()).toEqual(50);
-
   });
 
   it("Given an NFT Shop, treasury is able to mint for user", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
-    const metadata = "Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy";
+    const metadata = Buffer.from("Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy");
 
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
-    const token = new Token(defaultNonFungibleTokenFeatures);
+    const token = getTokenToTest({ 
+      decimals: 0,
+      maxSupply: 10,
+      supplyType: TokenSupplyType.Finite, 
+    }, TokenTypes.NonFungibleUnique, false);
     const contract = await Contract.newFrom({ code: read({ contract: 'NFTShop' }) });
 
     const { session } = await ApiSession.default();
@@ -97,13 +112,13 @@ describe('LiveContract.NFTShop', () => {
     });
 
     liveContract.onEvent("NftTransfer", ({tokenAddress, from, to, serialNumbers}) => {
-      session.log.info("NFTs transfered", tokenAddress, serialNumbers.map(item => item.toNumber()), from, to );
+      session.log.info("NFTs transferred", tokenAddress, serialNumbers.map(item => item.toNumber()), from, to );
     });
 
     const serialNumbers = await liveContract.mint(
       {
         amount: new Hbar(nftPrice.toBigNumber().toNumber() * amountToMint),
-        gas: 1_500_000
+        gas: 1_500_000,
       },
       aliceLiveAccount,
       amountToMint
@@ -118,6 +133,5 @@ describe('LiveContract.NFTShop', () => {
     session.log.info(`HBar balance of contract: ${contractInfo.balance.toBigNumber().toNumber()}`);
     expect(aliceInfo.ownedNfts.toNumber()).toEqual(serialNumbers.length);
     expect(contractInfo.balance.toBigNumber().toNumber()).toEqual(nftPrice.toBigNumber().toNumber() * amountToMint);
-
   });
 });

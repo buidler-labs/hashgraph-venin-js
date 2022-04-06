@@ -8,28 +8,33 @@ import {
 } from "@hashgraph/sdk";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
+import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
 import { ArgumentsForCreate } from "../../core/CreatableEntity";
 import { BasicCreatableEntity } from "./BasicCreatableEntity";
 import { LiveToken } from "../../live/LiveToken";
-import { TypeOfExecutionReturn } from "../../ApiSession";
 
 export type TokenFeatures = {
-  name: string,
-  symbol: string,
-  decimals?: number | Long.Long,
-  initialSupply?: number | Long.Long,
+  name?: string,
+  symbol?: string,
   treasuryAccountId?: string | AccountId,
   keys?: TokenKeys,
-  freezeDefault?: boolean,
   autoRenewAccountId?: string | AccountId,
   expirationTime?: Date | Timestamp,
   autoRenewPeriod?: number | Long.Long | Duration,
   tokenMemo?: string,
-  customFees?: { feeCollectorAccountId?: string | AccountId | undefined }[],
-  type: TokenType,
-  supplyType?: TokenSupplyType,
-  maxSupply?: number | Long.Long
 };
+
+export type CreateTokenFeatures = TokenFeatures & {
+  name: string,
+  symbol: string,
+  type: TokenType,
+  maxSupply?: number | Long.Long,
+  supplyType?: TokenSupplyType,
+  initialSupply?: number | Long.Long,
+  decimals?: number | Long.Long,
+  customFees?: { feeCollectorAccountId?: string | AccountId | undefined }[],
+  freezeDefault?: boolean,
+}
 
 type TokenKeys = {
   admin?: Key,
@@ -41,8 +46,14 @@ type TokenKeys = {
   wipe?: Key
 };
 
-class TokenType {
-  public constructor(readonly hTokenType: HederaTokenType) {}
+const _GUARD_OBJ = {};
+
+export class TokenType {
+  public constructor(gObj: any, readonly hTokenType: HederaTokenType) {
+    if (gObj !== _GUARD_OBJ) {
+      throw new Error("TokenType-s can only be created from within the static/Token module");
+    }
+  }
 
   public equals(what: any) {
     return what instanceof TokenType ? this.hTokenType._code === what.hTokenType._code :
@@ -51,34 +62,53 @@ class TokenType {
 }
 
 export const TokenTypes = {
-  FungibleCommon: new TokenType(HederaTokenType.FungibleCommon),
-  NonFungibleUnique: new TokenType(HederaTokenType.NonFungibleUnique),
+  FungibleCommon: new TokenType(_GUARD_OBJ, HederaTokenType.FungibleCommon),
+  NonFungibleUnique: new TokenType(_GUARD_OBJ, HederaTokenType.NonFungibleUnique),
 }
 
 export class Token extends BasicCreatableEntity<LiveToken> {
 
-  public constructor(private readonly info: TokenFeatures) {
+  public static mapTokenFeaturesToTokenUpgradeArguments(tokenFeatures: TokenFeatures) {
+    const upgradeFeatures = {};
+    tokenFeatures.keys?.admin && (upgradeFeatures['adminKey'] = tokenFeatures.keys?.admin);
+    tokenFeatures.keys?.feeSchedule && (upgradeFeatures['feeScheduleKey'] = tokenFeatures.keys?.feeSchedule);
+    tokenFeatures.keys?.freeze && (upgradeFeatures['freezeKey'] = tokenFeatures.keys?.freeze);
+    tokenFeatures.keys?.kyc && (upgradeFeatures['kycKey'] = tokenFeatures.keys?.kyc);
+    tokenFeatures.keys?.pause && (upgradeFeatures['pauseKey'] = tokenFeatures.keys?.pause);
+    tokenFeatures.keys?.supply && (upgradeFeatures['supplyKey'] = tokenFeatures.keys?.supply);
+    tokenFeatures.keys?.wipe && (upgradeFeatures['wipeKey'] = tokenFeatures.keys?.wipe);
+    tokenFeatures.name && (upgradeFeatures['tokenName'] = tokenFeatures.name);
+    tokenFeatures.symbol && (upgradeFeatures['tokenSymbol'] = tokenFeatures.symbol);
+    tokenFeatures.treasuryAccountId && (upgradeFeatures['treasuryAccountId'] = tokenFeatures.treasuryAccountId);
+    return {...upgradeFeatures, ...tokenFeatures};
+  }
+
+  public static mapTokenFeaturesToTokenArguments(tokenFeatures: CreateTokenFeatures, session: ApiSession) {
+    return {
+      // First map to expected properties
+      adminKey: tokenFeatures.keys?.admin !== null ? tokenFeatures.keys?.admin ?? session.publicKey : undefined,
+      feeScheduleKey: tokenFeatures.keys?.feeSchedule !== null ? tokenFeatures.keys?.feeSchedule ?? session.publicKey : undefined,
+      freezeKey: tokenFeatures.keys?.freeze !== null ? tokenFeatures.keys?.freeze ?? session.publicKey : undefined,
+      kycKey: tokenFeatures.keys?.kyc !== null ? tokenFeatures.keys?.kyc ?? session.publicKey : undefined,
+      pauseKey: tokenFeatures.keys?.pause !== null ? tokenFeatures.keys?.pause ?? session.publicKey : undefined,
+      supplyKey: tokenFeatures.keys?.supply !== null ? tokenFeatures.keys?.supply ?? session.publicKey : undefined,
+      tokenName: tokenFeatures.name,
+      tokenSymbol: tokenFeatures.symbol,
+      tokenType: tokenFeatures.type.hTokenType ?? HederaTokenType.FungibleCommon,
+      treasuryAccountId: tokenFeatures.treasuryAccountId ?? session.accountId,
+      wipeKey: tokenFeatures.keys?.wipe !== null ? tokenFeatures.keys?.wipe ?? session.publicKey : undefined,
+  
+      // Merge everything with what's provided
+      ...tokenFeatures,
+    };
+  }
+
+  public constructor(public readonly info: CreateTokenFeatures) {
     super("Token");
   }
 
   public async createVia({ session }: ArgumentsForCreate): Promise<LiveToken> {
-    const constructorArgs = {
-      // First map to expected properties
-      adminKey: this.info.keys?.admin !== null ? this.info.keys?.admin ?? session.publicKey : undefined,
-      feeScheduleKey: this.info.keys?.feeSchedule !== null ? this.info.keys?.feeSchedule ?? session.publicKey : undefined,
-      freezeKey: this.info.keys?.freeze !== null ? this.info.keys?.freeze ?? session.publicKey : undefined,
-      kycKey: this.info.keys?.kyc !== null ? this.info.keys?.kyc ?? session.publicKey : undefined,
-      pauseKey: this.info.keys?.pause !== null ? this.info.keys?.pause ?? session.publicKey : undefined,
-      supplyKey: this.info.keys?.supply !== null ? this.info.keys?.supply ?? session.publicKey : undefined,
-      tokenName: this.info.name,
-      tokenSymbol: this.info.symbol,
-      tokenType: this.info.type.hTokenType ?? HederaTokenType.FungibleCommon,
-      treasuryAccountId: session.accountId,
-      wipeKey: this.info.keys?.wipe !== null ? this.info.keys?.wipe ?? session.publicKey : undefined,
-
-      // Merge everything with what's provided
-      ...this.info,
-    };
+    const constructorArgs = Token.mapTokenFeaturesToTokenArguments(this.info, session);
     const createTokenTransaction = new TokenCreateTransaction(constructorArgs as unknown);
     const creationReceipt = await session.execute(createTokenTransaction, TypeOfExecutionReturn.Receipt, true);
 

@@ -1,22 +1,18 @@
-import { AccountId, AccountInfo, AccountInfoQuery, PrivateKey, PublicKey, Transaction } from "@hashgraph/sdk";
+import { AccountDeleteTransaction, AccountId, AccountInfo, AccountInfoQuery, AccountUpdateTransaction, PrivateKey, Transaction } from "@hashgraph/sdk";
 
+import { Account, AccountFeatures } from "../static/create/Account";
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { LiveEntity } from "./LiveEntity";
-import { SolidityAddressable } from "../core/SolidityAddressable";
+import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 
 type LiveAccountConstructorArgs = {
   session: ApiSession,
   id: AccountId,
-  publicKey: PublicKey,
 };
 
-export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements SolidityAddressable {
-  
-  public readonly publicKey: PublicKey;
+export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInfo, AccountFeatures> {
 
-  constructor({ session, id, publicKey }: LiveAccountConstructorArgs) {
+  constructor({ session, id }: LiveAccountConstructorArgs) {
     super(session, id);
-    this.publicKey = publicKey;
   }
   
   public getSolidityAddress(): string {
@@ -27,6 +23,22 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements S
     const accountInfoQuery = new AccountInfoQuery().setAccountId(this.id);
     return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
   }
+
+  protected _getDeleteTransaction(args?: any): Transaction {
+    args = this._getEntityWithBalanceDeleteArguments(args);
+    return new AccountDeleteTransaction({ accountId: this.id, ...args });
+  }
+  
+  protected async _getUpdateTransaction(args?: AccountFeatures): Promise<Transaction> {
+    const propsUsedForUpdate = await Account.mapAccountFeaturesToAccountArguments(this.session, args);
+
+    return new AccountUpdateTransaction(propsUsedForUpdate);
+  }
+
+  protected _getBalancePayload(): object {
+    return { accountId: this.id };
+  }
+
 }
 
 /**
@@ -36,14 +48,28 @@ export class LiveAccount extends LiveEntity<AccountId, AccountInfo> implements S
 export class LiveAccountWithPrivateKey extends LiveAccount {
   public readonly privateKey: PrivateKey;
 
-  constructor({ session, id, publicKey, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {
-    super({ id, publicKey, session });
+  constructor({ session, id, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {
+    super({ id, session });
     this.privateKey = privateKey;
   }
 
   public tryToSign(transaction: Transaction): void {
     const signature = this.privateKey.signTransaction(transaction);
 
-    transaction.addSignature(this.publicKey, signature);
+    transaction.addSignature(this.privateKey.publicKey, signature);
+  }
+
+  protected async _getUpdateTransaction(args?: AccountFeatures): Promise<Transaction> {
+    const updateTransaction = await super._getUpdateTransaction(args);
+    this.tryToSign(updateTransaction);
+    
+    return updateTransaction;
+  }
+
+  protected _getDeleteTransaction(args?: any): Transaction {
+    const deleteTransaction = super._getDeleteTransaction(args);
+    //TODO: freeze with signer once HIP-338 branch is merged and feature is stable
+    this.tryToSign(deleteTransaction);
+    return deleteTransaction;
   }
 }

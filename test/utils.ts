@@ -5,6 +5,12 @@ import { PrivateKey } from '@hashgraph/sdk';
 import elliptic from "elliptic";
 import nacl from "tweetnacl";
 
+import { 
+  CreateTokenFeatures, 
+  Token, 
+  TokenType, 
+  TokenTypes, 
+} from '../lib/static/create/Token';
 import { ApiSession } from '../lib/ApiSession';
 import { Contract } from '../lib/static/upload/Contract';
 import { 
@@ -38,6 +44,23 @@ export function loadContractRegistry(relativeTo = 'general', recurse = true): Co
   const contractsPath = path.join(__dirname, `${relativeTo}/contracts`);
 
   return new ContractRegistry(contractsPath, recurse);
+}
+
+export function getTokenToTest(
+  featureOverrides: Partial<CreateTokenFeatures> = {}, 
+  tokenType: TokenType = TokenTypes.FungibleCommon,
+  useSessionKeyForKyc = true) {
+  const tokenFeatures = Object.assign({
+    decimals: 0,
+    initialSupply: tokenType.equals(TokenTypes.FungibleCommon) ? 1000 : 0,
+    name: "hbarRocks",
+    symbol: "HROK",
+    type: tokenType,
+  }, 
+  featureOverrides,
+  useSessionKeyForKyc ? {}: { keys: {kyc: null} });
+
+  return new Token(tokenFeatures);
 }
 
 export function getKeyTypeFor(privateKey: PrivateKey): KeyType {

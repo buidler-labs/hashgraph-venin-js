@@ -4,6 +4,7 @@ import Long from "long";
 import {
   ContractCallQuery, 
   ContractCreateTransaction, 
+  ContractDeleteTransaction, 
   ContractExecuteTransaction, 
   ContractFunctionResult, 
   ContractId, 
@@ -11,6 +12,7 @@ import {
   ContractInfoQuery, 
   ContractLogInfo, 
   Hbar, 
+  Transaction, 
   TransactionId,
 } from "@hashgraph/sdk";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
@@ -19,13 +21,13 @@ import { arrayify } from '@ethersproject/bytes';
 import traverse from 'traverse';
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { SolidityAddressable, extractSolidityAddressFrom  } from "../core/SolidityAddressable";
-import { Contract } from "../static/upload/Contract";
+import { Contract, ContractFeatures } from "../static/upload/Contract";
+import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
 import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber';
-import { LiveAddress } from "./LiveAddress";
-import { LiveEntity } from "./LiveEntity";
+import { StratoAddress } from "../core/StratoAddress";
 import { encodeToHex } from '../core/Hex';
+import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
@@ -72,7 +74,7 @@ function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[
   }).filter(parsedLogCandidate => parsedLogCandidate !== null);
 }
 
-export class LiveContract extends LiveEntity<ContractId, ContractInfo> implements SolidityAddressable {
+export class LiveContract extends BaseLiveEntityWithBalance<ContractId, ContractInfo, ContractFeatures> {
 
   /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.
@@ -311,7 +313,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
 
         if (typeof what === 'string' && extractSolidityAddressFrom(what) !== undefined) {
           // most likely, this is a solidity-address
-          f(new LiveAddress({ session: this.session, address: what }), true);
+          f(new StratoAddress(this.session, what), true);
           wasMapped = true;
         } else if (EthersBigNumber.isBigNumber(what)) {
           f(new BigNumber(what.toString()), false);
@@ -370,6 +372,20 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
     const contractInfoQuery = new ContractInfoQuery().setContractId(this.id);
     return this.session.execute(contractInfoQuery, TypeOfExecutionReturn.Result, false);
   }
+  
+  protected _getDeleteTransaction<R>(args?: R): Transaction {
+    args = this._getEntityWithBalanceDeleteArguments(args);
+    return new ContractDeleteTransaction({ contractId: this.id, ...args });
+  }
+
+  protected _getUpdateTransaction(args?: ContractFeatures): Promise<Transaction> {
+    throw new Error("Method not implemented.");
+  }
+
+  protected _getBalancePayload(): object {
+    return { contractId: this.id };
+  }
+  
 }
 
 /**
@@ -381,7 +397,7 @@ export class LiveContractWithLogs extends LiveContract {
   public readonly liveContract: LiveContract;
 
   constructor({ session, id, cInterface, logs }: LiveContractConstructorArgs & { logs: ParsedEvent[] }) {
-    super({ session, id, cInterface });
+    super({ cInterface, id, session });
     this.liveContract = this;
     this.logs = logs;
   }
