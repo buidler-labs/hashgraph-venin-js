@@ -8,16 +8,18 @@ describe('LiveFile', () => {
 
   it("given a string, a file is created from that string", async () => {
     const fileContent = "this is a string";
+    const fileContentBuffer = Buffer.from(fileContent);
 
     const { session } = await ApiSession.default();
     const liveFile = await session.upload(fileContent);
 
     expect(liveFile).toBeInstanceOf(LiveFile);
-    expect(await liveFile.getContents()).toEqual(fileContent);
+    expect(await liveFile.getContents()).toEqual(fileContentBuffer);
   });
 
   it("building a file from it's file id, the content is queried and returned as expected.", async () => {
     const fileContent = "this is a string";
+    const fileContentBuffer = Buffer.from(fileContent);
 
     const { session } = await ApiSession.default();
     const liveFile = await session.upload(fileContent);
@@ -26,7 +28,7 @@ describe('LiveFile', () => {
 
     const contents = await liveFileFromId.getContents();
 
-    expect(contents).toEqual(fileContent);
+    expect(contents).toEqual(fileContentBuffer);
   });
 
   it("building a file from it's file id string, LiveFile is created as expected", async () => {
@@ -58,6 +60,7 @@ describe('LiveFile', () => {
     const liveFile = await session.upload(fileContent);
 
     const updatedContent = "this is another string";
+    const updatedContentBuffer = Buffer.from(updatedContent);
 
     const status = await liveFile.updateEntity({contents: updatedContent});
 
@@ -65,7 +68,7 @@ describe('LiveFile', () => {
 
     const contents = await liveFile.getContents();
 
-    expect(contents).toEqual(updatedContent);
+    expect(contents).toEqual(updatedContentBuffer);
   });
 
   it("deleting an existing file returns success.", async () => {

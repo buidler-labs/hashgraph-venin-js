@@ -3,14 +3,13 @@ import { AccountDeleteTransaction, AccountId, AccountInfo, AccountInfoQuery, Acc
 import { Account, AccountFeatures } from "../static/create/Account";
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
-import { SolidityAddressable } from "../core/SolidityAddressable";
 
 type LiveAccountConstructorArgs = {
   session: ApiSession,
   id: AccountId,
 };
 
-export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInfo, AccountFeatures> implements SolidityAddressable {
+export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInfo, AccountFeatures> {
 
   constructor({ session, id }: LiveAccountConstructorArgs) {
     super(session, id);
@@ -25,17 +24,15 @@ export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInf
     return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
   }
 
-  protected _mapFeaturesToArguments(args?: AccountFeatures): Promise<any> {
-    return Account.considerGenerateKeyFromAccountFeatures(this.session.log, args);
-  }
-
   protected _getDeleteTransaction(args?: any): Transaction {
     args = this._getEntityWithBalanceDeleteArguments(args);
     return new AccountDeleteTransaction({ accountId: this.id, ...args });
   }
   
-  protected _getUpdateTransaction<R>(args?: R): Transaction {
-    return new AccountUpdateTransaction(args);
+  protected async _getUpdateTransaction(args?: AccountFeatures): Promise<Transaction> {
+    const propsUsedForUpdate = await Account.mapAccountFeaturesToAccountArguments(this.session, args);
+
+    return new AccountUpdateTransaction(propsUsedForUpdate);
   }
 
   protected _getBalancePayload(): object {
@@ -62,15 +59,16 @@ export class LiveAccountWithPrivateKey extends LiveAccount {
     transaction.addSignature(this.privateKey.publicKey, signature);
   }
 
-  protected _getUpdateTransaction<R>(args?: R): Transaction {
-    const updateTransaction = super._getUpdateTransaction(args);
+  protected async _getUpdateTransaction(args?: AccountFeatures): Promise<Transaction> {
+    const updateTransaction = await super._getUpdateTransaction(args);
     this.tryToSign(updateTransaction);
+    
     return updateTransaction;
   }
 
   protected _getDeleteTransaction(args?: any): Transaction {
     const deleteTransaction = super._getDeleteTransaction(args);
-    //TODO: freeze with signer once HIP-338 branch is merged
+    //TODO: freeze with signer once HIP-338 branch is merged and feature is stable
     this.tryToSign(deleteTransaction);
     return deleteTransaction;
   }

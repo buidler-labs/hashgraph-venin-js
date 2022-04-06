@@ -1,11 +1,12 @@
-import { Status } from '@hashgraph/sdk';
 import {
   beforeAll, describe, expect, it,
 } from '@jest/globals';
+import { Status } from '@hashgraph/sdk';
 
 import { ApiSession } from "../../../lib/ApiSession";
 import { LiveTopic } from '../../../lib/live/LiveTopic';
 import { Topic } from "../../../lib/static/create/Topic";
+import { VALID_AUTO_RENEW_IN_SECONDS } from '../../constants';
 
 describe('LiveTopic', () => {
   
@@ -32,7 +33,7 @@ describe('LiveTopic', () => {
 
   it("given a topic, getting info about a topic returns the expected information", async () => {
     const memoText = "memo";
-    const renewPeriod = 1000;
+    const renewPeriod = VALID_AUTO_RENEW_IN_SECONDS;
     const liveTopic = await session.create(new Topic({
       autoRenewAccountId: session.accountId,
       autoRenewPeriod: renewPeriod,
@@ -72,7 +73,7 @@ describe('LiveTopic', () => {
     const liveTopic = await session.create(new Topic({keys: {admin: session.publicKey}}));
 
     const memoText = "memo";
-    const renewPeriod = 1000;
+    const renewPeriod = VALID_AUTO_RENEW_IN_SECONDS;
     const updateStatus = await liveTopic.updateEntity({
       autoRenewAccountId: session.accountId,
       autoRenewPeriod: renewPeriod,

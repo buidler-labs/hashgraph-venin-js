@@ -46,8 +46,14 @@ type TokenKeys = {
   wipe?: Key
 };
 
-class TokenType {
-  public constructor(readonly hTokenType: HederaTokenType) {}
+const _GUARD_OBJ = {};
+
+export class TokenType {
+  public constructor(gObj: any, readonly hTokenType: HederaTokenType) {
+    if (gObj !== _GUARD_OBJ) {
+      throw new Error("TokenType-s can only be created from within the static/Token module");
+    }
+  }
 
   public equals(what: any) {
     return what instanceof TokenType ? this.hTokenType._code === what.hTokenType._code :
@@ -56,15 +62,12 @@ class TokenType {
 }
 
 export const TokenTypes = {
-  FungibleCommon: new TokenType(HederaTokenType.FungibleCommon),
-  NonFungibleUnique: new TokenType(HederaTokenType.NonFungibleUnique),
+  FungibleCommon: new TokenType(_GUARD_OBJ, HederaTokenType.FungibleCommon),
+  NonFungibleUnique: new TokenType(_GUARD_OBJ, HederaTokenType.NonFungibleUnique),
 }
 
 export class Token extends BasicCreatableEntity<LiveToken> {
 
-  public constructor(private readonly info: CreateTokenFeatures) {
-    super("Token");
-  }
   public static mapTokenFeaturesToTokenUpgradeArguments(tokenFeatures: TokenFeatures) {
     const upgradeFeatures = {};
     tokenFeatures.keys?.admin && (upgradeFeatures['adminKey'] = tokenFeatures.keys?.admin);
@@ -98,6 +101,10 @@ export class Token extends BasicCreatableEntity<LiveToken> {
       // Merge everything with what's provided
       ...tokenFeatures,
     };
+  }
+
+  public constructor(public readonly info: CreateTokenFeatures) {
+    super("Token");
   }
 
   public async createVia({ session }: ArgumentsForCreate): Promise<LiveToken> {

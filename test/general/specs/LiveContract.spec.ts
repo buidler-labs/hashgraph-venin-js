@@ -4,15 +4,14 @@ import {
 } from '@jest/globals';
 import BigNumber from "bignumber.js";
 
-import { load, read } from "../../utils";
+import { getTokenToTest, load, read } from "../../utils";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 import { LiveContract } from "../../../lib/live/LiveContract";
-import { Token, TokenTypes } from "../../../lib/static/create/Token";
 
 describe('LiveContract', () => {
 
-  it("emitting an event during contract construction time should be returned following a successfull upload", async () => {
+  it("emitting an event during contract construction time should be returned following a successful upload", async () => {
     const { liveContract, logs } = await load('constructor_event');
 
     expect(liveContract).toBeInstanceOf(LiveContract);
@@ -81,7 +80,7 @@ describe('LiveContract', () => {
     expect((spiedReceiptCallback.mock.calls[0][0] as any).transaction).toBeInstanceOf(ContractExecuteTransaction);
   });
 
-  it("calling a live contract method containing bytes32 as a parameter, calling the contract with a hex string is successful", async () => {
+  it("calling a live contract method with a bytes32 parameter encoded into hex format is permitted", async () => {
     const { session } = await ApiSession.default();
     const bytesContract = await Contract.newFrom({ code: read({ contract: 'bytes' }) });
     const liveContract = await session.upload(bytesContract);
@@ -106,20 +105,11 @@ describe('LiveContract', () => {
   });
 
   it("by having an instance of a liveContract, associating a token with the liveContract returns status success", async () => {
-    const tokenFeatures = {
-      decimals: 3,
-      initialSupply: 1000,
-      name: "Wrapped HBAR",
-      symbol: "wHBAR",
-      treasuryAccountId: process.env.HEDERAS_OPERATOR_ID,
-      type: TokenTypes.FungibleCommon,
-    }
-
     const { session } = await ApiSession.default();
     const bytesContract = await Contract.newFrom({ code: read({ contract: 'bytes' }) });
     const liveContract = await session.upload(bytesContract);
 
-    const liveToken = await session.create(new Token(tokenFeatures));
+    const liveToken = await session.create(getTokenToTest());
     const status = await liveContract.associateTokensWithLiveEntity([liveToken.id.toString()]);
     
     expect(status).toEqual(Status.Success);

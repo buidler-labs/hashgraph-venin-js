@@ -19,11 +19,6 @@ type TopicKeys = {
 }
 
 export class Topic extends BasicCreatableEntity<LiveTopic> {
-
-  public constructor(private readonly topicFeatures: TopicFeatures = {}) {
-    super("Topic")
-  }
-
   public static mapTopicFeaturesToTopicArguments(topicFeatures: TopicFeatures): any {
     return {
       adminKey: topicFeatures.keys?.admin,
@@ -32,6 +27,10 @@ export class Topic extends BasicCreatableEntity<LiveTopic> {
       submitKey: topicFeatures.keys?.submit,
       topicMemo: topicFeatures.memo,
     }
+  }
+
+  public constructor(private readonly topicFeatures: TopicFeatures = {}) {
+    super("Topic");
   }
 
   public async createVia({ session }: ArgumentsForCreate): Promise<LiveTopic> {

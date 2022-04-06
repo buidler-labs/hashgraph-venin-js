@@ -1,5 +1,9 @@
-import { ArgumentsOnFileUploaded, BasicUploadableEntity } from "./BasicUploadableEntity";
 import { Key, KeyList } from "@hashgraph/sdk";
+
+import { 
+  ArgumentsOnFileUploaded, 
+  BasicUploadableEntity, 
+} from "./BasicUploadableEntity";
 import { LiveFile } from "../../live/LiveFile";
 
 export type FileFeatures = {

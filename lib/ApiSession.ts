@@ -386,13 +386,11 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     let uploadableWhat: BasicUploadableEntity<T, R, I>;
 
     if (what instanceof BasicUploadableEntity === false) {
-      // Try to go with a live-json upload
-      if(typeof what === 'string' || what instanceof Uint8Array) {
+      if (typeof what === 'string' || what instanceof Uint8Array) {
         uploadableWhat = (new File(what) as unknown) as BasicUploadableEntity<T, R, I>;
-      }else if (Json.isInfoAcceptable(what)) {
+      } else if (Json.isInfoAcceptable(what)) {
         uploadableWhat = (new Json(what) as unknown) as BasicUploadableEntity<T, R, I>;
       } else {
-        // There's nothing we can do
         throw new Error("Can only upload UploadableFile-s or Json-file acceptable content.");
       }
     } else {

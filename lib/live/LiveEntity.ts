@@ -1,10 +1,11 @@
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Status, Transaction } from "@hashgraph/sdk";
+import { SolidityAddressable } from "../core/SolidityAddressable";
 /**
  * Common functionality exhibited by session-bounded, id-entifiable LiveEntity instances.
  */
-export abstract class LiveEntity<T, I, P> {
+export abstract class LiveEntity<T, I, P> implements SolidityAddressable {
   constructor(
     public readonly session: ApiSession,
     public readonly id: T
@@ -21,11 +22,21 @@ export abstract class LiveEntity<T, I, P> {
     return this._equals(what);
   }
 
+  public deleteEntity(args?: any): Promise<Status> {
+    const transaction = this._getDeleteTransaction(args);
+    return this.executeAndReturnStatus(transaction);
+  }
+
+  public async updateEntity(args?: P): Promise<Status> {
+    const transaction = await this._getUpdateTransaction(args);
+    return this.executeAndReturnStatus(transaction);
+  }
+
   protected _equals<R>(what: R): boolean {
     return false;
   }
 
-  protected executeAndReturnStatus(transaction: Transaction): Promise<Status> {
+  protected async executeAndReturnStatus(transaction: Transaction): Promise<Status> {
     return this.session.execute(transaction, TypeOfExecutionReturn.Receipt, false)
       .then(receipt => receipt.status);
   }
@@ -34,20 +45,7 @@ export abstract class LiveEntity<T, I, P> {
 
   public abstract getLiveEntityInfo(): Promise<I>;
 
-  protected abstract _mapFeaturesToArguments(args?: P): Promise<any>;
-
   protected abstract _getDeleteTransaction(args?: any): Transaction;
 
-  public deleteEntity(): Promise<Status> {
-    const transaction = this._getDeleteTransaction();
-    return this.executeAndReturnStatus(transaction);
-  }
-
-  protected abstract _getUpdateTransaction(args?: any): Transaction;
-
-  public async updateEntity(args?: P): Promise<Status> {
-    const entityArgs = await this._mapFeaturesToArguments(args);
-    const transaction = this._getUpdateTransaction(entityArgs);
-    return this.executeAndReturnStatus(transaction);
-  }
+  protected abstract _getUpdateTransaction(args?: P): Promise<Transaction>;
 }

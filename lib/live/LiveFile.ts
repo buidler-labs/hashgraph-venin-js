@@ -1,10 +1,17 @@
 
-import { FileContentsQuery, FileDeleteTransaction, FileId, FileInfo, FileInfoQuery, FileUpdateTransaction, Transaction } from "@hashgraph/sdk";
+import { 
+  FileContentsQuery, 
+  FileDeleteTransaction, 
+  FileId, 
+  FileInfo, 
+  FileInfoQuery, 
+  FileUpdateTransaction, 
+  Transaction, 
+} from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { FileFeatures } from '../static/upload/File';
 import { LiveEntity } from "./LiveEntity";
-import { SolidityAddressable } from "../core/SolidityAddressable";
 
 export type LiveFileConstructorArgs = {
     session: ApiSession,
@@ -12,7 +19,7 @@ export type LiveFileConstructorArgs = {
     data?: string|Uint8Array
 }
 
-export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> implements SolidityAddressable {
+export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
 
   readonly data: string|Uint8Array;
 
@@ -21,34 +28,30 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> impleme
     this.data = data;
   }
 
-  public getLiveEntityInfo(): Promise<FileInfo> {
+  public override getLiveEntityInfo(): Promise<FileInfo> {
     const fileInfoQuery = new FileInfoQuery({ fileId: this.id });
     return this.session.execute(fileInfoQuery, TypeOfExecutionReturn.Result, false);
   }
 
-  getSolidityAddress(): string {
+  override getSolidityAddress(): string {
     return this.id.toSolidityAddress();
   }
 
-  protected _mapFeaturesToArguments(args?: FileFeatures): any {
-    return args;
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected _getDeleteTransaction<R>(args?: R): Transaction {
+  protected override _getDeleteTransaction<R>(args?: R): Transaction {
     return new FileDeleteTransaction({ fileId: this.id });
   }
 
-  protected _getUpdateTransaction<R>(args?: R): Transaction {
+  protected override async _getUpdateTransaction(args?: FileFeatures): Promise<Transaction> {
     return new FileUpdateTransaction({
       ...args,
       fileId: this.id,
     });
   }
 
-  public async getContents() {
+  public async getContents(): Promise<Uint8Array> {
     const fileContentsQuery = new FileContentsQuery({fileId: this.id});
     const queryResponse = await this.session.execute(fileContentsQuery, TypeOfExecutionReturn.Result, false);
-    return queryResponse.toString();
+    return queryResponse;
   }
 }

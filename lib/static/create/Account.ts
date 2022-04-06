@@ -35,7 +35,35 @@ export type CreateAccountFeatures = AccountFeatures & {
 };
 
 export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
-  private _key: PrivateKey;
+  public static async mapAccountFeaturesToAccountArguments<T extends AccountFeatures>(session: ApiSession, features: T): Promise<T> {
+    // we are looking to generate a key if a keyType exists on the AccountFeatures
+    if (features.keyType !== null) {
+      const key = await Account.considerGenerateKeyFromAccountFeatures(session.log, features);
+      return Object.assign({}, features, { key });
+    }
+    return features;
+  }
+
+  /**
+   * @param logger - StratoLogger to log information of the created key
+   * @param features - AccountFeatures being used to find out what type of key needs to be generated
+   * @returns - the key for the new account
+   */
+  public static async considerGenerateKeyFromAccountFeatures<T extends AccountFeatures>(logger: StratoLogger, features: T): Promise<PrivateKey> {
+    let keyToReturn = features.key as PrivateKey;
+    
+    if (!features.key) {
+      const { keyType } = features;
+      const keyTypeString = keyType === KeyType.ED25519 ? KeyType[KeyType.ED25519] : KeyType[KeyType.ECDSA];
+
+      keyToReturn = keyType === KeyType.ED25519 ? 
+        await PrivateKey.generateED25519Async() : await PrivateKey.generateECDSAAsync();
+      logger.debug(`A new '${keyTypeString}' key has been created: ${keyToReturn.toStringDer()} . Copy it since this is only time you'll see it.`);
+    }
+    return keyToReturn;
+  }
+
+  private key: PrivateKey;
   private accountFeatures: CreateAccountFeatures;
 
   public constructor(info?: CreateAccountFeatures) {
@@ -48,8 +76,8 @@ export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
 
   public async createVia({ session }: ArgumentsForCreate): Promise<LiveAccountWithPrivateKey> {
     let resolutedInfo: AccountFeatures;
-    if(this._key) {
-      resolutedInfo = Object.assign({}, this.accountFeatures, { key: this._key });
+    if (this.key) {
+      resolutedInfo = Object.assign({}, this.accountFeatures, { key: this.key });
     }
     resolutedInfo = await Account.mapAccountFeaturesToAccountArguments(session, this.accountFeatures);
     const createAccountTransaction = new AccountCreateTransaction(resolutedInfo);
@@ -60,33 +88,5 @@ export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
       privateKey: resolutedInfo.key as PrivateKey,
       session,
     });
-  }
-
-  public static async mapAccountFeaturesToAccountArguments<T extends AccountFeatures>(session: ApiSession, features: T): Promise<T> {
-    // we are looking to generate a key if a keyType exists on the AccountFeatures
-    if(features.keyType !== null) {
-      const key = await Account.considerGenerateKeyFromAccountFeatures(session.log, features);
-      return Object.assign({}, features, { key });
-    }
-    return features;
-  }
-  /**
-   * 
-   * @param logger - StratoLogger to log information of the created key
-   * @param features - AccountFeatures being used to find out what type of key needs to be generated
-   * @returns - the key for the new account
-   */
-  public static async considerGenerateKeyFromAccountFeatures<T extends AccountFeatures>(logger: StratoLogger, features: T): Promise<PrivateKey> {
-    if (!features.key) {
-      const { keyType } = features;
-      const keyTypeString = keyType === KeyType.ED25519 ? KeyType[KeyType.ED25519] : KeyType[KeyType.ECDSA];
-      const generatedKey = keyType === KeyType.ED25519 ? 
-        await PrivateKey.generateED25519Async() : await PrivateKey.generateECDSAAsync();
-        
-      logger.debug(`A new '${keyTypeString}' key has been created: ${generatedKey.toStringDer()} . Copy it since this is only time you'll see it.`);
-      return generatedKey;
-    } else {
-      return features.key as PrivateKey;
-    }
   }
 }

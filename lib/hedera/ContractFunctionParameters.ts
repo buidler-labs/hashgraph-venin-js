@@ -1,11 +1,17 @@
-import { ConstructorFragment, FunctionFragment } from "@ethersproject/abi";
+import { 
+  ConstructorFragment, 
+  FunctionFragment, 
+} from "@ethersproject/abi";
+import { 
+  Hbar, 
+  ContractFunctionParameters as HederaContractFunctionParameters, 
+} from "@hashgraph/sdk";
 import BigNumber from "bignumber.js";
 import { arrayify } from "@ethersproject/bytes";
 
-import { Hbar, ContractFunctionParameters as HederaContractFunctionParameters } from "@hashgraph/sdk";
-
 import { ParamTypeToFunctionNameMapper } from "../ParamTypeToFunctionNameMapper";
 import { isSolidityAddressable } from "../core/SolidityAddressable";
+import { transform } from "../core/UsefulOps";
 
 export class ContractFunctionParameters extends HederaContractFunctionParameters {
   /**
@@ -21,9 +27,6 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
     } else if (fDescription.inputs.length !== args.length) {
       throw new ContractFunctionParametersParser(`The contract expects ${fDescription.inputs.length} arguments yet ${args.length} were provided.`);
     }
-
-    const applyTransformationToArg = (argument: any, transformArg: (arg: any) => any) => 
-      Array.isArray(argument) ? argument.map(transformArg) : transformArg(argument)
     
     const toReturn = new ContractFunctionParameters();
 
@@ -35,10 +38,9 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
 
       if (fInputDescription.type.startsWith('address')) {
         const considerMappingSolidityAddressableToAddress = (arg: any): string => isSolidityAddressable(arg) ? arg.getSolidityAddress() : arg;
-        argToAdd = applyTransformationToArg(argToAdd, considerMappingSolidityAddressableToAddress);
+        argToAdd = transform(argToAdd, considerMappingSolidityAddressableToAddress);
       } else if (fInputDescription.type.startsWith('bytes') && !(argToAdd instanceof Uint8Array)) {
-        const considerArrayifying = (arg: any): Uint8Array => arrayify(arg);
-        argToAdd = applyTransformationToArg(argToAdd, considerArrayifying);
+        argToAdd = transform(argToAdd, arrayify);
       } else if (shouldUseBigNumbers) {
         const toBigNumber = (arg: any): BigNumber => {
           if(arg instanceof Hbar) {
@@ -46,7 +48,7 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
           }
           return arg instanceof BigNumber ? arg : new BigNumber(arg);
         }
-        argToAdd = applyTransformationToArg(argToAdd, toBigNumber);
+        argToAdd = transform(argToAdd, toBigNumber);
       }
       toReturn[fctCallName](argToAdd);
     }

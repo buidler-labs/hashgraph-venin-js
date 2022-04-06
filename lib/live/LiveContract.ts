@@ -22,12 +22,12 @@ import traverse from 'traverse';
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Contract, ContractFeatures } from "../static/upload/Contract";
-import { SolidityAddressable, extractSolidityAddressFrom  } from "../core/SolidityAddressable";
 import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
 import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber';
 import { StratoAddress } from "../core/StratoAddress";
 import { encodeToHex } from '../core/Hex';
+import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
@@ -74,7 +74,7 @@ function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[
   }).filter(parsedLogCandidate => parsedLogCandidate !== null);
 }
 
-export class LiveContract extends BaseLiveEntityWithBalance<ContractId, ContractInfo, ContractFeatures> implements SolidityAddressable {
+export class LiveContract extends BaseLiveEntityWithBalance<ContractId, ContractInfo, ContractFeatures> {
 
   /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.
@@ -372,17 +372,13 @@ export class LiveContract extends BaseLiveEntityWithBalance<ContractId, Contract
     const contractInfoQuery = new ContractInfoQuery().setContractId(this.id);
     return this.session.execute(contractInfoQuery, TypeOfExecutionReturn.Result, false);
   }
-
-  protected _mapFeaturesToArguments(args?: ContractFeatures): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
   
   protected _getDeleteTransaction<R>(args?: R): Transaction {
     args = this._getEntityWithBalanceDeleteArguments(args);
     return new ContractDeleteTransaction({ contractId: this.id, ...args });
   }
 
-  protected _getUpdateTransaction<R>(args?: R): Transaction {
+  protected _getUpdateTransaction(args?: ContractFeatures): Promise<Transaction> {
     throw new Error("Method not implemented.");
   }
 

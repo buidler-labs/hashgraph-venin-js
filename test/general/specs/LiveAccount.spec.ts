@@ -4,8 +4,8 @@ import {
 } from '@jest/globals';
 
 import { Account, KeyType } from '../../../lib/static/create/Account';
-import { ApiSession } from '../../../lib/ApiSession';
 import { LiveAccount, LiveAccountWithPrivateKey } from '../../../lib/live/LiveAccount';
+import { ApiSession } from '../../../lib/ApiSession';
 import { getKeyTypeFor } from '../../utils';
 
 describe('LiveAccount', () => {

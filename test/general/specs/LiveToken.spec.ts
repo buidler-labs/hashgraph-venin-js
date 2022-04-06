@@ -1,26 +1,15 @@
+import { PublicKey, Status } from '@hashgraph/sdk';
 import {
   beforeAll, beforeEach, describe, expect, it,
 } from '@jest/globals';
 
-import { read } from "../../utils";
-
-import { CreateTokenFeatures, Token, TokenTypes } from '../../../lib/static/create/Token';
-import { PublicKey, Status } from '@hashgraph/sdk';
+import { getTokenToTest, read } from "../../utils";
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 import { LiveToken } from '../../../lib/live/LiveToken';
 
 describe('LiveToken', () => {
-  const defaultTokenFeatures: CreateTokenFeatures = {
-    decimals: 3,
-    initialSupply: 1000,
-    name: "Wrapped HBAR",
-    symbol: "wHBAR",
-    treasuryAccountId: process.env.HEDERAS_OPERATOR_ID,
-    type: TokenTypes.FungibleCommon,
-  };
-
   let session: ApiSession;
   let liveToken: LiveToken;
 
@@ -29,7 +18,7 @@ describe('LiveToken', () => {
   });
 
   beforeEach(async () => {
-    liveToken = await session.create(new Token(defaultTokenFeatures));
+    liveToken = await session.create(getTokenToTest());
   });
 
   it("given a token, solidity address is returned as expected", async () => {
@@ -39,17 +28,19 @@ describe('LiveToken', () => {
   it("getting info of newly created token, info is correct", async () => {
     const info = await liveToken.getLiveEntityInfo();
     const accPubKey = session.publicKey.toString();
+    const testedTokenInfo = getTokenToTest().info;
+
     expect(info.adminKey.toString()).toEqual(accPubKey);
     expect(info.supplyKey.toString()).toEqual(accPubKey);
     expect(info.freezeKey.toString()).toEqual(accPubKey);
     expect(info.wipeKey.toString()).toEqual(accPubKey);
     expect(info.pauseKey.toString()).toEqual(accPubKey);
     expect(info.treasuryAccountId.toString()).toEqual(session.accountId.toString());
-    expect(info.name).toEqual(defaultTokenFeatures.name);
-    expect(info.symbol).toEqual(defaultTokenFeatures.symbol);
-    expect(defaultTokenFeatures.type.equals(info.tokenType)).toBeTruthy();
-    expect(info.totalSupply.toNumber()).toEqual(defaultTokenFeatures.initialSupply);
-    expect(info.decimals).toEqual(defaultTokenFeatures.decimals);
+    expect(info.name).toEqual(testedTokenInfo.name);
+    expect(info.symbol).toEqual(testedTokenInfo.symbol);
+    expect(testedTokenInfo.type.equals(info.tokenType)).toBeTruthy();
+    expect(info.totalSupply.toNumber()).toEqual(testedTokenInfo.initialSupply);
+    expect(info.decimals).toEqual(testedTokenInfo.decimals);
   });
 
   it("given a token, assigning the supply control to a new account should work as expected", async () => {

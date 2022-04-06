@@ -11,7 +11,6 @@ import {
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Token, TokenFeatures } from "../static/create/Token";
 import { LiveEntity } from "./LiveEntity";
-import { SolidityAddressable } from "../core/SolidityAddressable";
 
 type LiveTokenConstructorArgs = {
     session: ApiSession,
@@ -21,7 +20,7 @@ type LiveTokenConstructorArgs = {
 /**
  * Represents a native Token on the Hedera Token Service
  */
-export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> implements SolidityAddressable {
+export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> {
 
   public constructor({ session, id }: LiveTokenConstructorArgs) {
     super(session, id);
@@ -43,18 +42,16 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> imp
     return this.session.execute(tokenInfoQuery, TypeOfExecutionReturn.Result, false);
   }
 
-  protected _mapFeaturesToArguments(args?: TokenFeatures): any {
-    return Token.mapTokenFeaturesToTokenUpgradeArguments(args);
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected _getDeleteTransaction<R>(args?: R): Transaction {
     return new TokenDeleteTransaction({tokenId: this.id})
   }
 
-  protected _getUpdateTransaction<R>(args?: R): Transaction {
+  protected async _getUpdateTransaction(args?: TokenFeatures): Promise<Transaction> {
+    const featuresUsedInTransaction = Token.mapTokenFeaturesToTokenUpgradeArguments(args);
+
     return new TokenUpdateTransaction({
-      ...args,
+      ...featuresUsedInTransaction,
       tokenId: this.id,
     });
   }

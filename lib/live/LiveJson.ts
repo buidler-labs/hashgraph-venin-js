@@ -1,7 +1,7 @@
 import { LiveFile, LiveFileConstructorArgs } from "./LiveFile";
 
 /**
- * Represents a Hedera, HFS-managed Json object
+ * Represents a Hedera, HFS-managed, Json object
  */
 export class LiveJson extends LiveFile {
   
@@ -12,7 +12,7 @@ export class LiveJson extends LiveFile {
     if(typeof data === 'string'){
       data = JSON.parse(data);
     }
-    // Dynamically bind jData properties to instance
+    // Dynamically bind 'data' properties to instance
     Object.keys(data).forEach(jDataKey => Object.defineProperty(this, jDataKey, {
       enumerable: true,
       value: data[jDataKey],

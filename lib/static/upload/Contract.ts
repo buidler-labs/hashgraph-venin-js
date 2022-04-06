@@ -10,8 +10,8 @@ import { CompileIssues } from '../../errors/CompileIssues';
 import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
 
 export type ContractFeatures = {
-  contract: any,
-}
+  // TODO: add feature props here
+};
 
 type AllContractOptions = {
   /**
