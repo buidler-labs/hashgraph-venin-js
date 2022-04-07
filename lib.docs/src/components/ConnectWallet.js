@@ -39,16 +39,15 @@ export const HeadStarterConnectWallet = () => {
   })
 
   const handleOnConnect = async () => {
-    window.connectWallet(operator.network)
-      .then(() => {
-        setState(prevState => ({
-          ...prevState,
-          connected: true
-        }))
-      })
-      .catch(err => {
-        console.error(err)
-      })
+    try {
+      await window.connectWallet(operator.network);
+      setState(prevState => ({
+        ...prevState,
+        connected: true,
+      }));
+    } catch(e) {
+      alert(e);
+    }
   }
 
   const handleOnDisconnect = () => {

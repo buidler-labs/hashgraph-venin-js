@@ -73,7 +73,7 @@ export class HashPackWallet extends Wallet {
     jLocalWalletData.topic = state.topic;
 
     // First try to see if any browser wallet extension is available with a timeout
-    const extensionCheckWatchdog = new Promise((_, reject) => setTimeout(() => { reject("HashPack browser extension not found."); }, HP_WAIT_FOR_EXTENSION_RESPONSE_TIMEOUT));
+    const extensionCheckWatchdog = new Promise((_, reject) => setTimeout(() => { reject("The HashPack browser extension could not be found. Please install it to continue."); }, HP_WAIT_FOR_EXTENSION_RESPONSE_TIMEOUT));
     const extensionFoundEvent = new Promise(accept => hashConnect.foundExtensionEvent.once(_ => {
       accept(hashConnect.generatePairingString(state, networkName, true));
     }));
