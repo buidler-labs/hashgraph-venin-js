@@ -1,11 +1,11 @@
-import { AccountId, PrivateKey, TransactionId, TransferTransaction } from '@hashgraph/sdk';
+import { AccountId, Hbar, PrivateKey, Status, TransactionId, TransferTransaction } from '@hashgraph/sdk';
 import {
   describe, expect, it,
 } from '@jest/globals';
 
 import { Account, KeyType } from '../../../lib/static/create/Account';
+import { LiveAccount, LiveAccountWithPrivateKey } from '../../../lib/live/LiveAccount';
 import { ApiSession } from '../../../lib/ApiSession';
-import { LiveAccountWithPrivateKey } from '../../../lib/live/LiveAccount';
 import { getKeyTypeFor } from '../../utils';
 
 describe('LiveAccount', () => {
@@ -50,7 +50,49 @@ describe('LiveAccount', () => {
 
     account.tryToSign(transaction);
 
-    expect(transaction._signerPublicKeys).toContain(account.publicKey.toStringRaw());
+    expect(transaction._signerPublicKeys).toContain(account.privateKey.publicKey.toStringRaw());
 
+  });
+
+  it("given a new account with initial balance, querying the balance returns the right amounts", async () => {
+    const { session } = await ApiSession.default();
+    const account = await session.create(new Account({initialBalance: new Hbar(10)}));
+
+    const balance = await account.getBalanceOfLiveEntity();
+
+    expect(balance.hbars.toBigNumber().toNumber()).toEqual(10);
+  });
+
+  it.skip("given a new account, updating it works as expected", async () => {
+    const { session } = await ApiSession.default();
+    const account = await session.create(new Account());
+
+    const updateStatus = await account.updateEntity({maxAutomaticTokenAssociations: 10});
+
+    expect(updateStatus).toEqual(Status.Success);
+
+    const info = await account.getLiveEntityInfo();
+
+    expect(info.maxAutomaticTokenAssociations.toString()).toEqual('10');
+  });
+
+  it.skip("given a new account, deleting it works as expected", async () => {
+    const { session } = await ApiSession.default();
+    const account = await session.create(new Account());
+
+    const deleteStatus = await account.deleteEntity();
+    
+    expect(deleteStatus).toEqual(Status.Success);
+  });
+
+  it("instantiating an account with an id, getting balance works as expected", async () => {
+    const { session } = await ApiSession.default();
+    const createdAccount = await session.create(new Account({initialBalance: new Hbar(10)}));
+
+    const account = new LiveAccount({id: createdAccount.id, session });
+
+    const balance = await account.getBalanceOfLiveEntity();
+
+    expect(balance.hbars.toBigNumber().toNumber()).toEqual(10);
   });
 });

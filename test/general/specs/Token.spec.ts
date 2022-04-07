@@ -1,4 +1,5 @@
 import { 
+  TokenType as HederaTokenType,
   PrivateKey, 
   PublicKey, 
   TokenCreateTransaction, 
@@ -9,10 +10,18 @@ import {
   jest,
 } from '@jest/globals';
 
-import { Token, TokenTypes } from '../../../lib/static/create/Token';
+import { 
+  Token, 
+  TokenType, 
+  TokenTypes, 
+} from '../../../lib/static/create/Token';
 import { ApiSession } from '../../../lib/ApiSession';
 
 describe('Token', () => {
+  it("TokenType-s should not be created from outside the Token module", () => {
+    expect(() => new TokenType({}, HederaTokenType.FungibleCommon)).toThrow();
+  });
+
   it("null key values should disable them altogether when creating a token", async () => {
     const { publicKey } = PrivateKey.generateED25519();
     const mockedSessionExecute = jest.fn().mockReturnValue({ tokenId: TokenId.fromString("0.0.69") });

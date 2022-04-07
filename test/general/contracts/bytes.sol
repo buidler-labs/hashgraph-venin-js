@@ -10,6 +10,10 @@ contract Bytes {
         buff32 = _buff32;
     }
 
+    function setBytes32(bytes32 _buff32) public {
+        buff32 = _buff32;
+    }
+
     function get() public view returns (bytes memory, bytes32) {
         return (buff, buff32);
     }

@@ -3,10 +3,13 @@ import { Interface } from "@ethersproject/abi";
 
 import { SolidityAddressable, extractSolidityAddressFrom } from "../core/SolidityAddressable";
 import { ApiSession } from "../ApiSession";
-import { LiveContract } from "./LiveContract";
-import { LiveEntity } from "./LiveEntity";
+import { LiveContract } from "../live/LiveContract";
+import { LiveEntity } from "../live/LiveEntity";
 
-export class LiveAddress extends LiveEntity<string, void> implements SolidityAddressable {
+export class StratoAddress implements SolidityAddressable {
+
+  public readonly id: string;
+
   private static getSolidityAddressMatchOrDieTryingFrom(addr: string): string {
     const matchedSolidityAddress = extractSolidityAddressFrom(addr);
     
@@ -17,8 +20,11 @@ export class LiveAddress extends LiveEntity<string, void> implements SolidityAdd
     return matchedSolidityAddress.toLowerCase();
   }
 
-  public constructor({ session, address }: { session: ApiSession, address: string }) {
-    super(session, LiveAddress.getSolidityAddressMatchOrDieTryingFrom(address));
+  constructor(
+    public readonly session: ApiSession,
+    address: string
+  ) { 
+    this.id = StratoAddress.getSolidityAddressMatchOrDieTryingFrom(address);
   }
     
   public getSolidityAddress(): string {
@@ -31,12 +37,11 @@ export class LiveAddress extends LiveEntity<string, void> implements SolidityAdd
     return new LiveContract({ cInterface, id, session: this.session });
   }
 
-  protected override _equals<R>(other: R): boolean {
-    return typeof other === 'string' ? extractSolidityAddressFrom(other).toLocaleLowerCase() === this.id : 
-      other instanceof AccountId ? other.toSolidityAddress() === this.id : false;
-  }
-
-  public getLiveEntityInfo(): Promise<void> {
-    throw new Error("Method does not exist for type LiveAddress");
+  public equals<R>(what: R | LiveEntity<any, any, any>): boolean {
+    if (what instanceof LiveEntity) {
+      return what.id.toString() === this.id.toString();
+    }
+    return typeof what === 'string' ? extractSolidityAddressFrom(what).toLocaleLowerCase() === this.id : 
+      what instanceof AccountId ? what.toSolidityAddress() === this.id : false;
   }
 }

@@ -11,7 +11,7 @@ import {
 } from "../../utils";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
-import { LiveEntity } from "../../../lib/live/LiveEntity";
+import { StratoAddress } from '../../../lib/core/StratoAddress';
 
 function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'taskbar', ...what });
@@ -45,9 +45,9 @@ describe('LiveContract.TaskBar', () => {
       taskId
     );
     expect(gottenTask.disputionTime).not.toBeUndefined();
-    expect(gottenTask.needer).toBeInstanceOf(LiveEntity);
+    expect(gottenTask.needer).toBeInstanceOf(StratoAddress);
     expect(gottenTask.needer.equals(session.wallet.account.id)).toBeTruthy();
-    expect(gottenTask.tasker).toBeInstanceOf(LiveEntity);
+    expect(gottenTask.tasker).toBeInstanceOf(StratoAddress);
     expect(gottenTask.tasker.equals("0x0000000000000000000000000000000000000000")).toBeTruthy();
     expect(gottenTask).toMatchObject({
       disputed: [ false, false ],
@@ -57,7 +57,7 @@ describe('LiveContract.TaskBar', () => {
       ploc: arrayify("0x3637333437343635363837343335373236383737373437323635363736353732"),
       price: new BigNumber(200),
       taskType: 1,
-      tploc: arrayify("0x0000000000000000000000000000000000000000000000000000000000000000")
+      tploc: arrayify("0x0000000000000000000000000000000000000000000000000000000000000000"),
     });
   });
 

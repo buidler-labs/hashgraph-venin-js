@@ -2,6 +2,9 @@
 
 module.exports = {
   collectCoverage: true,
+  coveragePathIgnorePatterns : [
+    "test/*",
+  ],
   displayName: 'hedera-strato',
   moduleFileExtensions: ['js', 'ts'],
   preset: "ts-jest",
