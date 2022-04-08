@@ -22,7 +22,7 @@ export type WalletControllerParameters = {
 };
 type WalletRuntimeParameters = {
   controller: WalletControllerParameters,
-  type: WalletType,
+  type: string|WalletType,
   sdk: {
     operatorId: string,
     operatorKey: string
@@ -61,7 +61,7 @@ export type StratoContextSource = {
 // Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
 const DEFAULT_FILE_CHUNK_SIZE = 1024;
 
-const DefinedNetworkDefaults: { [k: string]: NetworkDefaults } = {
+export const DefinedNetworkDefaults: { [k: string]: NetworkDefaults } = {
   [AVAILABLE_NETWORK_NAMES.CustomNet]: {
     fileChunkSize: DEFAULT_FILE_CHUNK_SIZE,
   }, 
@@ -126,7 +126,7 @@ export class StratoContext {
   }
 
   public async getWallet(controller?: WalletController): Promise<ControlledWallet> {
-    const walletType = this.params.wallet.type;
+    const walletType = typeof this.params.wallet.type === 'string' ? this.walletTypes.getBy({ name: this.params.wallet.type }) : this.params.wallet.type;
     const resolvedController = controller ?? 
       this.walletControllers.getBy({ name: this.params.wallet.controller.type }) ?? 
       new walletType.defaultController(this);

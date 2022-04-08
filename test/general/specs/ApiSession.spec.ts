@@ -14,6 +14,7 @@ import { EnvironmentInvalidError } from '../../../lib/errors/EnvironmentInvalidE
 import { HEDERA_CUSTOM_NET_NAME } from '../../../lib/HederaNetwork';
 import { LiveToken } from '../../../lib/live/LiveToken';
 import { StratoContext } from '../../../lib/StratoContext';
+import { WalletType } from '../../../lib/wallet/WalletType';
 
 describe('ApiSession', () => {
   const ORIGINAL_ENV = process.env;
@@ -57,18 +58,21 @@ describe('ApiSession', () => {
       HEDERAS_OPERATOR_KEY: "302e020100300506032b657004220420c344b07fa7bb3107116dea17de7a0f565ef68795b9d9f6c92f3094f1d98ed0ef"
     };
     const spyApiSessionBuildFrom = jest.spyOn(ApiSession, "buildFrom");
-
+    
     await fs.writeFile(tmpDotEnvFileName, Object.keys(tmpDotEnvFileContent).map(key => `${key}=${tmpDotEnvFileContent[key]}`).join('\n'));
     try {
       await ApiSession.default(tmpDotEnvFileName);
 
       expect(spyApiSessionBuildFrom.mock.calls.length === 1).toBeTruthy();
       expect(spyApiSessionBuildFrom.mock.calls[0][0]).toBeInstanceOf(StratoContext);
+
+      const walletTypedInstance = spyApiSessionBuildFrom.mock.calls[0][0].params.wallet.type as WalletType;
+
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.name).toEqual(tmpDotEnvFileContent.HEDERAS_NETWORK);
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.nodes).not.toBeUndefined();
       expect(spyApiSessionBuildFrom.mock.calls[0][0].network.nodes['127.0.0.1:123']).toEqual(new AccountId(69));
-      expect(spyApiSessionBuildFrom.mock.calls[0][0].params.wallet.type.name).toEqual("Sdk");
-      expect(spyApiSessionBuildFrom.mock.calls[0][0].params.wallet.type.computeColdStartOptionsFrom(spyApiSessionBuildFrom.mock.calls[0][0].params)).toMatchObject({
+      expect(walletTypedInstance.name).toEqual("Sdk");
+      expect(walletTypedInstance.computeColdStartOptionsFrom(spyApiSessionBuildFrom.mock.calls[0][0].params)).toMatchObject({
         accountId: AccountId.fromString(tmpDotEnvFileContent.HEDERAS_OPERATOR_ID),
         privateKey: PrivateKey.fromStringED25519(tmpDotEnvFileContent.HEDERAS_OPERATOR_KEY),
       });

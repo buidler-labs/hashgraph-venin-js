@@ -2,12 +2,12 @@ import {
   describe, expect, it,
 } from '@jest/globals';
 import { 
-  AccountId 
+  AccountId, 
 } from '@hashgraph/sdk';
 
 import { 
   HEDERA_CUSTOM_NET_NAME,
-  HederaNetwork 
+  HederaNetwork, 
 } from '../../../lib/HederaNetwork';
 
 describe('HederaNetwork', () => {
@@ -19,9 +19,8 @@ describe('HederaNetwork', () => {
       { fileChunkSize: 1024 },
       HEDERA_CUSTOM_NET_NAME, {
         "node_0:52111": node0Account,
-        "node_1:52111": node1Account
+        "node_1:52111": node1Account,
       }
     )).not.toThrowError();
   });
 });
-
