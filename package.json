@@ -49,10 +49,10 @@
     "test": "run-s test:node test:jsdom test:rollup",
     "test:ci": "run-s lint test test:rollup",
     "test:browser": "run-s build:bundle-test-rollup test:smoke-rollup",
-    "test:node": "jest --env=./test/jte.node.ts",
+    "test:node": "jest --config=jest.node.config.cjs",
     "test:node-previewnet": "PORTAL_NETWORK=previewnet node ./script/test-online.mjs",
     "test:node-testnet": "PORTAL_NETWORK=testnet node ./script/test-online.mjs",
-    "test:jsdom": "jest --env=./test/jte.web.ts --setupFilesAfterEnv core-js ./test/setup.web.ts",
+    "test:jsdom": "jest --config=jest.web.config.cjs",
     "test:smoke-rollup": "karma start ./test/rollup/karma.smoke.conf.js"
   },
   "keywords": [
