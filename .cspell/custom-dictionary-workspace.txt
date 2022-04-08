@@ -1,0 +1,13 @@
+# Custom Dictionary Words
+Buidler
+cmfcmf
+estree
+polies
+resolutedAbi
+resolutedInfo
+TransactionedReceipt
+tweetnacl
+_valueInTinybar
+arrayify
+considerArrayifying
+Tinybar
