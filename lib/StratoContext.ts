@@ -182,6 +182,7 @@ export class StratoContext {
       contractTransactionGas: rParams.session?.defaults?.contractCreationGas ?? parseInt(resolveSessionDefaultValueFor("contract_transaction_gas") ?? "169000"),
       emitConstructorLogs: rParams.session?.defaults?.emitConstructorLogs ?? (resolveSessionDefaultValueFor("emit_constructor_logs") ?? "true") === "true",
       emitLiveContractReceipts: rParams.session?.defaults?.emitLiveContractReceipts ?? (resolveSessionDefaultValueFor("emit_live_contracts_receipts") ?? "false") === "true",
+      onlyReceiptsFromContractRequests: rParams.session?.defaults?.onlyReceiptsFromContractRequests ?? (resolveSessionDefaultValueFor("contract_requests_return_only_receipts") ?? "true") === "true",
       paymentForContractQuery: rParams.session?.defaults?.paymentForContractQuery ?? parseInt(resolveSessionDefaultValueFor("payment_for_contract_query") ?? "1000000"),
     };
   }
