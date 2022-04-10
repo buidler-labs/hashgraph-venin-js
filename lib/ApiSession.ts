@@ -58,12 +58,14 @@ type TransactionedReceipt<R> = {
 };
 
 export const enum TypeOfExecutionReturn {
+  OnlyReceipt = "OnlyReceipt",
   Receipt = "Receipt",
   Record = "Record",
   Result = "Result"
 }
 
 type ExecutionReturnTypes<T> = {
+  [TypeOfExecutionReturn.OnlyReceipt]: TransactionReceipt,
   [TypeOfExecutionReturn.Receipt]: TransactionReceipt,
   [TypeOfExecutionReturn.Record]: TransactionRecord,
   [TypeOfExecutionReturn.Result]: T
@@ -79,6 +81,7 @@ export type SessionDefaults = {
   contractTransactionGas: number,
   emitConstructorLogs: boolean,
   emitLiveContractReceipts: boolean,
+  onlyReceiptsFromContractRequests: boolean,
   paymentForContractQuery: number
 };
 
@@ -212,7 +215,8 @@ export class ApiSession implements SolidityAddressable {
       // start out by generating the receipt for the original transaction
       txReceipt = await this.client.getReceipt(txResponse);
 
-      if (returnType === TypeOfExecutionReturn.Record || (isContractTransaction && returnType === TypeOfExecutionReturn.Result)) {
+      if (returnType !== TypeOfExecutionReturn.OnlyReceipt &&
+        (returnType === TypeOfExecutionReturn.Record || (isContractTransaction && returnType === TypeOfExecutionReturn.Result))) {
         const txRecordQuery = new TransactionRecordQuery().setTransactionId(txResponse.transactionId);
 
         txRecord = await this.client.execute(txRecordQuery);
@@ -230,6 +234,7 @@ export class ApiSession implements SolidityAddressable {
 
     // Depending on the return-type resolution, fetch the typed-result
     return {
+      [TypeOfExecutionReturn.OnlyReceipt]: txReceipt,
       [TypeOfExecutionReturn.Record]: txRecord,
       [TypeOfExecutionReturn.Receipt]: txReceipt,
       [TypeOfExecutionReturn.Result]: executionResult,
