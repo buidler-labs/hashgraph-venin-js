@@ -385,8 +385,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<ContractId, Contract
     return this.session.execute(contractInfoQuery, TypeOfExecutionReturn.Result, false);
   }
   
-  protected _getDeleteTransaction<R>(args?: R): Transaction {
-    args = this._getEntityWithBalanceDeleteArguments(args);
+  protected override newDeleteTransaction<R>(args?: R): Transaction {
     return new ContractDeleteTransaction({ contractId: this.id, ...args });
   }
 

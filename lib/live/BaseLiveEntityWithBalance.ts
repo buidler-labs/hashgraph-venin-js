@@ -5,6 +5,7 @@ import {
   Status, 
   TokenAssociateTransaction, 
   TokenId, 
+  Transaction, 
   TransferTransaction,
 } from "@hashgraph/sdk";
 
@@ -35,12 +36,19 @@ export abstract class BaseLiveEntityWithBalance<T, I, P> extends LiveEntity<T, I
     return this.executeAndReturnStatus(tokenAssociateTransaction);
   }
 
-  protected _getEntityWithBalanceDeleteArguments(args: any): any {
+  protected override _getDeleteTransaction(args?: any): Transaction {
+    return this.newDeleteTransaction(this._getDeleteArguments(args));
+  }
+
+  private _getDeleteArguments(args: any): any {
+    let argsToReturn = args;
+
     if(!args || !args.has("transferAccountId") || !args.has("transferContractId")) {
-      args = { "transferAccountId": this.session.wallet.account.id };
+      argsToReturn = { ...args, "transferAccountId": this.session.wallet.account.id };
     }
-    return args;
+    return argsToReturn;
   }
 
   protected abstract _getBalancePayload(): object;
+  protected abstract newDeleteTransaction(args?: any): Transaction;
 }
