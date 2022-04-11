@@ -151,7 +151,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     } else if (typeof byteCode === 'string' && byteCode.length !== 0) {
       if(/.*__\$.*\$__.*/.test(byteCode)) {
         throw new Error("Library linking is not currently supported. Please follow issue #38 for more info.");
-      } else if(!byteCode || !/^[0-9a-f]+$/.test(byteCode)) {
+      } else if(!/^[0-9a-f]+$/.test(byteCode)) {
         throw new Error("Please provide the valid formatted byte-code definition for the Contract in order to instantiate it.");
       }
     } else {
