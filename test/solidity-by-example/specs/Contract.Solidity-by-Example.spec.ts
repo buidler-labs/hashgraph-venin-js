@@ -1,5 +1,5 @@
 import {
-    describe, expect, it,
+  describe, expect, it,
 } from '@jest/globals';
 
 import { ResourceReadOptions, read as readResource } from '../../utils';

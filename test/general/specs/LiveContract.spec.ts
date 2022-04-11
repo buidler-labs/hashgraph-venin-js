@@ -11,6 +11,13 @@ import { LiveContract } from "../../../lib/live/LiveContract";
 
 describe('LiveContract', () => {
 
+  it("an abstract solidity contract should not be permitted to be uploaded to the network", async () => {
+    const { session } = await ApiSession.default();
+    const bytesContract = await Contract.newFrom({ code: read({ contract: 'abstract_storage' }) });
+    
+    expect(async () => await session.upload(bytesContract)).rejects.toThrow();
+  });
+
   it("emitting an event during contract construction time should be returned following a successful upload", async () => {
     const { liveContract, logs } = await load('constructor_event');
 
