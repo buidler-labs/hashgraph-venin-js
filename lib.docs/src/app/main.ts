@@ -6,10 +6,12 @@ import {
   Account,
   ApiSession,
   Contract,
+  File,
   Json,
   KeyType,
   Token,
   TokenTypes,
+  Topic,
 } from '@buidlerlabs/hedera-strato-js';
 
 import {
@@ -75,10 +77,12 @@ async function fetchDocsOperator() {
   } finally {
     window["Account"] = Account;
     window["Contract"] = Contract;
+    window["File"] = File;
     window["Json"] = Json;
     window["KeyType"] = KeyType;
     window["Token"] = Token;
     window["TokenTypes"] = TokenTypes;
+    window["Topic"] = Topic;
   }
 }
 

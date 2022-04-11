@@ -14,9 +14,9 @@ import { FileFeatures } from '../static/upload/File';
 import { LiveEntity } from "./LiveEntity";
 
 export type LiveFileConstructorArgs = {
-    session: ApiSession,
-    id: string | FileId,
-    data?: string|Uint8Array
+  session: ApiSession,
+  id: string | FileId,
+  data?: string|Uint8Array
 }
 
 export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {

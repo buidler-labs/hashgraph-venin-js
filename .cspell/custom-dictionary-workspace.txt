@@ -1,13 +1,14 @@
+_valueInTinybar
 # Custom Dictionary Words
+arrayify
 Buidler
 cmfcmf
+considerArrayifying
+easy-peasy
 estree
 polies
 resolutedAbi
 resolutedInfo
+Tinybar
 TransactionedReceipt
 tweetnacl
-_valueInTinybar
-arrayify
-considerArrayifying
-Tinybar

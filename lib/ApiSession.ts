@@ -312,7 +312,7 @@ export class ApiSession implements SolidityAddressable {
    * 
    * @param {Uploadable} what - The {@link UploadableEntity} to push through this {@link ApiSession}
    * @param {*} args - A list of arguments to pass through the upload operation itself.
-   *                   Note: this list has, by convention, at various unpaking stages in the call hierarchy, the capabilities to specify SDK behavior through
+   *                   Note: this list has, by convention, at various unpacking stages in the call hierarchy, the capabilities to specify SDK behavior through
    *                         eg. "_file" ({@link UploadableEntity}) or "_contract" ({@link Contract})
    * @returns - An instance of the {@link UploadableEntity} concrete result-type which is a subtype of {@link LiveEntity}.
    */

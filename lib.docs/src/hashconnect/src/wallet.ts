@@ -1,10 +1,7 @@
 /* eslint-env browser */
 
 import {
-  AccountBalanceQuery,
   AccountId,
-  AccountInfoQuery,
-  AccountRecordsQuery,
   Client,
   Provider,
   PublicKey,

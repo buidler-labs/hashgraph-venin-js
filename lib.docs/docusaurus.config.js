@@ -67,6 +67,7 @@ module.exports = async function () {
         copyright: `Copyright © ${new Date().getFullYear()} <a href='https://github.com/buidler-labs'>Buidler Labs</a>. Built with ❤️ in <a href='https://docusaurus.io/'>Docusaurus</a>.`,
         logo: {
           alt: 'BuiDler Labs Logo',
+          href: 'https://buidlerlabs.com/',
           src: 'img/logos/buidler-labs.png',
         },
         style: 'dark',

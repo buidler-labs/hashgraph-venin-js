@@ -8,7 +8,7 @@ As we [previously saw](./quick-start.md), in order to get a hold on a precious s
 * `ApiSession.default(params?, path?)`
 * `ApiSession.buildFrom(StratoContext)`
 
-Both of them return a Promise which, when resolved, give back the `ApiSession` instance to play with. In fact, `ApiSession.buildFrom(StratoContext)` is wrapped by it's `default` sibling which, we could argue, will most likey probabily end up to being used the most. 
+Both of them return a Promise which, when resolved, give back the `ApiSession` instance to play with. In fact, `ApiSession.buildFrom(StratoContext)` is wrapped by it's `default` sibling which, we could argue, will most likely probability end up to being used the most. 
 
 This section describes the arguments of `ApiSession.default` and how they can be used to obtain a session to operate on.
 
@@ -16,7 +16,7 @@ The `default` session can be procured in one of the 4 following ways:
 * `ApiSession.default()` - run most often with no arguments at all, in which case it will try to load the parameters from the environment file present at `HEDERAS_ENV_PATH` environment-variable path or, if not specified, default loading the `.env` from repo-root. This is basically equivalent to calling `ApiSession.default({}, path = process.env.HEDERAS_ENV_PATH || '.env')`
 * `ApiSession.default(path)` - parse params present at `path` env-file location. This ends up running `ApiSession.default({}, path)`
 * `ApiSession.default(params)` - build the desired context unpacking a runtime representation of a json object. This is equivalent to running `ApiSession.default(params, path = process.env.HEDERAS_ENV_PATH || '.env')`
-* `ApiSession.default(params, path)` - creates a session-execution context (`StratoContex`) by [doing a parameter resolution](#parameters-resolution) over the provided arguments
+* `ApiSession.default(params, path)` - creates a session-execution context (`StratoContext`) by [doing a parameter resolution](#parameters-resolution) over the provided arguments
 
 Following is a table detailing all the object-parameters along with their environmental variables counterparts which can be used to bootstrap a Strato session.
 
@@ -46,7 +46,7 @@ Following is a table detailing all the object-parameters along with their enviro
 <!-- Be careful with the order of the generated footnotes! Rendering them always maintains the same order and markdown has to be aligned with this otherwise the reference links won't work -->
 [^winston-logger-github]: see https://github.com/winstonjs/winston#logging
 [^wallet-type-hedera]: required if `HEDERAS_WALLET_TYPE`/`wallet.type` is `Sdk` (the default)
-[^customnet-nodes]: a comma separated string of node-network addreses having the following format : `<ip>:<port>#<account_id>` eg `127.0.0.2:52111#3` to make an address-book of one node located at `127.0.0.1`, port `52111` having account-id `0.0.3` 
+[^customnet-nodes]: a comma separated string of node-network addresses having the following format : `<ip>:<port>#<account_id>` eg `127.0.0.2:52111#3` to make an address-book of one node located at `127.0.0.1`, port `52111` having account-id `0.0.3` 
 [^customnet-hedera-network]: required if `HEDERAS_NETWORK`/`network.name` is `customnet`
 [^relative-path-prefixes]: a comma separated list of relative folder paths to look at when importing a relative solidity contract-file from within one of the contracts that we wish to compile
 [^default-operatorKey]: required if `HEDERAS_WALLET_CONTROLLER_TYPE` is `DefaultPrivateKey`

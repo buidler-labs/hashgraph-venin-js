@@ -9,7 +9,7 @@ export class Json extends BasicUploadableEntity<LiveJson> {
    * Checks to see if a piece of data can be referenced by a {@link Json} object or not.
    * 
    * @param {object} jInfo - info-param to check 
-   * @returns - true if the data is {@link Json} referenceable and false otherwise
+   * @returns - true if the data is {@link Json} reference-able and false otherwise
    */
   public static isInfoAcceptable(jInfo: object): boolean {
     try {
@@ -30,7 +30,7 @@ export class Json extends BasicUploadableEntity<LiveJson> {
       ) !== undefined;
 
       if (containsInvalidKeys) {
-        throw new Error("Static Jsons can only be constructed from JSON objects whos properties dont't start with '_' or has the 'id' naming.");
+        throw new Error("Static Jsons can only be constructed from JSON objects who's properties don't start with '_' or has the 'id' naming.");
       }
     }
   }

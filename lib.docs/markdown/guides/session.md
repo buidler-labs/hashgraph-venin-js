@@ -22,7 +22,7 @@ Retrieval operations
 ## Subscribing to receipts
 The session also allows to get notified of transaction receipts via the `subscribeToReceiptsWith` method. You pass it a callback, do some contract transactions and wait to get called like so:
 
-```js live=true containerKey=subscribe_to_recipts
+```js live=true containerKey=subscribe_to_receipts
 const code = `
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
@@ -35,7 +35,7 @@ contract Counter {
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ code });
 const receiptsSubscription = session.subscribeToReceiptsWith(({ transaction, receipt }) => {
-    console.log(`Transaction ${transaction.transactionId.toString()} receipt reported finishing with status ${receipt.status}`);
+    console.log(`Transaction ${transaction.transactionId} receipt reported finishing with status ${receipt.status}`);
 });
 const liveContract = await session.upload(contract);
 

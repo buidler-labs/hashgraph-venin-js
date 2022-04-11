@@ -7,7 +7,7 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 import { HeadStarterConnectWallet } from '@site/src/components/ConnectWallet';
 
 ## [HIP-338](https://hips.hedera.com/hip/hip-338) compliant
-We might be the first library to support Hedera's standardized wallet proposal and we're damn proud of it.
+We might be the first non-official library to support Hedera's standardized wallet proposal and we're damn proud of it.
 
 Want to give it a spin? Make sure you have [HashPack installed](https://www.hashpack.app/) and then connect to the docs page by clicking 
 <BrowserOnly fallback={<p>Wallet Button</p>}>{() => <HeadStarterConnectWallet /> }</BrowserOnly>
@@ -17,12 +17,12 @@ Then get a hold of [a Session that targets a `Browser` wallet](../configuration.
 const { session } = await ApiSession.default({ wallet: { type: 'Browser' } });
 const liveJson = await session.upload(new Json({ theAnswer: 42 }));
 
-console.log(`Wallet account id used: ${session.wallet.account.id.toString()}`);
-console.log(`Json is stored at ${liveJson.id.toString()}`);
+console.log(`Wallet account id used: ${session.wallet.account.id}`);
+console.log(`Json is stored at ${liveJson.id}`);
 console.log(`The answer is: ${liveJson.theAnswer}`);
 ```
 :::note
-We need here to intentionally specify the `{ wallet: { type: 'Browser' } }` object argument to `ApiSession.default` otherwise, [fallowing normal parameters resolution](../configuration.md#parameters-resolution), the strato bundle would have defaulted to using the implicit `Sdk` wallet type. This is actually the case for other live-code edits present on other pages.
+We need here to intentionally specify the `{ wallet: { type: 'Browser' } }` object argument to `ApiSession.default` otherwise, [fallowing normal parameters resolution](../configuration.md#parameters-resolution), the strato bundle would have defaulted to using the implicit `Sdk` wallet type which was configured when bundling for use with these docs. This is actually the case for other live-code edits present on other pages.
 :::
 
 :::warning
