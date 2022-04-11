@@ -26,7 +26,21 @@ describe('Contract', () => {
     }
   });
 
-  it('given neither the source code nor the source path, instantiating a Contract should not be permitted.', async () => {
+  it('equality testing suite', async () => {
+    expect(Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`).equals(Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`))).toBeTruthy();
+    expect(Contract.deserialize(`{"name": "A", "abi": []}`).equals(Contract.deserialize(`{"name": "A", "abi": []}`))).toBeTruthy();
+    expect(Contract.deserialize(`{"name": "A", "abi": ["function set(uint256 _num)"]}`).equals(Contract.deserialize(`{"name": "A", "abi": ["function set(uint256 _num)"]}`))).toBeTruthy();
+    expect(Contract.deserialize(`{"name": "B", "byteCode": "beef", "abi": ["function set(uint256 _num)"]}`).equals(Contract.deserialize(`{"name": "A", "byteCode": "beef", "abi": ["function set(uint256 _num)"]}`)))
+      .toBeTruthy();
+    expect(Contract.deserialize(`{"name": "B", "byteCode": "beef", "abi": ["function num() view returns (uint256)", "function set(uint256 _num)"]}`)
+      .equals(Contract.deserialize(`{"name": "A", "byteCode": "beef", "abi": ["function set(uint256 _num)", "function num() view returns (uint256)"]}`)))
+      .toBeTruthy();
+
+    expect(Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`).equals(Contract.deserialize(`{"name": "A", "byteCode": "bc", "abi": []}`))).not.toBeTruthy();
+    expect(Contract.deserialize(`{"name": "A", "abi": ["function set(uint256 _num)"]}`).equals(Contract.deserialize(`{"name": "A", "abi": []}`))).not.toBeTruthy();
+  });
+
+  it('given neither the source code nor the source path, instantiating a Contract should not be permitted', async () => {
     await expect(Contract.allFrom({ })).rejects.toThrow();
     await expect(Contract.newFrom({ })).rejects.toThrow();
   });
@@ -50,7 +64,7 @@ describe('Contract', () => {
       expect(e.constructor.name).toEqual(CompileIssues.name);
       return;
     }
-    throw new Error("Instantiating a Contract works even though it should fail having warnings reported.");
+    throw new Error("Instantiating a Contract works even though it should fail having warnings reported");
   });
 
   it("given a solidity contract code which doesn't have a license, extracting all the Contracts should succede if we don't care about compiler warnings", async () => {

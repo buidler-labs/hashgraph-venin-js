@@ -172,7 +172,22 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     if (other instanceof Contract === false) {
       return false;
     }
-    return this.byteCode === other.byteCode;
+    const thisFragments = this.interface.fragments;
+    const otherFragments = other.interface.fragments;
+
+    if (thisFragments.length !== otherFragments.length) {
+      return false;
+    }
+
+    let areAbisTheSame = true;
+
+    for (const thisFragment of thisFragments) {
+      if (!otherFragments.find(otherFragment => otherFragment.format() === thisFragment.format())) {
+        areAbisTheSame = false;
+        break;
+      }
+    }
+    return this.byteCode === other.byteCode && areAbisTheSame;
   }
 
   /**
