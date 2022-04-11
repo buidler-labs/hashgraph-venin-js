@@ -43,4 +43,4 @@ Since it's a `LiveEntity` type (which implements the `SolidityAddressable` inter
 Of course, this also means that you can delete it via the `LiveAccount.deleteEntity({ transferAccountId?: AccountId })`. When deleting, you are given the option of providing a `transferAccountId` recipient of the remaining account hbar value. If none provided, the operation will default using the `ApiSession`'s wallet account id.
 
 #### Updating
-On the other hand, if you want to [update elements of your smart contract](https://docs.hedera.com/guides/docs/sdks/cryptocurrency/update-an-account), you can do a `LiveEntity.updateEntity(AccountFeatures)`. The updated properties follows the same object schema definition as when creating an `Account`, namely, the `AccountFeatures` type defined above.
+On the other hand, if you want to [update elements of your account](https://docs.hedera.com/guides/docs/sdks/cryptocurrency/update-an-account), you can do a `LiveEntity.updateEntity(AccountFeatures)`. The updated properties follows the same object schema definition as when creating an `Account`, namely, the `AccountFeatures` type defined above.

@@ -36,7 +36,9 @@ The `_file` property is needed when `upload`ing a file to distinguish it from `u
 Besides setting a `memo` you can pick and use any other fields that [the `FileCreateTransaction` supports](https://docs.hedera.com/guides/docs/sdks/file-storage/create-a-file).
 
 ### Retrieving a file from the network
-Is not currently possible, but will be [once #58 gets implemented](https://github.com/buidler-labs/hedera-strato-js/issues/58).
+Although there is no `ApiSession.getLiveJson` equivalent method available to retrieve a `LiveFile` from Hedera (this will be supported [once #58 gets implemented](https://github.com/buidler-labs/hedera-strato-js/issues/58)), we do provide a workaround:
+- having a `FileId` at hand, manually create a `LiveFile` via its constructor binding it to a working `ApiSession`
+- call `LiveFile.getContents()` to retrieve it's raw `Uint8Array` content
 
 ### Deleting an online file
 To delete a deployed `File`, you have to have the wallet `ApiSession` owner be the owner of the `LiveFile` and then do a `LiveFile.deleteEntity()` call.
