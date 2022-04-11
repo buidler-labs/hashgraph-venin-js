@@ -6,12 +6,14 @@ import {
 } from '@hashgraph/sdk';
 
 import { load, read } from "../../utils";
+import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
+import { LiveAccount } from '../../../lib/live/LiveAccount';
 import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 describe('LiveAddress', () => {
-  it("given an all-caps address, the resulting LiveAddress id should be lower-capsed, matching hedera's toSolidityAddress behaviour", async () => {
+  it("given an all-caps address, the resulting LiveAddress id should be lower-capsed, matching hedera's toSolidityAddress behavior", async () => {
     const { session } = await ApiSession.default();
     const allUpperCasedAddress = "0000000000000000000000000000000000000ABC";
     const liveAddress = new StratoAddress(session, allUpperCasedAddress);
@@ -53,5 +55,17 @@ describe('LiveAddress', () => {
     const liveContractFromLiveAddress = await address.toLiveContract(contract.interface);
 
     expect(liveContractFromLiveAddress.equals(liveContract)).toBeTruthy();
+  });
+
+  it("given an account-id returned by a method from a live-contract, when converting it, it should allow mapping it to a live-account", async () => {
+    const { session } = await ApiSession.default();
+    const contract = await Contract.newFrom({ code: read({ contract: 'account_id_store' }) });
+    const account = await session.create(new Account());
+    const liveContract = await session.upload(contract, account);
+    const idStoredInContract = await liveContract.idAddress() as StratoAddress;
+    const liveAccountOfContractStoredAccountId = await idStoredInContract.toLiveAccount();
+
+    expect(liveAccountOfContractStoredAccountId).toBeInstanceOf(LiveAccount);
+    expect(liveAccountOfContractStoredAccountId.equals(account)).toBeTruthy();
   });
 });

@@ -1,4 +1,5 @@
 import * as fs from 'fs/promises';
+import * as legacyFs from 'fs';
 import * as path from 'path';
 
 // @ts-ignore: Must use self-referencing imports here otherwise we risk getting into strange cyclic-dependency issues
@@ -37,11 +38,6 @@ export default function strato(options: StratoRollupOptions = {}) {
     'process.env.NODE_ENV': `'${environment.NODE_ENV ?? 'test'}'`,
   }, sourceMap);
   const resolvableIds: { [k:string]: { external: boolean, id: string } } = {
-    // We need to dedupe the sdk itself to forcefully look in the current dir's node_modules to pick up that version of it otherwise, 
-    // due to multiple issues in the SDK code base, the strato runtime might fail in all sorts of ways.
-    // TODO: once sdk is stable, this won't be required.
-    '@hashgraph/sdk': {external: false, id: '@hashgraph/sdk-web'},
-
     'ContractRegistry': {external: false, id: CONTRACT_REGISTRY_ID},
     'ContractsInFileStorage': {external: false, id: CONTRACTS_IN_FILE_STORAGE_ID},
     'SolidityCompiler': {external: false, id: SOLIDITY_COMPILER_ID},
@@ -100,32 +96,80 @@ function getPoliePathOf(file) {
 async function getRegistryCodeFor(solPaths: string[]) {
   const resolvedStaticContracts: Contract[] = await Promise.all(
     solPaths.map(
-      solFilePath => Contract.allFrom({ 
-        ignoreWarnings: true,
-        path: solFilePath, 
-      }),
+      solFilePath => getAllVirtuallyLocalizedContracts(solFilePath),
     )
   );
   const staticContracts = resolvedStaticContracts.reduce((a, b) => a.concat(b), []);
   const contractsRegistryCode = `export default {
-    ${ staticContracts.map(contract => `"${contract.name}": ${JSON.stringify(contract.interface.format())}`).join(",") }
+    ${ staticContracts.map(({ contract, vLocation }) => `"${vLocation}": ${JSON.stringify(contract.interface.format())}`).join(",") }
   }`;
 
   return contractsRegistryCode;
 }
 
-async function getSolFiles(path: string, recurse = false) {
-  let filesInPath = [];
-  try {
-    filesInPath = await fs.readdir(path, { withFileTypes: true });
-  } catch(e) {
-    console.warn(`Could not read contracts from '${path}': ${e.message} Skipping ...`);
+/**
+ * Given a {@param solPath} relative file location, it compiles and retrieves all the inner {@link Contract}s along with their virtual-path locations 
+ * primarily used for the generation of the ContractRegistry in folder-nested solidity scenarios.
+ * 
+ * Eg #1: solPath = 'a.sol' => vLocation = name of the inner contract(s)
+ * Eg #2: solPath = 'b/a.sol' => vLocation = "b/<name of the inner contract(s)>"
+ * Eg #3: solPath = 'c.d e/b/a.sol' => vLocation = "c_d_e/b/<name of the inner contract(s)>"
+ * 
+ * Note: Eg #3 depicts a more complicated use case with sanitization taking place.
+ * 
+ * @param solPath - The solidity-file path to load the contracts from.
+ *                  Note: Only relative locations are supported.
+ * @returns {[{ contract: Contract, vLocation: string }]}
+ */
+async function getAllVirtuallyLocalizedContracts(solPath: string) {
+  if (path.isAbsolute(solPath)) {
+    throw new Error("Only relative solidity paths can be virtually localisable")
   }
 
-  const solFilesInPath = filesInPath.filter(potentialSolFile => potentialSolFile.isFile() && potentialSolFile.name.endsWith(".sol"));
+  const contracts = await Contract.allFrom({ 
+    ignoreWarnings: true,
+    path: solPath, 
+  });
+  const solDirName = path.dirname(solPath);
+  const normalizedPathSegments = solDirName === '.' ? [] : solDirName.split(path.sep).map(pathSegment => pathSegment.replace(/[ \\."']+/g, "_"));
+
+  return contracts.map(contract => ({
+    contract,
+    vLocation: [...normalizedPathSegments, contract.name].join('/'),
+  }));
+}
+
+/**
+ * Given a {@link basePath}, it looks for and retrieves a list of all .sol file directory-entries ({@link legacyFs.Dirent}). If {@link recurse} is set to true, it descends into the lower, inner, directories
+ * and tries to load all .sol files from all inner levels.
+ * 
+ * @param basePath - The absolute base-folder to start the .sol files loading from
+ * @param recurse - true to recurse into inner sub-folders and false otherwise. 
+ *                  If set to false, it just takes the top-level folder and sees what solidity files can be retrieved from there.
+ *                  It defaults to false.
+ * @param relativePath - a {@link basePath} relative subfolder structure path to look for .sol files
+ * @returns - a list of directory-entries of all .sol files found in {@param basePath}
+ */
+async function getSolFiles(basePath: string, recurse = false, relativePath = ''): Promise<legacyFs.Dirent[]> {
+  const finalPath = `${basePath}/${relativePath}`;
+  let filesInPath: legacyFs.Dirent[] = [];
+
+  try {
+    filesInPath = await fs.readdir(finalPath, { withFileTypes: true });
+  } catch(e) {
+    console.warn(`StratoRollup - Could not read contracts from '${finalPath}': ${e.message} Skipping ...`);
+  }
+
+  const solFilesInPath = filesInPath.filter(potentialSolFile => potentialSolFile.isFile() && potentialSolFile.name.endsWith(".sol"))
+    .map(solFile => {
+      solFile.name = relativePath !== '' ? `${relativePath}/${solFile.name}` : solFile.name;
+
+      return solFile;
+    });
   const directoriesInPath = recurse ? filesInPath.filter(potentialDirectory => potentialDirectory.isDirectory())
     .map(filteredEntry => filteredEntry.name) : [];
-  const solRecurseInDirectory = await Promise.all(directoriesInPath.map(directory => getSolFiles(directory, recurse)));
+  const solRecurseInDirectory = await Promise.all(directoriesInPath.map(directory => 
+    getSolFiles(basePath, recurse, relativePath !== '' ? `${relativePath}/${directory}` : directory)));
   const solFilesRecurse = solRecurseInDirectory.reduce((a, b) => a.concat(b), []);
 
   return [
@@ -134,7 +178,7 @@ async function getSolFiles(path: string, recurse = false) {
   ];
 }
 
-async function getStorageCodeFor(basePath: string, solFiles: FileSystemDirectoryEntry[]) {
+async function getStorageCodeFor(basePath: string, solFiles: legacyFs.Dirent[]) {
   const contractSources = await Promise.all(solFiles.map(async (solFile) => ({
     code: await fs.readFile(`${basePath}/${solFile.name}`),
     name: solFile.name,

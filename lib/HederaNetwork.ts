@@ -1,21 +1,22 @@
 import { 
   AccountId, 
-  Client
+  Client,
 } from "@hashgraph/sdk";
 import { NetworkName } from "@hashgraph/sdk/lib/client/Client";
 
-import { 
-  HederaNodesAddressBook, 
-  NetworkRuntimeParameters 
-} from "./StratoContext";
 import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
+import { 
+  NetworkRuntimeParameters, 
+} from "./StratoContext";
+
+export type HederaNodesAddressBook = { [key: string]: string | AccountId };
 
 /**
- * The Hedera Network label value used in library configurations (such as the {@link HederaNetwork.defaultApiSession} method) to signify 
+ * The Hedera Network label value used in library configurations (such as the {@link ApiSession.default} method) to signify 
  * that the library is targeting a custom network implementation with its own nodes apart from [the official ones](https://docs.hedera.com/guides/mirrornet/hedera-mirror-node#mainnet). 
  * 
- * `Note:` When this type of network is selected, its node addressbook must also be provided and that is usually done through something like the
- *         `HEDERAS_NODES` env-parameter (when using {@link HederaNetwork.defaultApiSession})
+ * `Note:` When this type of network is selected, its node address book must also be provided and that is usually done through something like the
+ *         `HEDERAS_NODES` env-parameter (when using {@link ApiSession.default})
  * 
  * Example of a `.env` file that targets a `customnet`, [local hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) deployment:
  * ```
@@ -37,7 +38,7 @@ export const AVAILABLE_NETWORK_NAMES = {
   CustomNet: HEDERA_CUSTOM_NET_NAME, 
   MainNet: "mainnet",
   PreviewNet: "previewnet", 
-  TestNet: "testnet"
+  TestNet: "testnet",
 };
 
 export type NetworkDefaults = { 

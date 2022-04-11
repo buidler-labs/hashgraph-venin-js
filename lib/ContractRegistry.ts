@@ -36,7 +36,7 @@ function getSolFiles(path: string, recurse: boolean): string[] {
   try {
     filesInPath = fs.readdirSync(path, { withFileTypes: true });
   } catch(e) {
-    console.warn(`Could not read contracts from '${path}': ${e.message} Skipping ...`);
+    // TODO: log this once logger is available: `ContractRegistry - Could not read contracts from '${path}': ${e.message} Skipping ...`
   }
 
   const basePathAppender = (dirEntry: fs.Dirent) => `${path}/${dirEntry.name}`;

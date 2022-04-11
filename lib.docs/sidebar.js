@@ -29,6 +29,10 @@ module.exports = {
       label: "Bundling",
       type: 'doc',
     }, {
+      id: 'markdown/guides/wallet',
+      label: "Wallet",
+      type: 'doc',
+    }, {
       id: 'markdown/guides/session',
       label: "Session",
       type: 'doc',
@@ -37,8 +41,10 @@ module.exports = {
       items: [ 
         'markdown/guides/entities/account', 
         'markdown/guides/entities/contract', 
+        'markdown/guides/entities/file',
         'markdown/guides/entities/json',
         'markdown/guides/entities/token', 
+        'markdown/guides/entities/topic', 
       ],
       label: 'Entities',
       type: 'category',

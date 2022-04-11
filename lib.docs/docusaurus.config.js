@@ -40,7 +40,10 @@ module.exports = async function () {
             showLastUpdateTime: true,
             sidebarPath: path.join(__dirname, './sidebar.js'),
           },
-          googleAnalytics: false,
+          googleAnalytics: {
+            anonymizeIP: true,
+            trackingID: 'G-ZHBJ3QTDC9',
+          },
           gtag: false,
           theme: {
             customCss: [
@@ -51,19 +54,11 @@ module.exports = async function () {
       ],
     ],
     projectName: "hedera-strato-js",
-    scripts: [
-      "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js",
-      {
-        async: true,
-        src: '/strato-loader.js',
-      }, {
-        async: true,
-        src: '/hedera-strato.js.map',
-      },
-    ],
+    scripts: [{
+      src: '/js/app.js',
+      type: 'module',
+    }],
     staticDirectories: [
-      "src/strato/lib.esm",
-      "src/strato/loaders",
       "static",
     ],
     tagline: "Write Hedera dApps like a boss because why not?",
@@ -72,6 +67,7 @@ module.exports = async function () {
         copyright: `Copyright © ${new Date().getFullYear()} <a href='https://github.com/buidler-labs'>Buidler Labs</a>. Built with ❤️ in <a href='https://docusaurus.io/'>Docusaurus</a>.`,
         logo: {
           alt: 'BuiDler Labs Logo',
+          href: 'https://buidlerlabs.com/',
           src: 'img/logos/buidler-labs.png',
         },
         style: 'dark',

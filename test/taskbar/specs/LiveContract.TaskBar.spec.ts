@@ -46,7 +46,7 @@ describe('LiveContract.TaskBar', () => {
     );
     expect(gottenTask.disputionTime).not.toBeUndefined();
     expect(gottenTask.needer).toBeInstanceOf(StratoAddress);
-    expect(gottenTask.needer.equals(session.accountId)).toBeTruthy();
+    expect(gottenTask.needer.equals(session.wallet.account.id)).toBeTruthy();
     expect(gottenTask.tasker).toBeInstanceOf(StratoAddress);
     expect(gottenTask.tasker.equals("0x0000000000000000000000000000000000000000")).toBeTruthy();
     expect(gottenTask).toMatchObject({

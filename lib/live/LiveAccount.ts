@@ -1,4 +1,12 @@
-import { AccountDeleteTransaction, AccountId, AccountInfo, AccountInfoQuery, AccountUpdateTransaction, PrivateKey, Transaction } from "@hashgraph/sdk";
+import { 
+  AccountDeleteTransaction, 
+  AccountId, 
+  AccountInfo, 
+  AccountInfoQuery, 
+  AccountUpdateTransaction, 
+  PrivateKey, 
+  Transaction, 
+} from "@hashgraph/sdk";
 
 import { Account, AccountFeatures } from "../static/create/Account";
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
@@ -24,8 +32,7 @@ export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInf
     return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
   }
 
-  protected _getDeleteTransaction(args?: any): Transaction {
-    args = this._getEntityWithBalanceDeleteArguments(args);
+  protected override newDeleteTransaction(args?: any): Transaction {
     return new AccountDeleteTransaction({ accountId: this.id, ...args });
   }
   

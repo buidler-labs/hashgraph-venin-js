@@ -12,9 +12,9 @@ describe('BrowserSmoke', function () {
     const { session } = await ApiSession.default();
     const contract = await Contract.newFrom({ path: 'hello_world.sol' });
     const liveContract = await session.upload(contract);
-    const greetReponse = await liveContract.greet();
+    const greetResponse = await liveContract.greet();
 
-    expect(greetReponse).toEqual("Hello World!");
+    expect(greetResponse).toEqual("Hello World!");
   }, 30000);
 
   it("a simple contract given by code can be compiled, uploaded and executed with the result returned", async () => {
@@ -28,17 +28,17 @@ describe('BrowserSmoke', function () {
     const { session } = await ApiSession.default();
     const contract = await Contract.newFrom({ code });
     const liveContract = await session.upload(contract);
-    const greetReponse = await liveContract.greet();
+    const greetResponse = await liveContract.greet();
 
-    expect(greetReponse).toEqual("Hello World from code!");
+    expect(greetResponse).toEqual("Hello World from code!");
   }, 30000);
 
   it("given a solidity file with a simple contract, its ABI should be generated allowing for, in browser, session live-contract retrievals", async () => {
     const { session } = await ApiSession.default();
     // Note: this contract has been deployed on testnet only
     const liveContract = await session.getLiveContract({ abi: ContractRegistry.HelloWorld, id: '0.0.30840469' } );
-    const greetReponse = await liveContract.greet();
+    const greetResponse = await liveContract.greet();
 
-    expect(greetReponse).toEqual("Hello ABI World!");
+    expect(greetResponse).toEqual("Hello ABI World!");
   });
 });

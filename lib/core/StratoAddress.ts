@@ -3,6 +3,7 @@ import { Interface } from "@ethersproject/abi";
 
 import { SolidityAddressable, extractSolidityAddressFrom } from "../core/SolidityAddressable";
 import { ApiSession } from "../ApiSession";
+import { LiveAccount } from "../live/LiveAccount";
 import { LiveContract } from "../live/LiveContract";
 import { LiveEntity } from "../live/LiveEntity";
 
@@ -16,7 +17,7 @@ export class StratoAddress implements SolidityAddressable {
     if (!matchedSolidityAddress) {
       throw new Error(`The provided address '${addr}' does not appear to be a valid Solidity address.`);
     }
-    // We're lower-caseing this to match Hedera's ".toSolidityAddress" behaviour for consistency
+    // We're lower-casein this to match Hedera's ".toSolidityAddress" behavior for consistency
     return matchedSolidityAddress.toLowerCase();
   }
 
@@ -31,8 +32,14 @@ export class StratoAddress implements SolidityAddressable {
     return this.id;
   }
 
+  public async toLiveAccount(): Promise<LiveAccount> {
+    const id = AccountId.fromSolidityAddress(this.getSolidityAddress());
+
+    return new LiveAccount({ id, session: this.session });
+  }
+
   public async toLiveContract(cInterface: Interface): Promise<LiveContract> {
-    const id = ContractId.fromSolidityAddress(await this.getSolidityAddress());
+    const id = ContractId.fromSolidityAddress(this.getSolidityAddress());
 
     return new LiveContract({ cInterface, id, session: this.session });
   }

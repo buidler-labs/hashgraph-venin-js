@@ -6,13 +6,15 @@ import {
   ContractId, 
   FileContentsQuery, 
   FileId, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  LocalWallet,
   PublicKey, 
   Query, 
   Transaction,
   TransactionReceipt,
   TransactionRecord,
   TransactionRecordQuery,
-  TransactionResponse 
+  TransactionResponse,
 } from '@hashgraph/sdk';
 import { EventEmitter } from "events";
 import { Interface } from '@ethersproject/abi';
@@ -24,7 +26,6 @@ import {
 } from "./core/UsefulTypes";
 import { StratoContext, StratoContextSource, StratoParameters } from "./StratoContext";
 import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
-import { ClientController } from "./client/controller/ClientController";
 import { CreatableEntity } from "./core/CreatableEntity";
 import { File } from './static/upload/File';
 import { HederaNetwork } from './HederaNetwork';
@@ -32,19 +33,22 @@ import { Json } from './static/upload/Json';
 import { LiveEntity } from './live/LiveEntity';
 import { LiveFile } from './live/LiveFile';
 import { LiveJson } from './live/LiveJson';
-import { Saver } from "./core/Persistance";
 import { SolidityAddressable } from './core/SolidityAddressable';
-import { StratoClient } from "./client/StratoClient";
 import { StratoLogger } from "./StratoLogger";
+import { StratoWallet } from "./core/wallet/StratoWallet";
 import { Subscription } from "./core/Subscription";
 import { UploadableEntity } from "./core/UploadableEntity";
+import { WalletController } from "./core/wallet/WalletController";
+import { WalletInfo } from './core/wallet/WalletInfo';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { WalletTypes } from './wallet/WalletType';
 
 type ApiSessionConstructorArgs = {
   ctx: StratoContext,
-  client: StratoClient
+  client: StratoWallet
 };
 type ControlledSession = {
-  controller: ClientController,
+  controller: WalletController,
   session: ApiSession
 };
 type SessionExecutable<R> = Query<R>|Transaction;
@@ -75,6 +79,7 @@ export type SessionDefaults = {
   contractTransactionGas: number,
   emitConstructorLogs: boolean,
   emitLiveContractReceipts: boolean,
+  onlyReceiptsFromContractRequests: boolean,
   paymentForContractQuery: number
 };
 
@@ -86,37 +91,27 @@ const TRANSACTION_ON_RECEIPT_EVENT_NAME = "__TransactionOnReceiptAvailable_Event
 /**
  * The core class used for all business-logic, runtime network-interactions.
  * 
- * Should only be instantiable through the {@link SessionBuilder} or through direct {@link ApiSession} factory methods such as {@link ApiSession.default} (to load from a .env-like file/runtime process.env)
- * or {@link ApiSession.buildFrom} to construct an {@link ApiSession} from a manually-built {@link StratoParametersSource} instance.
+ * Should only be instantiable through direct {@link ApiSession} factory methods such as {@link ApiSession.default} (to load from a .env-like file/runtime process.env)
+ * or {@link ApiSession.buildFrom} to construct an {@link ApiSession} from a manually-built {@link StratoContext} instance.
  */
-export class ApiSession implements SolidityAddressable, Saver<string> {
+export class ApiSession implements SolidityAddressable {
   /**
-   * Builds and retrieves the default {@link ApiSession} associated with this runtime. There are currently 2 ways of providing the parameters requried for the api-session to be built:
+   * Builds and retrieves the default {@link ApiSession} associated with this runtime. There are currently 2 ways of providing the parameters required for the api-session to be built:
    * - either pass them through the {@param source.env} parameter property (defaults to the `process.env` for node environments) or 
    * - give the path to a [dotenv](https://www.npmjs.com/package/dotenv) like file (defaults to `.env`) from which they are loaded by the library (the {@link source.path} parameter)
-   *   which can be auto-overwritten via the {@link proces.env.HEDERAS_ENV_PATH} value
+   *   which can be auto-overwritten via the {@link process.env.HEDERAS_ENV_PATH} value
    * 
    * `Note:` At least one source must be properly wired and if both these parameter sources are set, the environment/runtime values overwrite the file-loaded ones.
    * 
    * In order for the default {@link ApiSession} to be generated, the resulting resolved parameters must have the following values present:
    * - `HEDERAS_NETWORK` : the targeted hedera-network cluster. Can be one of the following: `mainnet`, `testnet`, `previewnet` or {@link HederaNetwork.HEDERA_CUSTOM_NET_NAME | customnet}
-   * - `HEDERAS_NODES` : (mandatory if `HEDERAS_NETWORK={$link HederaNetwork.HEDERA_CUSTOM_NET_NAME}`) a comma separated list of {@link HederaNodesAddressBook} nodes encoded in 
+   * - `HEDERAS_NODES` : (mandatory if `HEDERAS_NETWORK={@link HederaNetwork.HEDERA_CUSTOM_NET_NAME}`) a comma separated list of {@link HederaNodesAddressBook} nodes encoded in 
    *                     the following format `<node_ip>:<node_port>#<account_number>`. Eg. `127.0.0.1:502111#3` would be parsed in an address book having a node with IP `127.0.0.1`
    *                     and port 502111 associated with {@link AccountId} `3`
-   * - `HEDERAS_CLIENT_TYPE` : the network {@link StratoClient} to use. Possible Values are staticall defined in the {@link ClientTypes} props. If not provided, it defaults to `Hedera` which
-   *                           is the native {@link Client} provided by the Hedera SDK.
+   * - `HEDERAS_WALLET_TYPE` : the network {@link StratoWallet} to use. Possible Values are statically defined in the {@link WalletTypes} props. If not provided, it defaults to `Sdk` which
+   *                           targets the native {@link LocalWallet} provided by the Hedera SDK.
    * 
-   * Continuing and depending on the nature of the session (cold-start or restored) as well as the choosen {@link ClientType}, there are four scenarios:
-   * 
-   * Cold-start (where this is the first time a session is being constructed for this client, and there's no previously saved state available)
-   * If `HEDERAS_CLIENT_TYPE` is `Hedera`, you will need to provide the client-operator credentials:
-   * - `HEDERAS_OPERATOR_ID` : the string representation of the {@link AccountId} operating the resulting session (eg. `0.0.2`)
-   * - `HEDERAS_OPERATOR_KEY` : the string representation of the private key of the `HEDERAS_OPERATOR_ID` operator paying for the session 
-   * 
-   * Restored client-states have the following variables expectations irrespective of the choosen `HEDERAS_CLIENT_TYPE`:
-   * - `HEDERAS_CLIENT_SAVED_STATE` : the base64 encoded string which got outputted at some point via a call to {@link ApiSession.save}
-   * 
-   * For other possible config values, please see the `.env.sample` info file provided with the main repo code.
+   * For other possible config values, please either see the `.env.sample` info file provided with the main repo code or, better yet, the {@link https://hsj-docs.buidlerlabs.com/markdown/configuration online configuration} docs.
    */
   public static async default(params: RecursivePartial<StratoParameters>|string = {}, path = process.env.HEDERAS_ENV_PATH || '.env'): Promise<ControlledSession> {
     const ctxArgs: StratoContextSource = typeof params === 'string' ? { params: {}, path: params } : { params, path };
@@ -126,24 +121,21 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 
   /**
-   * Another, more parametrisable, way to build an {@link ApiSession} besides the {@link ApiSession.default}
-   * 
-   * @param params {StratoContext}
-   * @returns {Promise<ApiSession>}
+   * Another, more parametrically, way to build an {@link ApiSession} besides the {@link ApiSession.default} variant.
    */
   public static async buildFrom(ctx: StratoContext): Promise<ControlledSession> {
-    const { client, controller } = await ctx.getClient();
+    const { wallet, controller } = await ctx.getWallet();
 
     return {
       controller,
-      session: new ApiSession(SESSION_CONSTRUCTOR_GUARD, { client, ctx })
+      session: new ApiSession(SESSION_CONSTRUCTOR_GUARD, { client: wallet, ctx }),
     };
   }
 
   private readonly events: EventEmitter;
   public readonly log: StratoLogger;
   public readonly network: HederaNetwork;
-  private readonly client: StratoClient;
+  private readonly client: StratoWallet;
   public readonly defaults: SessionDefaults;
 
   /**
@@ -162,17 +154,10 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 
   /**
-   * Retrieves the operator {@link AccountId} for this {@link ApiSession}.
+   * Retrieves the wallet-info structure portraying both account and current signer info for this {@link ApiSession}.
    */
-  public get accountId() {
-    return this.client.account.id;
-  }
-
-  /**
-   * Retrieves the operator's public-key.
-   */
-  public get publicKey() {
-    return this.client.account.publicKey;
+  public get wallet(): WalletInfo {
+    return this.client;
   }
 
   /**
@@ -191,19 +176,19 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 
   /**
-    * Queries/Executes a contract function, capable of returning the {@link ContractFunctionResult} if successfull. This depends on the {@param returnType} of course.
+    * Queries/Executes a contract function, capable of returning the {@link ContractFunctionResult} if successful. This depends on the {@param returnType} of course.
     */
   public async execute<T extends TypeOfExecutionReturn>(transaction: ContractFunctionCall, returnType?: T, getReceipt?: boolean)
     : Promise<ExecutionReturnTypes<ContractFunctionResult>[T]>;
 
   /**
-    * A catch-all/generic {@link Transaction} execution operation yeilding, upon success, of a {@link TransactionResponse}.
+    * A catch-all/generic {@link Transaction} execution operation yielding, upon success, of a {@link TransactionResponse}.
     */
   public async execute<T extends TypeOfExecutionReturn>(transaction: Transaction, returnType?: T, getReceipt?: boolean)
     : Promise<ExecutionReturnTypes<TransactionResponse>[T]>;
 
   /**
-    * A catch-all/generic {@link Query<R>} execution operation yeilding, upon success, of the underlying generic-bounded response type, R.
+    * A catch-all/generic {@link Query<R>} execution operation yielding, upon success, of the underlying generic-bounded response type, R.
     */
   public async execute<T extends TypeOfExecutionReturn, R>(transaction: Query<R>, returnType?: T, getReceipt?: boolean)
    : Promise<ExecutionReturnTypes<R>[T]>;
@@ -248,17 +233,17 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     return {
       [TypeOfExecutionReturn.Record]: txRecord,
       [TypeOfExecutionReturn.Receipt]: txReceipt,
-      [TypeOfExecutionReturn.Result]: executionResult
+      [TypeOfExecutionReturn.Result]: executionResult,
     }[returnType];
   }
 
   /**
    * Retrieves the solidity-address of the underlying {@link AccountId} that's operating this session.
    */
-  getSolidityAddress(): string {
-    return this.accountId.toSolidityAddress();
+  public getSolidityAddress(): string {
+    return this.wallet.account.id.toSolidityAddress();
   }
-
+ 
   /**
    * Loads a pre-deployed {@link LiveContract} ready to be called into at runtime. The contract-interface is passed in raw-ly 
    * through the {@link abi} param.
@@ -299,7 +284,7 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
     } catch(e) {
       throw new Error("Please provide a valid Hedera file id in order try to lock onto an already-deployed Json object.");
     }
-    const fileContentsQuery = await new FileContentsQuery().setFileId(targetedFileId);
+    const fileContentsQuery = new FileContentsQuery().setFileId(targetedFileId);
     const fileContentsBuffer = await this.execute(fileContentsQuery, TypeOfExecutionReturn.Result, false);
     const fileContents = new TextDecoder('utf8').decode(fileContentsBuffer);
     
@@ -323,30 +308,18 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   }
 
   /**
-   * Marshals the current session {@link Client} allowing for it to be restored in the future via the {@link SessionBuilder} if provided back alongside the 
-   * {@link HederaNetwork} and the {@link ClientType}.
-   * 
-   * Note: This API might change in the following, subsequent, releases
-   * 
-   * @returns {string} - a serialized represetantion of the underlying client
-   */
-  public save(): Promise<string> {
-    return this.client.save();
-  }
-
-  /**
-   * Given an {@link UploadableEntity}, it triest ot upload it using the currently configured {@link ApiSession} passing in-it any provided {@link args}.
+   * Given an {@link UploadableEntity}, it tries ot upload it using the currently configured {@link ApiSession} passing in-it any provided {@link args}.
    * 
    * @param {Uploadable} what - The {@link UploadableEntity} to push through this {@link ApiSession}
    * @param {*} args - A list of arguments to pass through the upload operation itself.
-   *                   Note: this list has, by convention, at various unpaking stages in the call hierarchy, the capabilities to specify SDK behaviour through
+   *                   Note: this list has, by convention, at various unpacking stages in the call hierarchy, the capabilities to specify SDK behavior through
    *                         eg. "_file" ({@link UploadableEntity}) or "_contract" ({@link Contract})
    * @returns - An instance of the {@link UploadableEntity} concrete result-type which is a subtype of {@link LiveEntity}.
    */
   public async upload<T extends LiveEntity<R, I, P>, R, I, P>(what: BasicUploadableEntity<T, R, I>, ...args: any[]): Promise<T>;
 
   /**
-  * Given a raw JSON {@link object}, it tries to upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
+  * Given a raw JSON {@link object}, it tries to upload it using the currently configured {@link StratoWallet} passing in-it any provided {@link args}.
   * 
   * `Note:` This is the same as calling the more verbose equivalent of `upload(new Json(what))`.
   * 
@@ -357,14 +330,14 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   * 
   * @param {object} what - The {@link Json}-acceptable payload to push through this {@link ApiSession}
   * @param {*} args - A list of arguments to pass through the upload operation itself.
-  *                   Note: this list has, by convention, at various unpaking stages in the call hierarchy, the capabilities to specify SDK behaviour through
+  *                   Note: this list has, by convention, at various unpaking stages in the call hierarchy, the capabilities to specify SDK behavior through
   *                         eg. "_file" ({@link Uploadable}) or "_contract" ({@link Contract})
   * @returns - An instance of the associated {@link LiveJson} resulting {@link LiveEntity}.
   */
   public async upload(what: object, ...args: any[]): Promise<LiveJson>;
 
   /**
-  * Given raw data {@link string|Uint8Array}, it tries to upload it using the currently configured {@link Client} passing in-it any provided {@link args}.
+  * Given raw data {@link string|Uint8Array}, it tries to upload it using the currently configured {@link StratoWallet} passing in-it any provided {@link args}.
   * 
   * `Note:` This is the same as calling the more verbose equivalent of `upload(new File(what))`.
   * 
@@ -374,10 +347,8 @@ export class ApiSession implements SolidityAddressable, Saver<string> {
   * ```
   * 
   * @param {object} what - The {@link File}-acceptable payload to push through this {@link ApiSession}
-  * @param {*} args - A list of arguments to pass through the upload operation itself.
-  *                   Note: this list has, by convention, at various unpaking stages in the call hierarchy, the capabilities to specify SDK behaviour through
-  *                         eg. "_file" ({@link Uploadable}) or "_contract" ({@link Contract})
-  * @returns - An instance of the associated {@link LiveFile} resulting {@link LiveEntity}.
+  * @param {*} args - A list of arguments to pass through the content upload operation itself
+  * @returns - An instance of the associated {@link LiveFile} resulting {@link LiveEntity}
   */
   public async upload(what: string|Uint8Array, ...args: any[]): Promise<LiveFile>;
 

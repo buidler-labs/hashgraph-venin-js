@@ -11,9 +11,6 @@ module.exports = {
   setupFiles: [
     'dotenv/config',
   ],
-  testMatch: [
-    "**/?(*.)+(spec|test).ts",
-  ],
   testRunner: "./test/hedera-test-runner.ts",
   testTimeout: 300000,
   transform: {

@@ -34,21 +34,23 @@ describe('LiveTopic', () => {
   it("given a topic, getting info about a topic returns the expected information", async () => {
     const memoText = "memo";
     const renewPeriod = VALID_AUTO_RENEW_IN_SECONDS;
+    const walletPublicKey = session.wallet.account.publicKey;
+    const walletAccountId = session.wallet.account.id;
     const liveTopic = await session.create(new Topic({
-      autoRenewAccountId: session.accountId,
+      autoRenewAccountId: walletAccountId,
       autoRenewPeriod: renewPeriod,
       keys: {
-        admin: session.publicKey,
-        submit: session.publicKey,
+        admin: walletPublicKey,
+        submit: walletPublicKey,
       },
       memo: memoText,
     }));
     const topicInfo = await liveTopic.getLiveEntityInfo();
     expect(topicInfo.topicId.toString()).toEqual(liveTopic.id.toString());
-    expect(topicInfo.autoRenewAccountId.toString()).toEqual(session.accountId.toString());
+    expect(topicInfo.autoRenewAccountId.toString()).toEqual(walletAccountId.toString());
     expect(topicInfo.autoRenewPeriod.seconds.toString()).toEqual(renewPeriod.toString());
-    expect(topicInfo.adminKey.toString()).toEqual(session.publicKey.toStringDer());
-    expect(topicInfo.submitKey.toString()).toEqual(session.publicKey.toStringDer());
+    expect(topicInfo.adminKey.toString()).toEqual(walletPublicKey.toStringDer());
+    expect(topicInfo.submitKey.toString()).toEqual(walletPublicKey.toStringDer());
     expect(topicInfo.topicMemo).toEqual(memoText);
   });
 
@@ -62,7 +64,7 @@ describe('LiveTopic', () => {
   });
 
   it("given a topic, deleting it will return status success", async () => {
-    const liveTopic = await session.create(new Topic({keys: {admin: session.publicKey}}));
+    const liveTopic = await session.create(new Topic({keys: {admin: session.wallet.account.publicKey}}));
 
     const deleteStatus = await liveTopic.deleteEntity();
 
@@ -70,16 +72,18 @@ describe('LiveTopic', () => {
   });
 
   it("given a topic, updating it will return status success and update is successful", async () => {
-    const liveTopic = await session.create(new Topic({keys: {admin: session.publicKey}}));
+    const walletPublicKey = session.wallet.account.publicKey;
+    const walletAccountId = session.wallet.account.id;
+    const liveTopic = await session.create(new Topic({keys: {admin: walletPublicKey}}));
 
     const memoText = "memo";
     const renewPeriod = VALID_AUTO_RENEW_IN_SECONDS;
     const updateStatus = await liveTopic.updateEntity({
-      autoRenewAccountId: session.accountId,
+      autoRenewAccountId: walletAccountId,
       autoRenewPeriod: renewPeriod,
       keys: {
-        admin: session.publicKey,
-        submit: session.publicKey,
+        admin: walletPublicKey,
+        submit: walletPublicKey,
       },
       memo: memoText,
     });

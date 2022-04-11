@@ -27,7 +27,11 @@ describe('Token', () => {
     const mockedSessionExecute = jest.fn().mockReturnValue({ tokenId: TokenId.fromString("0.0.69") });
     const session = { 
       execute: mockedSessionExecute,
-      publicKey,
+      wallet: {
+        account: {
+          publicKey,
+        },
+      },
     } as unknown as ApiSession;
     const token = new Token({
       keys: {

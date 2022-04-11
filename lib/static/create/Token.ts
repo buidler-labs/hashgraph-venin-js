@@ -84,19 +84,22 @@ export class Token extends BasicCreatableEntity<LiveToken> {
   }
 
   public static mapTokenFeaturesToTokenArguments(tokenFeatures: CreateTokenFeatures, session: ApiSession) {
+    const sessionPublicKey = session.wallet.account.publicKey;
+    const sessionAccountId = session.wallet.account.id;
+
     return {
       // First map to expected properties
-      adminKey: tokenFeatures.keys?.admin !== null ? tokenFeatures.keys?.admin ?? session.publicKey : undefined,
-      feeScheduleKey: tokenFeatures.keys?.feeSchedule !== null ? tokenFeatures.keys?.feeSchedule ?? session.publicKey : undefined,
-      freezeKey: tokenFeatures.keys?.freeze !== null ? tokenFeatures.keys?.freeze ?? session.publicKey : undefined,
-      kycKey: tokenFeatures.keys?.kyc !== null ? tokenFeatures.keys?.kyc ?? session.publicKey : undefined,
-      pauseKey: tokenFeatures.keys?.pause !== null ? tokenFeatures.keys?.pause ?? session.publicKey : undefined,
-      supplyKey: tokenFeatures.keys?.supply !== null ? tokenFeatures.keys?.supply ?? session.publicKey : undefined,
+      adminKey: tokenFeatures.keys?.admin !== null ? tokenFeatures.keys?.admin ?? sessionPublicKey : undefined,
+      feeScheduleKey: tokenFeatures.keys?.feeSchedule !== null ? tokenFeatures.keys?.feeSchedule ?? sessionPublicKey : undefined,
+      freezeKey: tokenFeatures.keys?.freeze !== null ? tokenFeatures.keys?.freeze ?? sessionPublicKey : undefined,
+      kycKey: tokenFeatures.keys?.kyc !== null ? tokenFeatures.keys?.kyc ?? sessionPublicKey : undefined,
+      pauseKey: tokenFeatures.keys?.pause !== null ? tokenFeatures.keys?.pause ?? sessionPublicKey : undefined,
+      supplyKey: tokenFeatures.keys?.supply !== null ? tokenFeatures.keys?.supply ?? sessionPublicKey : undefined,
       tokenName: tokenFeatures.name,
       tokenSymbol: tokenFeatures.symbol,
       tokenType: tokenFeatures.type.hTokenType ?? HederaTokenType.FungibleCommon,
-      treasuryAccountId: tokenFeatures.treasuryAccountId ?? session.accountId,
-      wipeKey: tokenFeatures.keys?.wipe !== null ? tokenFeatures.keys?.wipe ?? session.publicKey : undefined,
+      treasuryAccountId: tokenFeatures.treasuryAccountId ?? sessionAccountId,
+      wipeKey: tokenFeatures.keys?.wipe !== null ? tokenFeatures.keys?.wipe ?? sessionPublicKey : undefined,
   
       // Merge everything with what's provided
       ...tokenFeatures,

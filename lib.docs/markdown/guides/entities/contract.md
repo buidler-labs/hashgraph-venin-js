@@ -11,7 +11,7 @@ This is different then [deploying contracts](#deploying-contracts) on the networ
 A contract can be loaded from 2 sources: either referencing a local file or by giving the contract's code directly. To load a contract one of the following methods can be used:
 - `Contract.newFrom` - given either the `path` of the `.sol` file or the actual `code` of it, retrieves a single `Contract` instance. If there are multiple contracts defined, by default, the first one is retrieved. This can be overwritten to retrieve either the n-th `index` contract (by default `index=0`) or a contract by `name`.
 - `Contract.allFrom` - same as `Contract.name` in all regards except for the fact that it does not take in an `index` nor a contract `name` and retrieves an array of all the available contracts.
-When bulding a `Contract` instance, there's also a `ignoreWarnings` property which is, by default, set to `false` that allows to bypass solidity's warnings when building the contract's code.
+When building a `Contract` instance, there's also a `ignoreWarnings` property which is, by default, set to `false` that allows to bypass solidity's warnings when building the contract's code.
 
 A thing to keep in mind here is the fact that, once a `Contract` instance has been constructed, this is also a guarantee that the provided code was accepted by the solidity compiler. This is the reason why `Contract`s have `byteCode` property defined on it.
 
@@ -107,6 +107,26 @@ liveContract.onEvent("Log", ({ sender, message }) => {
 await liveContract.test();
 ```
 
+Logs can also be emitted from within contract constructors provided that either [the `HEDERAS_DEFAULT_EMIT_CONSTRUCTOR_LOGS` parameter is set](../../configuration.md) to true or that `emitConstructorLogs` meta-arg is set to true in the `_contract` object when `upload`-ing the contract. 
+
+To get access to the constructor logs, you would need to destructure the live-contract `upload` result like so:
+```js live=true containerKey=dealing_with_constructor_events
+const { session } = await ApiSession.default();
+const contract = await Contract.newFrom({ path: './events.sol' });
+const { liveContract, logs } = await session.upload(contract, {_contract: {emitConstructorLogs: true}});
+
+console.log(JSON.stringify(logs));
+```
+
+As you can see from running the above snippet, the resulting `logs` are an array of objects which adhere to the following schema:
+```ts
+{
+    name: string,
+    payload: any
+}
+```
+`name` is the name of the event while `payload` is a JS object with keys named after the arguments of the event and values being the actual data passed when emit-ing that particular event.
+
 #### Transaction meta-arguments
 Similar to when uploading a _Smart Contract_, calling any of its methods follows the same meta-arguments passing logic: if the first argument is a JS object which has certain properties of interest, those properties are unpacked and used inside the transaction. One such property is the `maxQueryPayment` which makes for a good example: lets say that we would like to set a maximum query payment of 0.001ℏ for calling the [solidity-by-example's State Variable > get method](https://solidity-by-example.org/state-variables/). In this case, you would simply do a `liveContract.get({maxQueryPayment: 100000})` and it would suffice.
 
@@ -145,3 +165,9 @@ console.log(bigNumberGetResult.toNumber());
 :::note
 The `abi` type required for the `getLiveContract` property can be a `ethers` `Interface` object or anything that [can be parsed into one](https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--creating). For our above example we used a more human readable approach.
 :::
+
+### Deleting a live contract
+To delete a deployed contract owned by the account associated with the current `ApiSession`, just do a `LiveContract.deleteEntity({ transferAccountId?: AccountId, transferContractId?: ContractId })` where you can optionally pass in a `transferAccountId` or a `transferContractId` to transfer the hbar present on the deleted account to either an `AccountId` or a `ContractId`. If nothing is specified, the owner of the current `ApiSession` will get the remainder of the tokens.
+
+### Updating a live contract
+[Updating a deployed contract](https://docs.hedera.com/guides/docs/sdks/smart-contracts/update-a-smart-contract) is not currently possible but will be supported in a future release.  

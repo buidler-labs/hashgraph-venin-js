@@ -7,15 +7,15 @@ import { LiveTopic } from "../../live/LiveTopic";
 import { TypeOfExecutionReturn } from "../../ApiSession";
 
 export type TopicFeatures = {
-    autoRenewAccountId?: string | AccountId,
-    autoRenewPeriod?: number | Long.Long | Duration,
-    memo?: string,
-    keys?: TopicKeys
+  autoRenewAccountId?: string | AccountId,
+  autoRenewPeriod?: number | Long.Long | Duration,
+  memo?: string,
+  keys?: TopicKeys
 }
 
 type TopicKeys = {
-    admin?: Key,
-    submit?: Key
+  admin?: Key,
+  submit?: Key
 }
 
 export class Topic extends BasicCreatableEntity<LiveTopic> {

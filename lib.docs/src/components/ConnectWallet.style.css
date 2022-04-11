@@ -1,0 +1,54 @@
+.wallet-connect {
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    margin: auto 0;
+    padding: 0.65rem 1rem;
+}
+
+.wallet-connect.connect{
+    background-color: #58c4cc;
+    color: #fff;
+}
+
+.wallet-connect.disconnect{
+    background-color: #58c4cc;
+    color: #fff;
+}
+
+.connected-stats {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.connected-stats .info {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    color: #fff;
+    background-color: #58c4cc;
+    padding: 0.2rem;
+    box-sizing: border-box;
+
+}
+
+.connected-stats .info span.id,
+.connected-stats .info span.balance {
+    padding: 0.2rem 0.5rem;
+}
+
+.connected-stats .info span.id {
+    background-color: transparent;
+    font-weight: bold;
+}
+
+.connected-stats .info span.balance {
+    color: #000;
+    background-color: #fff;
+}
