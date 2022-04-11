@@ -58,14 +58,12 @@ type TransactionedReceipt<R> = {
 };
 
 export const enum TypeOfExecutionReturn {
-  OnlyReceipt = "OnlyReceipt",
   Receipt = "Receipt",
   Record = "Record",
   Result = "Result"
 }
 
 type ExecutionReturnTypes<T> = {
-  [TypeOfExecutionReturn.OnlyReceipt]: TransactionReceipt,
   [TypeOfExecutionReturn.Receipt]: TransactionReceipt,
   [TypeOfExecutionReturn.Record]: TransactionRecord,
   [TypeOfExecutionReturn.Result]: T
@@ -215,8 +213,7 @@ export class ApiSession implements SolidityAddressable {
       // start out by generating the receipt for the original transaction
       txReceipt = await this.client.getReceipt(txResponse);
 
-      if (returnType !== TypeOfExecutionReturn.OnlyReceipt &&
-        (returnType === TypeOfExecutionReturn.Record || (isContractTransaction && returnType === TypeOfExecutionReturn.Result))) {
+      if (returnType === TypeOfExecutionReturn.Record || (isContractTransaction && returnType === TypeOfExecutionReturn.Result)) {
         const txRecordQuery = new TransactionRecordQuery().setTransactionId(txResponse.transactionId);
 
         txRecord = await this.client.execute(txRecordQuery);
@@ -234,7 +231,6 @@ export class ApiSession implements SolidityAddressable {
 
     // Depending on the return-type resolution, fetch the typed-result
     return {
-      [TypeOfExecutionReturn.OnlyReceipt]: txReceipt,
       [TypeOfExecutionReturn.Record]: txRecord,
       [TypeOfExecutionReturn.Receipt]: txReceipt,
       [TypeOfExecutionReturn.Result]: executionResult,
@@ -288,7 +284,7 @@ export class ApiSession implements SolidityAddressable {
     } catch(e) {
       throw new Error("Please provide a valid Hedera file id in order try to lock onto an already-deployed Json object.");
     }
-    const fileContentsQuery = await new FileContentsQuery().setFileId(targetedFileId);
+    const fileContentsQuery = new FileContentsQuery().setFileId(targetedFileId);
     const fileContentsBuffer = await this.execute(fileContentsQuery, TypeOfExecutionReturn.Result, false);
     const fileContents = new TextDecoder('utf8').decode(fileContentsBuffer);
     
@@ -312,11 +308,11 @@ export class ApiSession implements SolidityAddressable {
   }
 
   /**
-   * Given an {@link UploadableEntity}, it triest ot upload it using the currently configured {@link ApiSession} passing in-it any provided {@link args}.
+   * Given an {@link UploadableEntity}, it tries ot upload it using the currently configured {@link ApiSession} passing in-it any provided {@link args}.
    * 
    * @param {Uploadable} what - The {@link UploadableEntity} to push through this {@link ApiSession}
    * @param {*} args - A list of arguments to pass through the upload operation itself.
-   *                   Note: this list has, by convention, at various unpaking stages in the call hierarchy, the capabilities to specify SDK behaviour through
+   *                   Note: this list has, by convention, at various unpaking stages in the call hierarchy, the capabilities to specify SDK behavior through
    *                         eg. "_file" ({@link UploadableEntity}) or "_contract" ({@link Contract})
    * @returns - An instance of the {@link UploadableEntity} concrete result-type which is a subtype of {@link LiveEntity}.
    */
