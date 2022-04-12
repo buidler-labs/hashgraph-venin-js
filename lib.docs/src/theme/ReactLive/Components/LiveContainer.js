@@ -1,30 +1,27 @@
-import LiveResultContainer from "./LiveResultContainer";
-import LiveEditorContainer from "./LiveEditorContainer";
 import * as React from "react";
+import LiveEditorContainer from "./LiveEditorContainer";
+import LiveResultContainer from "./LiveResultContainer";
 
 const LiveContainer = ({hasTopPosition, ...props}) => {
-    const contaienerElements = [
-        {
-            name: 'editor',
-            Component: LiveEditorContainer,
-            props
-        },
-        {
-            name: 'result',
-            Component: LiveResultContainer,
-            props
-        }
-    ]
+  const containerElements = [{
+    Component: LiveEditorContainer,
+    name: 'editor',
+    props,
+  }, {
+    Component: LiveResultContainer,
+    name: 'result',
+    props,
+  }];
 
-    const toRender = hasTopPosition
-        ? contaienerElements.reverse()
-        : contaienerElements
+  const toRender = hasTopPosition
+    ? containerElements.reverse()
+    : containerElements
 
-    return toRender.map(element => {
-        const {Component, props, name} = element;
+  return toRender.map(element => {
+    const {Component, props, name} = element;
 
-        return <Component key={`${name}-container`} {...props}/>
-    })
+    return <Component key={`${name}-container`} {...props}/>
+  })
 }
 
 export default LiveContainer;

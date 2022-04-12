@@ -34,7 +34,7 @@
     "build:bundle-test-rollup": "rollup -c ./test/rollup/rollup.config.js",
     "build:declarations": "tsc",
     "build:docs": "run-s build:docs-install-wallet build:bundle-docs build:docs-docusaurus",
-    "build:docs-docusaurus": "docusaurus build --out-dir=docs lib.docs",
+    "build:docs-docusaurus": "docusaurus build --out-dir=../docs lib.docs",
     "build:docs-install-wallet": "cd ./lib.docs/src/hashconnect && npm i",
     "clean": "run-s clean:bundle-test-rollup clean:cjs clean:esm clean:declarations && docusaurus clear lib.docs",
     "clean:bundle-test-rollup": "rm -fr test/rollup/lib.esm",
