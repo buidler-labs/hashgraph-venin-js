@@ -5,7 +5,8 @@ import {
   AccountInfoQuery, 
   AccountUpdateTransaction, 
   PrivateKey, 
-  Transaction, 
+  Transaction,
+  Wallet, 
 } from "@hashgraph/sdk";
 
 import { Account, AccountFeatures } from "../static/create/Account";
@@ -68,6 +69,7 @@ export class LiveAccountWithPrivateKey extends LiveAccount {
 
   protected async _getUpdateTransaction(args?: AccountFeatures): Promise<Transaction> {
     const updateTransaction = await super._getUpdateTransaction(args);
+    // TODO: freeze with signer similar to the delete op?
     this.tryToSign(updateTransaction);
     
     return updateTransaction;
@@ -75,7 +77,8 @@ export class LiveAccountWithPrivateKey extends LiveAccount {
 
   protected _getDeleteTransaction(args?: any): Transaction {
     const deleteTransaction = super._getDeleteTransaction(args);
-    //TODO: freeze with signer once HIP-338 branch is merged and feature is stable
+    
+    deleteTransaction.freezeWithSigner(this.session.wallet.signer as Wallet);
     this.tryToSign(deleteTransaction);
     return deleteTransaction;
   }

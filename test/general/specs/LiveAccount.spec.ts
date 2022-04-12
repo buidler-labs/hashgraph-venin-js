@@ -76,10 +76,9 @@ describe('LiveAccount', () => {
     expect(info.maxAutomaticTokenAssociations.toString()).toEqual('10');
   });
 
-  it.skip("given a new account, deleting it works as expected", async () => {
+  it("given a new account, deleting it works as expected", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account());
-
     const deleteStatus = await account.deleteEntity();
     
     expect(deleteStatus).toEqual(Status.Success);
