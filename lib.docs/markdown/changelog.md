@@ -4,6 +4,7 @@ title: Changelog
 ---
 
 ## 0.7.4
+* Supports `@hashgraph/sdk@2.11.3`
 * Support for [HIP-338 wallets](https://hips.hedera.com/hip/hip-338). See [the wallets guides section](./guides/wallet.md) for more info.
 * Added the [bundling guide](./guides//bundling.md) that makes use of a custom defined `@buidlerlabs/hedera-strato-js/rollup-plugin` export
 * Added `LiveEntity.deleteEntity` and `LiveEntity.updateEntity` operations to `delete` and/or `update` self-entity
