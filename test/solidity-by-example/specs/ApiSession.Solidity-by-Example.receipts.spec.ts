@@ -72,7 +72,7 @@ describe('ApiSession.Solidity-by-Example.Receipts', () => {
     expect((spiedReceiptCallback.mock.calls[0][0] as any).transaction).toBeInstanceOf(ContractExecuteTransaction);
   });
 
-  it('executing a live-contract function in a default-session environment that does not return only receipts when calling such functions should do so if runtime requests it', async () => {
+  it('executing a live-contract mutating function in a default-session environment that does not return only receipts when calling such functions should do so if runtime requests it', async () => {
     const { session } = await ApiSession.default({
       session: {
         defaults: {
@@ -90,7 +90,7 @@ describe('ApiSession.Solidity-by-Example.Receipts', () => {
     expect(sessionExecutionSpy.mock.calls[0][1]).toEqual(TypeOfExecutionReturn.Receipt);
   });
 
-  it('executing a live-contract function in a default-session environment that does return only receipts when calling such functions should behave accordingly and, by default, return that receipt', async () => {
+  it('executing a live-contract mutating function in a default-session environment that does return only receipts when calling such functions should behave accordingly and, by default, return that receipt', async () => {
     const { session } = await ApiSession.default({
       session: {
         defaults: {
@@ -106,5 +106,41 @@ describe('ApiSession.Solidity-by-Example.Receipts', () => {
     expect(contractSetResult).toBeInstanceOf(TransactionReceipt);
     expect(sessionExecutionSpy.mock.calls).toHaveLength(1);
     expect(sessionExecutionSpy.mock.calls[0][1]).toEqual(TypeOfExecutionReturn.Receipt);
+  });
+
+  it('executing a live-contract non-mutating function in a default-session environment that does return only receipts when calling such a function should return that query result', async () => {
+    const { session } = await ApiSession.default({
+      session: {
+        defaults: {
+          onlyReceiptsFromContractRequests: true,
+        },
+      },
+    });
+    const solContract = await Contract.newFrom({ code: read({ contract: 'hello_world' }) });
+    const liveContract = await session.upload(solContract);
+    const sessionExecutionSpy = jest.spyOn(session, "execute");
+    const queryResult = await liveContract.greet();
+
+    expect(queryResult).toEqual("Hello World!");
+    expect(sessionExecutionSpy.mock.calls).toHaveLength(1);
+    expect(sessionExecutionSpy.mock.calls[0][1]).toEqual(TypeOfExecutionReturn.Result);
+  });
+
+  it('executing a live-contract non-mutating function in a default-session environment that does not return only receipts, yet only receipts is requested, when calling such a function should return that query result', async () => {
+    const { session } = await ApiSession.default({
+      session: {
+        defaults: {
+          onlyReceiptsFromContractRequests: false,
+        },
+      },
+    });
+    const solContract = await Contract.newFrom({ code: read({ contract: 'hello_world' }) });
+    const liveContract = await session.upload(solContract);
+    const sessionExecutionSpy = jest.spyOn(session, "execute");
+    const queryResult = await liveContract.greet({ onlyReceipt: true });
+
+    expect(queryResult).toEqual("Hello World!");
+    expect(sessionExecutionSpy.mock.calls).toHaveLength(1);
+    expect(sessionExecutionSpy.mock.calls[0][1]).toEqual(TypeOfExecutionReturn.Result);
   });
 });

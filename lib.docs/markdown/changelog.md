@@ -11,7 +11,7 @@ title: Changelog
 * Implemented [`LiveAddress.equals(AccountId)` functionality](https://github.com/buidler-labs/hedera-strato-js/issues/34)
 * Implemented [`StratoAddress.toLiveAccount()`](https://github.com/buidler-labs/hedera-strato-js/issues/49)
 * [Auto arrayfying hex string](https://github.com/buidler-labs/hedera-strato-js/issues/40) if `bytes32` arguments are expected by the `LiveContract` call
-* 💥 *Braking change!* Added [`HEDERAS_DEFAULT_CONTRACT_REQUESTS_RETURN_ONLY_RECEIPTS` config](./configuration.md) option to have [finer cost-control over contract-requests](https://github.com/buidler-labs/hedera-strato-js/issues/48). Set it to `false` to revert to v0.7.3 behavior
+* 💥 *Potentially braking change!* Added [`HEDERAS_DEFAULT_CONTRACT_REQUESTS_RETURN_ONLY_RECEIPTS` config](./configuration.md) option to have [finer cost-control over contract-requests](https://github.com/buidler-labs/hedera-strato-js/issues/48). Set it to `false` to revert to v0.7.3 behavior. This only affects state-mutating contract-calls. Non-mutating (query) calls are not affected by this parameter.
 * Fixed [recursive loading of ABIs into `ContractRegistry`s](https://github.com/buidler-labs/hedera-strato-js/issues/50) at bundling time
 * Allow [`ContractRegistry`s to be created from abstract](https://github.com/buidler-labs/hedera-strato-js/issues/54) solidity contracts
 * A lot of tweaks on docs, visual and others

@@ -124,7 +124,8 @@ export class LiveContract extends BaseLiveEntityWithBalance<ContractId, Contract
       enumerable: true,
       value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {
         const { request, meta } = await this.createContractRequestFor({ fDescription, args });
-        const executionResultType = meta.onlyReceipt ? TypeOfExecutionReturn.Receipt : TypeOfExecutionReturn.Result;
+        const isNonQuery = !(request instanceof ContractCallQuery);
+        const executionResultType = isNonQuery && meta.onlyReceipt ? TypeOfExecutionReturn.Receipt : TypeOfExecutionReturn.Result;
         const callResponse = await this.session.execute(request, executionResultType, meta.emitReceipt);
 
         if (executionResultType == TypeOfExecutionReturn.Result) {
