@@ -24,7 +24,7 @@ module.exports = async function () {
         'classic', {
           blog: false,
           docs: {
-            editUrl: 'https://github.com/buidler-labs/hedera-strato-js/edit/main/',
+            editUrl: 'https://github.com/buidler-labs/hedera-strato-js/edit/main/lib.docs/',
             exclude: [
               "**/src/**",
             ],
