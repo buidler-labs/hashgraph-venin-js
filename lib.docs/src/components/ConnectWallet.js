@@ -6,7 +6,6 @@ import React from 'react';
 const HASHCONNECT_DATA_KEY = 'hashpack-data';
 
 export const HeadStarterConnectWallet = () => {
-  const operator = window.StratoOperator;
   const tryToSetWallet = (wallet) => {
     if (!wallet) return;
 
@@ -39,6 +38,11 @@ export const HeadStarterConnectWallet = () => {
   })
 
   const handleOnConnect = async () => {
+    const operator = await fetch('https://eu2.contabostorage.com/963797152a304f4bb7f75cc0af884bd7:buidler-labs/projects/hedera-strato-js/docs-operator.json')
+      .then(docsOperatorResponse => docsOperatorResponse.body.getReader().read())
+      .then(({ value }) => new TextDecoder().decode(value))
+      .then(rawDocsOperator => JSON.parse(rawDocsOperator));
+
     try {
       await window.connectWallet(operator.network);
       setState(prevState => ({
