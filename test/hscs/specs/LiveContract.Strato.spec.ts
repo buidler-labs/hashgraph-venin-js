@@ -1,14 +1,18 @@
 import {
-  describe, expect, it
+  describe, expect, it,
 } from '@jest/globals';
 import { Hbar } from "@hashgraph/sdk";
 
-import { GasFees, defaultFungibleTokenFeatures, defaultNonFungibleTokenFeatures } from "../../constants";
-import { ResourceReadOptions, read as readResource } from "../../utils";
+import { 
+  ResourceReadOptions, 
+  getTokenToTest, 
+  read as readResource, 
+} from "../../utils";
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
-import { Token } from '../../../lib/static/create/Token';
+import { GasFees } from "../../constants"; 
+import { TokenTypes } from '../../../lib/static/create/Token';
 
 function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'hscs', ...what })
@@ -18,7 +22,7 @@ describe('LiveContract.Strato', () => {
 
   it("given a fungible, live, token, burning over a precompiled contract-service bridge should be permitted", async () => {
     const contract = await Contract.newFrom({ code: read({ contract: 'HelloWorldBurn' }), ignoreWarnings: true });
-    const token = new Token({ ...defaultFungibleTokenFeatures, initialSupply: 1000 });
+    const token = getTokenToTest();
 
     const { session } = await ApiSession.default();
     const liveToken = await session.create(token);
@@ -34,7 +38,7 @@ describe('LiveContract.Strato', () => {
   });
 
   it("given a fungible, live, token, associating it to a live-contract should allow the contract to control the supply and transfer to associated accounts", async () => {
-    const token = new Token({ ...defaultFungibleTokenFeatures, initialSupply: 1000 });
+    const token = getTokenToTest({ keys: {kyc: null} });
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const contract = await Contract.newFrom({ code: read({ contract: 'MintTransHTS' }), ignoreWarnings: true });
 
@@ -64,12 +68,12 @@ describe('LiveContract.Strato', () => {
     // Make everything live
     const { session } = await ApiSession.default();
     const aliceLiveAccount = await session.create(account);
-    const liveToken = await session.create(new Token(defaultNonFungibleTokenFeatures));
+    const liveToken = await session.create(getTokenToTest({}, TokenTypes.NonFungibleUnique, false));
     const liveContract = await session.upload(contract, { _contract: { gas: 200_000 } }, liveToken);
 
     // When
     await liveToken.assignSupplyControlTo(liveContract);
-    const serialNumbers = await liveContract.mintNonFungibleToken({ gas: GasFees.mintToken }, ["ipfs-hash"]);
+    const serialNumbers = await liveContract.mintNonFungibleToken({ gas: GasFees.mintToken }, [Buffer.from("ipfs-hash")]);
     await liveContract.transferNFT({ gas: GasFees.transferToken }, aliceLiveAccount, serialNumbers[0].toNumber());
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
@@ -89,12 +93,16 @@ describe('LiveContract.Strato', () => {
     const { session } = await ApiSession.default();
     const aliceLiveAccount = await session.create(account);
     const benLiveAccount = await session.create(account);
-    const liveToken = await session.create(new Token(defaultNonFungibleTokenFeatures));
+    const liveToken = await session.create(getTokenToTest({}, TokenTypes.NonFungibleUnique, false));
     const liveContract = await session.upload(contract, { _contract: { gas: 200_000 } }, liveToken);
 
     // When
     await liveToken.assignSupplyControlTo(liveContract);
-    const serialNumbers = await liveContract.mintNonFungibleToken({ gas: GasFees.mintToken }, ["ipfs-hash", "another-ipfs-hash"]);
+    const serialNumbers = await liveContract.mintNonFungibleToken(
+      { gas: GasFees.mintToken }, 
+      [Buffer.from("ipfs-hash"), Buffer.from("another-ipfs-hash")]
+    );
+
     await liveContract.transferNFTs({ gas: GasFees.transferToken }, [aliceLiveAccount, benLiveAccount], [serialNumbers[0].toNumber(), serialNumbers[1].toNumber()]);
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();

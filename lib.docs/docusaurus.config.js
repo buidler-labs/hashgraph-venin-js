@@ -28,45 +28,46 @@ module.exports = async function () {
             exclude: [
               "**/src/**",
             ],
+            path: '.',
             remarkPlugins: [
               remarkGfm,
               remarkMermaid,
               [ remarkNpm2Yarn, { sync: true } ],
               remarkNumberedFootnoteLabels,
             ],
-            path: '.',
             routeBasePath: '/',
             showLastUpdateAuthor: true,
             showLastUpdateTime: true,
             sidebarPath: path.join(__dirname, './sidebar.js'),
           },
-          googleAnalytics: false,
+          googleAnalytics: {
+            anonymizeIP: true,
+            trackingID: 'G-ZHBJ3QTDC9',
+          },
           gtag: false,
+          theme: {
+            customCss: [
+              path.resolve(__dirname, 'static/css/theme.css'),
+            ],
+          },
         },
       ],
     ],
     projectName: "hedera-strato-js",
-    scripts: [
-      "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js",
-      {
-        async: true,
-        src: '/strato-loader.js',
-      }, {
-        async: true,
-        src: '/hedera-strato.js.map',
-      },
-    ],
+    scripts: [{
+      src: '/js/app.js',
+      type: 'module',
+    }],
     staticDirectories: [
-      "src/strato/lib.esm",
-      "src/strato/loaders",
       "static",
     ],
     tagline: "Write Hedera dApps like a boss because why not?",
     themeConfig: {
       footer: {
-        copyright: `Copyright © ${new Date().getFullYear()} <a href='https://github.com/buidler-labs'>BuiDler Labs</a>. Built with ❤️ in <a href='https://docusaurus.io/'>Docusaurus</a>.`,
+        copyright: `Copyright © ${new Date().getFullYear()} <a href='https://github.com/buidler-labs'>Buidler Labs</a>. Built with ❤️ in <a href='https://docusaurus.io/'>Docusaurus</a>.`,
         logo: {
           alt: 'BuiDler Labs Logo',
+          href: 'https://buidlerlabs.com/',
           src: 'img/logos/buidler-labs.png',
         },
         style: 'dark',
@@ -82,10 +83,11 @@ module.exports = async function () {
             position: 'left',
           },
           {
+            'aria-label': 'GitHub repository',
+            className: 'header-github-link',
             href: 'https://github.com/buidler-labs/hedera-strato-js',
-            label: 'GitHub',
             position: 'right',
-          }
+          },
         ],
       },
       prism: {

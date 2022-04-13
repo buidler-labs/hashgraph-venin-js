@@ -8,7 +8,7 @@ export default class JestTestEnvironment extends NodeEnvironment {
 
     try {
       // Test out if we can create a default api-session required to run the tests with
-      // Also make sure to turn off logging so as to not over-polute the console
+      // Also make sure to turn off logging so as to not over-pollute the console
       await ApiSession.default({
         logger: {
           enabled: false,
@@ -25,7 +25,7 @@ export default class JestTestEnvironment extends NodeEnvironment {
 
     // Required to solve https://github.com/facebook/jest/issues/4422
     //   see https://github.com/facebook/jest/issues/4422#issuecomment-770274099
-    // Unfortunatelly, if we hard-map these values in the jest.config > globals object, nx is not able to load them.
+    // Unfortunately, if we hard-map these values in the jest.config > globals object, nx is not able to load them.
     // That's why this looks to be the best working alternative so far.
     // Inspired from https://github.com/rafaelrpinto/jest-environment-uint8array/blob/master/index.js
     this.global.Uint8Array = Uint8Array;

@@ -1,35 +1,22 @@
-import { FileId, FileInfo, FileInfoQuery, } from "@hashgraph/sdk";
-
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { LiveEntity } from "./LiveEntity";
-
-type LiveJsonConstructorArgs = {
-    session: ApiSession,
-    id: FileId,
-    data: object
-};
+import { LiveFile, LiveFileConstructorArgs } from "./LiveFile";
 
 /**
- * Represents a Hedera, HFS-managed Json object
+ * Represents a Hedera, HFS-managed, Json object
  */
-export class LiveJson extends LiveEntity<FileId, FileInfo> {
+export class LiveJson extends LiveFile {
+  
+  readonly [k: string]: any;
 
-  public readonly id: FileId;
-    readonly [k: string]: any;
-
-    constructor({ session, id, data }: LiveJsonConstructorArgs) {
-      super(session, id);
-
-      // Dynamically bind jData properties to instance
-      Object.keys(data).forEach(jDataKey => Object.defineProperty(this, jDataKey, {
-        enumerable: true,
-        value: data[jDataKey],
-        writable: false,
-      }));
+  constructor({ session, id, data }: LiveFileConstructorArgs) {
+    super({data, id, session});
+    if(typeof data === 'string'){
+      data = JSON.parse(data);
     }
-
-    public getLiveEntityInfo(): Promise<FileInfo> {
-      const fileInfoQuery = new FileInfoQuery().setFileId(this.id);
-      return this.session.execute(fileInfoQuery, TypeOfExecutionReturn.Result, false);
-    }
+    // Dynamically bind 'data' properties to instance
+    Object.keys(data).forEach(jDataKey => Object.defineProperty(this, jDataKey, {
+      enumerable: true,
+      value: data[jDataKey],
+      writable: false,
+    }));
+  }
 }

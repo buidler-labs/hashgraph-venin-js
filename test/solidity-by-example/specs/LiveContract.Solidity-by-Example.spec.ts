@@ -1,18 +1,23 @@
-import BigNumber from "bignumber.js";
 import {
-  describe, expect, it,
+  describe, 
+  expect, 
+  it,
 } from '@jest/globals';
 import { AccountId } from "@hashgraph/sdk";
+import BigNumber from "bignumber.js";
 
 import { 
+  ResourceReadOptions,
+  loadContractRegistry as loadContractRegistryResource,
   load as loadResource, 
   read as readResource,
-  ResourceReadOptions
 } from "../../utils";
-import { LiveEntity } from "../../../lib/live/LiveEntity";
-import { LiveAddress } from "../../../lib/live/LiveAddress";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
+import { 
+  ContractRegistry,
+} from '../../../lib/ContractRegistry';
+import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 function load(contractPath: string) {
   return loadResource(contractPath, 'solidity-by-example');
@@ -20,6 +25,10 @@ function load(contractPath: string) {
 
 function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: 'solidity-by-example', ...what });
+}
+
+function loadContractRegistry(): ContractRegistry {
+  return loadContractRegistryResource('solidity-by-example');
 }
 
 describe('LiveContract.Solidity-by-Example', () => {
@@ -53,7 +62,7 @@ describe('LiveContract.Solidity-by-Example', () => {
 
     const { carAddr } = await liveCarFactoryContract.getCar(0);
 
-    expect(carAddr).toBeInstanceOf(LiveAddress);
+    expect(carAddr).toBeInstanceOf(StratoAddress);
 
     const liveCar = await carAddr.toLiveContract(carContract.interface);
 
@@ -67,7 +76,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     const liveContract = await session.upload(immutableContract, uintArgForConstructor);
     const returnedMyAddress = await liveContract.MY_ADDRESS();
 
-    expect(returnedMyAddress).toBeInstanceOf(LiveEntity);
+    expect(returnedMyAddress).toBeInstanceOf(StratoAddress);
     expect(returnedMyAddress.equals(session.getSolidityAddress())).toBeTruthy();
     await expect(liveContract.MY_UINT()).resolves.toEqual(uintArgForConstructor);
   });
@@ -78,18 +87,33 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(liveContract.greet()).resolves.toEqual("Hello World!");
   });
 
-  it("uploading a contract followed by a cold retrieval should be permitted provided it is deployed ID and ABI interface are available", async () => {
+  it("uploading a contract followed by a cold retrieval should be permitted through the deployed contract-Id and its original ABI", async () => {
     // prepare the session and the solidity contract
     const { session } = await ApiSession.default();
     const helloWorldContract = await Contract.newFrom({ code: read({ contract: 'hello_world' }) });
-    
+
     // upload it but don't get a hold on the actual resulting live contract instance. We only take note of its deployed id and,
     const { id } = await session.upload(helloWorldContract);
     
     // instead, retrieve it through an api session call
-    const liveContract = await session.getLiveContract({ id, abi: helloWorldContract.interface });
+    const simpleLiveContract = await session.getLiveContract({ abi: helloWorldContract.interface, id });
 
-    await expect(liveContract.greet()).resolves.toEqual("Hello World!");
+    await expect(simpleLiveContract.greet()).resolves.toEqual("Hello World!");
+  });
+
+  it("uploading a contract followed by a cold retrieval should be permitted through the deployed contract-Id and its contract-registry stored ABI", async () => {
+    // prepare the session and the solidity contract
+    const { session } = await ApiSession.default();
+    const helloWorldContract = await Contract.newFrom({ code: read({ contract: 'hello_world' }) });
+    const contractRegistry = loadContractRegistry();
+
+    // upload it but don't get a hold on the actual resulting live contract instance. We only take note of its deployed id and,
+    const { id } = await session.upload(helloWorldContract);
+    
+    // instead, retrieve it through an api session call
+    const registryLiveContract = await session.getLiveContract({ abi: contractRegistry.hello_world, id });
+
+    await expect(registryLiveContract.greet()).resolves.toEqual("Hello World!");
   });
 
   it("quering functions should succede giving back the expected answers", async () => {
@@ -158,7 +182,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     // TODO: activate this once secp is working on Hedera (and available through SDK ?)
     const liveContract = await load('signature');
     const { session } = await ApiSession.default();
-    const signer = session.accountId.toSolidityAddress();
+    const signer = session.wallet.account.id.toSolidityAddress();
     const to = AccountId.fromString('0.0.3').toSolidityAddress();
     const amount = 123;
     const message = "coffee and donuts";
@@ -173,6 +197,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     */
   });
 
+  // Requires: https://github.com/buidler-labs/hedera-strato-js/issues/38
   it.skip("uploading a public library-dependent contract should succede", async () => {
     const { session } = await ApiSession.default();
     const testArrayContract = await Contract.newFrom({ code: read({ contract: 'library' }), name: 'TestArray' });

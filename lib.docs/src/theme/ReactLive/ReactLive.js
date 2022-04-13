@@ -1,14 +1,14 @@
 import * as React from "react";
-import {LiveProvider} from "react-live";
-import {usePrismTheme} from "@docusaurus/theme-common";
 import LiveContainer from "./Components/LiveContainer";
-import LoadingSpinner from "./Components/LoadingSpinner";
 import LiveEventEmitter from "../ReactLive/LiveEventEmitter";
-import styles from "../Playground/styles.module.css";
+import {LiveProvider} from "react-live";
+import LoadingSpinner from "./Components/LoadingSpinner";
 import clsx from "clsx";
+import styles from "../Playground/styles.module.css";
+import {usePrismTheme} from "@docusaurus/theme-common";
 
 const wrapAsync = (code, containerKey) => {
-    return `  
+  return `  
         const originalApiSession = ApiSession.default;
         const originalLogger = console.log;
         
@@ -143,104 +143,104 @@ const wrapAsync = (code, containerKey) => {
 const liveEventEmitter = new LiveEventEmitter();
 
 const ReactLive = ({children: code, playgroundPosition, ...props}) => {
-    const [disabled, setDisabled] = React.useState(true);
-    const [updatedCode, setUpdatedCode] = React.useState(code);
-    const [running, setRunning] = React.useState(false);
-    const [error, setError] = React.useState(null);
-    const isMounted = React.useRef(false);
+  const [disabled, setDisabled] = React.useState(true);
+  const [updatedCode, setUpdatedCode] = React.useState(code);
+  const [running, setRunning] = React.useState(false);
+  const [error, setError] = React.useState(null);
+  const isMounted = React.useRef(false);
 
-    const prismTheme = usePrismTheme();
-    const scope = {
-        Loader: LoadingSpinner,
-        liveEventEmitter
+  const prismTheme = usePrismTheme();
+  const scope = {
+    Loader: LoadingSpinner,
+    liveEventEmitter,
+  };
+
+  const onRunHandler = (emitterKey) => {
+    if (emitterKey === props.containerKey) {
+      setError(null)
+    }
+
+    setRunning(emitterKey === props.containerKey)
+    setDisabled(emitterKey !== props.containerKey)
+  }
+
+  const onDoneHandler = () => {
+    setRunning(false)
+    setDisabled(false)
+  }
+
+  const onErrorHandler = (error) => {
+    setError(error)
+    liveEventEmitter.emit(`done`);
+  }
+
+  const executionErrorHandler = ({error, emitterKey}) => {
+    if (emitterKey === props.containerKey) {
+      setRunning(false);
+      onErrorHandler(error.toString())
+    }
+  }
+
+  React.useEffect(() => {
+    isMounted.current = true;
+
+    const waitFor = function (property, callback) {
+      if (window[property]) {
+        callback();
+      } else {
+        setTimeout(() => {
+          waitFor(property, callback);
+        }, 500);
+      }
     };
 
-    const onRunHandler = (emitterKey) => {
-        if (emitterKey === props.containerKey) {
-            setError(null)
-        }
+    const bindEventListeners = async () => {
+      waitFor('ApiSession', () => {
+        if (isMounted.current) {
+          liveEventEmitter.on(`running`, onRunHandler);
+          liveEventEmitter.on(`done`, onDoneHandler);
+          liveEventEmitter.on('executionError', executionErrorHandler)
 
-        setRunning(emitterKey === props.containerKey)
-        setDisabled(emitterKey !== props.containerKey)
+          setDisabled(false);
+        }
+      })
     }
 
-    const onDoneHandler = () => {
-        setRunning(false)
-        setDisabled(false)
+    const unbindEventListeners = () => {
+      liveEventEmitter.removeListener('running', onRunHandler);
+      liveEventEmitter.removeListener('done', onDoneHandler);
+      liveEventEmitter.removeListener('executionError', executionErrorHandler)
     }
 
-    const onErrorHandler = (error) => {
-        setError(error)
-        liveEventEmitter.emit(`done`);
-    }
+    bindEventListeners();
 
-    const executionErrorHandler = ({error, emitterKey}) => {
-        if (emitterKey === props.containerKey) {
-            setRunning(false);
-            onErrorHandler(error.toString())
-        }
-    }
+    return () => {
+      isMounted.current = false;
+      unbindEventListeners();
+    };
+  }, [props.categoryKey])
 
-    React.useEffect(() => {
-        isMounted.current = true;
+  return <React.Fragment>
+    <LiveProvider
+      code={updatedCode.replace(/\n$/, '')}
+      scope={scope}
+      transformCode={(_code) => running ? wrapAsync(_code, props.containerKey) : 'render(null)'}
+      theme={prismTheme}
+      noInline={true}
+      disabled={disabled}>
 
-        const waitFor = function (property, callback) {
-            if (window[property]) {
-                callback();
-            } else {
-                setTimeout(() => {
-                    waitFor(property, callback);
-                }, 500);
-            }
-        };
-
-        const bindEventListeners = async () => {
-            waitFor('ApiSession', () => {
-                if (isMounted.current) {
-                    liveEventEmitter.on(`running`, onRunHandler);
-                    liveEventEmitter.on(`done`, onDoneHandler);
-                    liveEventEmitter.on('executionError', executionErrorHandler)
-
-                    setDisabled(false);
-                }
-            })
-        }
-
-        const unbindEventListeners = () => {
-            liveEventEmitter.removeListener('running', onRunHandler);
-            liveEventEmitter.removeListener('done', onDoneHandler);
-            liveEventEmitter.removeListener('executionError', executionErrorHandler)
-        }
-
-        bindEventListeners();
-
-        return () => {
-            isMounted.current = false;
-            unbindEventListeners();
-        };
-    }, [props.categoryKey])
-
-    return <React.Fragment>
-        <LiveProvider
-            code={updatedCode.replace(/\n$/, '')}
-            scope={scope}
-            transformCode={(_code) => running ? wrapAsync(_code, props.containerKey) : 'render(null)'}
-            theme={prismTheme}
-            noInline={true}
-            disabled={disabled}>
-
-            <LiveContainer
-                hasTopPosition={playgroundPosition === 'top'}
-                isRunning={running}
-                onRunAction={() => liveEventEmitter.emit('running', props.containerKey)}
-                onChange={setUpdatedCode}
-                disabled={disabled}
-                error={error}
-                errorCallback={onErrorHandler}
-                {...props}
-            />
-        </LiveProvider>
-    </React.Fragment>
+      <LiveContainer
+        hasTopPosition={playgroundPosition === 'top'}
+        isRunning={running}
+        onRunAction={() => liveEventEmitter.emit('running', props.containerKey)}
+        onChange={setUpdatedCode}
+        disabled={disabled}
+        error={error}
+        errorCallback={onErrorHandler}
+        {...props}
+      />
+    </LiveProvider>
+  </React.Fragment>
 
 }
 

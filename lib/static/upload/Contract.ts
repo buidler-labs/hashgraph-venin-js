@@ -4,10 +4,14 @@ import {
 import { Interface } from '@ethersproject/abi';
 
 import { ArgumentsOnFileUploaded, BasicUploadableEntity } from "./BasicUploadableEntity";
-import { CompileIssues } from '../../errors/CompileIssues';
 import { LiveContract, LiveContractWithLogs } from '../../live/LiveContract';
-import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
 import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../../SolidityCompiler';
+import { CompileIssues } from '../../errors/CompileIssues';
+import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
+
+export type ContractFeatures = {
+  // TODO: add feature props here
+};
 
 type AllContractOptions = {
   /**
@@ -40,10 +44,10 @@ type NewContractOptions = {
  */
 export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   /**
-   * Given an index or a name, this returns a specific {@link Contract} following the successfull compilation of 
+   * Given an index or a name, this returns a specific {@link Contract} following the successful compilation of 
    * either the contract code itself ({@link options.code}) or the solidity file located at the provided {@link options.path}
    * 
-   * In terms of precidence, it first checks to see if the {@link options.name} is provided and, if so, it uses that otherwise
+   * In terms of precedence, it first checks to see if the {@link options.name} is provided and, if so, it uses that otherwise
    * it looks at the {@link options.index} one and goes with that.
    * 
    * @param {Object} options - Provides a source and controls various {@see Contract} construction settings
@@ -84,7 +88,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     }
 
     const rawCompileResult = await SolidityCompiler.compile({ code, path });
-    const compileResult = Contract._tryParsingCompileResultFrom({ rawCompileResult, ignoreWarnings });
+    const compileResult = Contract._tryParsingCompileResultFrom({ ignoreWarnings, rawCompileResult });
     const compiledContractsInfo = compileResult.contracts[VIRTUAL_SOURCE_CONTRACT_FILE_NAME];
     const contracts = [];
 
@@ -93,9 +97,9 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
 
       contracts.push(
         new Contract({
-          name: contractName,
           abi: solo.abi,
-          byteCode: solo.evm.bytecode.object
+          byteCode: solo.evm.bytecode.object,
+          name: contractName,
         })
       );
     }
@@ -144,8 +148,15 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
       throw new Error("Please provide a name for the Contract instance.");
     } else if(!abi) {
       throw new Error("Please provide a, valid, EthersProject-compatible, ABI definition for the Contract instance.");
-    } else if(!byteCode || !/^[0-9a-f]+$/.test(byteCode)) {
-      throw new Error("Please provide the valid formatted byte-code definition for the Contract in order to instantiate it.");
+    } else if (typeof byteCode === 'string' && byteCode.length !== 0) {
+      if(/.*__\$.*\$__.*/.test(byteCode)) {
+        throw new Error("Library linking is not currently supported. Please follow issue #38 for more info.");
+      } else if(!/^[0-9a-f]+$/.test(byteCode)) {
+        throw new Error("Please provide the valid formatted byte-code definition for the Contract in order to instantiate it.");
+      }
+    } else {
+      // if byteCode.length === '', yet there is an ABI, this means that most likely the loaded contract is an abstract one
+      // we permit this, but are weary when trying to upload it to a LiveContract. Basically, we won't allow uploading in this scenario.
     }
 
     super(`${name}-Contract`);
@@ -161,7 +172,22 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     if (other instanceof Contract === false) {
       return false;
     }
-    return this.byteCode === other.byteCode;
+    const thisFragments = this.interface.fragments;
+    const otherFragments = other.interface.fragments;
+
+    if (thisFragments.length !== otherFragments.length) {
+      return false;
+    }
+
+    let areAbisTheSame = true;
+
+    for (const thisFragment of thisFragments) {
+      if (!otherFragments.find(otherFragment => otherFragment.format() === thisFragment.format())) {
+        areAbisTheSame = false;
+        break;
+      }
+    }
+    return this.byteCode === other.byteCode && areAbisTheSame;
   }
 
   /**
@@ -173,13 +199,16 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
    */
   public serialize(): string {
     return JSON.stringify({
-      name: this.name,
+      abi: this.interface.format(),
       byteCode: this.byteCode,
-      abi: this.interface.format()
+      name: this.name,
     });
   }
 
   protected override async getContent() {
+    if (!this.byteCode) {
+      throw new Error("Won't upload contract to network because it's lacking the required byte-code data.");
+    }
     return this.byteCode;
   }
 
@@ -191,14 +220,14 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
    * are passed to the Contract constructor.
    */
   protected override async onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
-    const { createContractOptions, emitConstructorLogs } = await this._getContractCreateOptionsFor({ session, receipt, args });
+    const { createContractOptions, emitConstructorLogs } = await this._getContractCreateOptionsFor({ args, receipt, session });
     const createContractTransaction = new ContractCreateTransaction(createContractOptions);
 
     return await LiveContract.newFollowingUpload({
-      session,
       contract: this,
       emitConstructorLogs,
-      transaction: createContractTransaction
+      session,
+      transaction: createContractTransaction,
     });
   }
 
@@ -221,14 +250,14 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
       args = args.slice(1);
     }
     return {
-      emitConstructorLogs,
       createContractOptions: Object.assign({}, {
-        adminKey: session.publicKey,
+        adminKey: session.wallet.account.publicKey,
         bytecodeFileId: contractFileId,
         constructorParameters: await ContractFunctionParameters.newFor(constructorDefinition, args),
         gas: session.defaults.contractCreationGas,
-        ...contractCreationOverrides
-      })
+        ...contractCreationOverrides,
+      }),
+      emitConstructorLogs,
     }
   }
 }

@@ -1,21 +1,26 @@
 import {
   Key,
+  TokenDeleteTransaction,
   TokenId,
   TokenInfo,
   TokenInfoQuery,
   TokenUpdateTransaction,
+  Transaction,
 } from "@hashgraph/sdk";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { Token, TokenFeatures } from "../static/create/Token";
 import { LiveEntity } from "./LiveEntity";
-import { SolidityAddressable } from "../core/SolidityAddressable";
 
 type LiveTokenConstructorArgs = {
     session: ApiSession,
     id: TokenId
 };
 
-export class LiveToken extends LiveEntity<TokenId, TokenInfo> implements SolidityAddressable {
+/**
+ * Represents a native Token on the Hedera Token Service
+ */
+export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> {
 
   public constructor({ session, id }: LiveTokenConstructorArgs) {
     super(session, id);
@@ -25,7 +30,7 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo> implements Solidit
     return this.id.toSolidityAddress();
   }
 
-  public async assignSupplyControlTo<T extends Key, I>(key: Key | LiveEntity<T, I>): Promise<void> {
+  public async assignSupplyControlTo<T extends Key, I, P>(key: Key | LiveEntity<T, I, P>): Promise<void> {
     const tokenUpdateTx = new TokenUpdateTransaction()
       .setTokenId(this.id)
       .setSupplyKey(key instanceof Key ? key : key.id);
@@ -36,4 +41,19 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo> implements Solidit
     const tokenInfoQuery = new TokenInfoQuery().setTokenId(this.id);
     return this.session.execute(tokenInfoQuery, TypeOfExecutionReturn.Result, false);
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected _getDeleteTransaction<R>(args?: R): Transaction {
+    return new TokenDeleteTransaction({tokenId: this.id})
+  }
+
+  protected async _getUpdateTransaction(args?: TokenFeatures): Promise<Transaction> {
+    const featuresUsedInTransaction = Token.mapTokenFeaturesToTokenUpgradeArguments(args);
+
+    return new TokenUpdateTransaction({
+      ...featuresUsedInTransaction,
+      tokenId: this.id,
+    });
+  }
+  
 }

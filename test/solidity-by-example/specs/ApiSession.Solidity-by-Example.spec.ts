@@ -1,10 +1,9 @@
 import {
   afterEach,
   describe, expect, it,
-  jest
 } from '@jest/globals';
 
-import { read as readResource, ResourceReadOptions } from '../../utils';
+import { ResourceReadOptions, read as readResource } from '../../utils';
 import { ApiSession } from '../../../lib/ApiSession';
 import { Contract } from '../../../lib/static/upload/Contract';
 
@@ -19,7 +18,7 @@ describe('ApiSession.Solidity-by-Example', () => {
     process.env = ORIGINAL_ENV;
   });
 
-  it('given enough hbar, uploading a simple solidity contract should succede', async () => {
+  it('given enough hbar, uploading a simple solidity contract should succeed', async () => {
     const { session } = await ApiSession.default();
     const helloWorldContract = await Contract.newFrom({ code: read({ contract: 'hello_world' }) });
     

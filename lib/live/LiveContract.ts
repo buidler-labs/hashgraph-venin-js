@@ -4,6 +4,7 @@ import Long from "long";
 import {
   ContractCallQuery, 
   ContractCreateTransaction, 
+  ContractDeleteTransaction, 
   ContractExecuteTransaction, 
   ContractFunctionResult, 
   ContractId, 
@@ -11,6 +12,7 @@ import {
   ContractInfoQuery, 
   ContractLogInfo, 
   Hbar, 
+  Transaction, 
   TransactionId,
 } from "@hashgraph/sdk";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
@@ -19,20 +21,21 @@ import { arrayify } from '@ethersproject/bytes';
 import traverse from 'traverse';
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { SolidityAddressable, extractSolidityAddressFrom  } from "../core/SolidityAddressable";
-import { Contract } from "../static/upload/Contract";
+import { Contract, ContractFeatures } from "../static/upload/Contract";
+import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
 import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber';
-import { LiveAddress } from "./LiveAddress";
-import { LiveEntity } from "./LiveEntity";
-import { encodeToHex } from '../core/encoding/Hex';
+import { StratoAddress } from "../core/StratoAddress";
+import { encodeToHex } from '../core/Hex';
+import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
 export type ContractFunctionCall = ContractCallQuery | ContractExecuteTransaction;
 export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
 type CreateContractRequestMeta = { 
-  emitReceipt: boolean 
+  emitReceipt: boolean, 
+  onlyReceipt: boolean,
 };
 export type LiveContractConstructorArgs = {
   session: ApiSession,
@@ -72,7 +75,7 @@ function parseLogs(cInterface: Interface, logs: ContractLogInfo[]): ParsedEvent[
   }).filter(parsedLogCandidate => parsedLogCandidate !== null);
 }
 
-export class LiveContract extends LiveEntity<ContractId, ContractInfo> implements SolidityAddressable {
+export class LiveContract extends BaseLiveEntityWithBalance<ContractId, ContractInfo, ContractFeatures> {
 
   /**
      * Constructs a new LiveContract to be interacted with on the Hashgraph.
@@ -121,10 +124,17 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
       enumerable: true,
       value: (async function (this: LiveContract, fDescription: FunctionFragment, ...args: any[]) {
         const { request, meta } = await this.createContractRequestFor({ fDescription, args });
-        const callResponse = await this.session.execute(request, TypeOfExecutionReturn.Result, meta.emitReceipt);
+        const isNonQuery = !(request instanceof ContractCallQuery);
+        const executionResultType = isNonQuery && meta.onlyReceipt ? TypeOfExecutionReturn.Receipt : TypeOfExecutionReturn.Result;
+        const callResponse = await this.session.execute(request, executionResultType, meta.emitReceipt);
 
-        this.tryToProcessForEvents(callResponse);
-        return await this.tryExtractingResponse(callResponse, fDescription);
+        if (executionResultType == TypeOfExecutionReturn.Result) {
+          this.tryToProcessForEvents(callResponse as ContractFunctionResult);
+          return await this.tryExtractingResponse(callResponse as ContractFunctionResult, fDescription);
+        }
+        
+        // Reaching this point means that only the receipt was requested. We have it so we pass it through
+        return callResponse;
       }).bind(this, fDescription),
       writable: false,
     }));
@@ -161,7 +171,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
   }
 
   /**
-   * Registers/De-registers code to be executed when a particular contract event gets triggered yet there are no event-handlers registerd to handle it.
+   * Registers/De-registers code to be executed when a particular contract event gets triggered yet there are no event-handlers registered to handle it.
    * 
    * @param clb - the callback to get executed, if defined, otherwise remove all callbacks for this special event
    */
@@ -184,6 +194,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
     };
     const meta: CreateContractRequestMeta = {
       emitReceipt: this.session.defaults.emitLiveContractReceipts,
+      onlyReceipt: this.session.defaults.onlyReceiptsFromContractRequests,
     };
       
     // Try to unpack common meta-args that can be passed in at query/transaction construction time
@@ -210,7 +221,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
     // Try to inject setter-only options
     if (args && args.length > 0) {
       if (isContractQueryRequest(request)) {
-        // Try setting aditional Query properties
+        // Try setting additional Query properties
         if (args[0].maxQueryPayment instanceof Hbar) {
           request.setMaxQueryPayment(args[0].maxQueryPayment);
           requestOptionsPresentInArgs = true;
@@ -224,7 +235,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
           requestOptionsPresentInArgs = true;
         }
       } else {
-        // This is a state-changing Transaction. Try setting aditional properties as well
+        // This is a state-changing Transaction. Try setting additional properties as well
         if (args[0].amount) {  // number | string | Long | BigNumber | Hbar
           request.setPayableAmount(args[0].amount);
           requestOptionsPresentInArgs = true;
@@ -256,6 +267,10 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
     if (args && args.length > 0) {
       if (args[0].emitReceipt === false || args[0].emitReceipt === true) {
         meta.emitReceipt = args[0].emitReceipt;
+        requestOptionsPresentInArgs = true;
+      }
+      if (args[0].onlyReceipt === false || args[0].onlyReceipt === true) {
+        meta.onlyReceipt = args[0].onlyReceipt;
         requestOptionsPresentInArgs = true;
       }
     }
@@ -303,7 +318,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
         fResponse = fResult[0];
       }
 
-      // Do various type re-mapings such as:
+      // Do various type re-mappings such as:
       //    - Ethers' BigNumber to the Hedera-used, bignumber.js equivalent
       //    - solidity-address compatible values to LiveAddress-es
       const tryRemapingValue = (what: any, f: {(...args: any[]): any}) => {
@@ -311,7 +326,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
 
         if (typeof what === 'string' && extractSolidityAddressFrom(what) !== undefined) {
           // most likely, this is a solidity-address
-          f(new LiveAddress({ session: this.session, address: what }), true);
+          f(new StratoAddress(this.session, what), true);
           wasMapped = true;
         } else if (EthersBigNumber.isBigNumber(what)) {
           f(new BigNumber(what.toString()), false);
@@ -333,7 +348,7 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
    * Given the call-response of a contract-method call/query, we try to see if there have been any events emitted and, if so, we re-emit them on the live-contract events pub-sub channel.
    * 
    * Note: even if there is an event triggered, if there are no handlers registered, the first thing we do is try to dump it on the {@link UNHANDLED_EVENT_NAME} channel. 
-   *       if there are no handlers registered there either, we skipp the event all-together.
+   *       if there are no handlers registered there either, we skip the event all-together.
    */
   private tryToProcessForEvents(callResponse: ContractFunctionResult): void {
     const loggedEvents = parseLogs(this.interface, callResponse.logs);
@@ -370,6 +385,19 @@ export class LiveContract extends LiveEntity<ContractId, ContractInfo> implement
     const contractInfoQuery = new ContractInfoQuery().setContractId(this.id);
     return this.session.execute(contractInfoQuery, TypeOfExecutionReturn.Result, false);
   }
+  
+  protected override newDeleteTransaction<R>(args?: R): Transaction {
+    return new ContractDeleteTransaction({ contractId: this.id, ...args });
+  }
+
+  protected _getUpdateTransaction(args?: ContractFeatures): Promise<Transaction> {
+    throw new Error("Method not implemented.");
+  }
+
+  protected _getBalancePayload(): object {
+    return { contractId: this.id };
+  }
+  
 }
 
 /**
@@ -381,7 +409,7 @@ export class LiveContractWithLogs extends LiveContract {
   public readonly liveContract: LiveContract;
 
   constructor({ session, id, cInterface, logs }: LiveContractConstructorArgs & { logs: ParsedEvent[] }) {
-    super({ session, id, cInterface });
+    super({ cInterface, id, session });
     this.liveContract = this;
     this.logs = logs;
   }
