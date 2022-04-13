@@ -37,13 +37,20 @@ export default function strato(options: StratoRollupOptions = {}) {
     "process.env.HEDERAS_ENV_PATH": environment.HEDERAS_ENV_PATH,
     'process.env.NODE_ENV': `'${environment.NODE_ENV ?? 'test'}'`,
   }, sourceMap);
-  const resolvableIds: { [k:string]: { external: boolean, id: string } } = {
+  const resolvableIds: { [k:string]: { external: boolean, id: string, excludeImporter?: RegExp } } = {
     'ContractRegistry': {external: false, id: CONTRACT_REGISTRY_ID},
     'ContractsInFileStorage': {external: false, id: CONTRACTS_IN_FILE_STORAGE_ID},
     'SolidityCompiler': {external: false, id: SOLIDITY_COMPILER_ID},
     
     'StratoLogger': {external: false, id: getPoliePathOf('StratoLogger.js')},
-    'bignumber.js': {external: true, id: 'https://unpkg.com/bignumber.js@9.0.2/bignumber.mjs'},
+    'bignumber.js': {
+      // Strato is using both @ethersproject/bignumber and bignumber.js. They don't play well together
+      // There is a tendency to mess up @ethersproject inner-dependencies
+      // We try to leave it alone to bundle its own thing
+      excludeImporter: /@ethersproject/g, 
+      external: true, 
+      id: 'https://unpkg.com/bignumber.js@9.0.2/bignumber.mjs', 
+    },
     'core/Hex': {external: false, id: getPoliePathOf("Hex.js")},
     'dotenv': {external: false, id: getPoliePathOf("dotenv.js")},
   };
@@ -71,12 +78,17 @@ export default function strato(options: StratoRollupOptions = {}) {
     },
     async resolveId(importee: string, importer: string, options: any) {
       const resolvedImporteeKey = Object.keys(resolvableIds)
-        .find(potentialResolvableId => importee.endsWith(potentialResolvableId));
+        .find(potentialResolvableId => {
+          const excludeImporterRegex = resolvableIds[potentialResolvableId].excludeImporter;
+          const isImporterAcceptable = importer && excludeImporterRegex ? !(importer.search(excludeImporterRegex) != -1) : true;
+
+          return isImporterAcceptable && importee.endsWith(potentialResolvableId);
+        });
 
       if (resolvedImporteeKey) {
         const resolvedImportee = resolvableIds[resolvedImporteeKey];
 
-        if (resolvedImportee.id.startsWith('\0')) {
+        if (resolvedImportee.id.startsWith('\0') || resolvedImportee.external) {
           return resolvedImportee;
         }
         return this.resolve(resolvedImportee.id, importer, { skipSelf: true, ...options });

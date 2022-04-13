@@ -6,6 +6,7 @@ import {
   Contract,
   ContractRegistry, 
 } from './lib.esm/hedera-strato.js';
+import BigNumber from "https://unpkg.com/bignumber.js@9.0.2/bignumber.mjs";
 
 describe('BrowserSmoke', function () {
   it("a simple contract given by path can be compiled, uploaded and executed with the result returned", async () => {
@@ -41,4 +42,17 @@ describe('BrowserSmoke', function () {
 
     expect(greetResponse).toEqual("Hello ABI World!");
   });
+
+  it("a dapp should allow bignumbers to work both as arguments and as returned values", async () => {
+    const { session } = await ApiSession.default();
+    const contract = await Contract.newFrom({ path: 'bignumbers.sol' });
+    const liveContract = await session.upload(contract);
+    const plainNumberResponse = await liveContract.grr(42);
+    const bigNumberResponse = await liveContract.grr(new BigNumber(82));
+    const queryResponse = await liveContract.mrr();
+
+    expect(plainNumberResponse).toBeInstanceOf(BigNumber);
+    expect(bigNumberResponse).toBeInstanceOf(BigNumber);
+    expect(queryResponse).toBeInstanceOf(BigNumber);
+  }, 60000);
 });

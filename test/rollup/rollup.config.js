@@ -44,7 +44,6 @@ export default async function getConfig() {
         extensions,
         mainFields: [ "browser", "module", "main" ],
         preferBuiltins: false,
-        rootDir: getPathOf('.'),
       }),
       commonjs({
         esmExternals: true,
