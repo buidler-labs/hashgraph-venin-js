@@ -48,11 +48,31 @@ describe('LiveContract.Solidity-by-Example', () => {
     await liveContract.greet();
   });
 
-  it("creating a contract should allow its live-address to be convertable to the underlying model", async () => {
+  it("trying to create2 twice using the same salt should fail", async () => {
+    const { session } = await ApiSession.default();
+    const carFactoryContract = await Contract.newFrom({ code: read({ contract: 'new_contract' }), ignoreWarnings: true, name: 'CarFactory' });
+    const liveCarFactoryContract = await session.upload(carFactoryContract);
+    const newCarOwner = AccountId.fromString("0.0.123").toSolidityAddress();
+    const salt = "0xb7d7c82f47757be5f8f931c8ac65ab700ca1245ea02fff2c03fcd679e7f4bba9";
+
+    await expect(liveCarFactoryContract.create2({ gas: 200_000 }, 
+      newCarOwner, 
+      "Honda Civic",
+      salt
+    )).resolves.toBeUndefined();
+
+    await expect(() => liveCarFactoryContract.create2({ gas: 200_000 }, 
+      newCarOwner, 
+      "Honda Civic",
+      salt
+    )).rejects.toThrow();
+  });
+
+  it("creating a contract should allow its live-address to be convertible to the underlying model", async () => {
     const { session } = await ApiSession.default();
     const hapiSessionOwnerAddress = session.getSolidityAddress();
-    const carContract = await Contract.newFrom({ code: read({ contract: 'new_contract' }), name: 'Car', ignoreWarnings: true });
-    const carFactoryContract = await Contract.newFrom({ code: read({ contract: 'new_contract' }), name: 'CarFactory', ignoreWarnings: true });
+    const carContract = await Contract.newFrom({ code: read({ contract: 'new_contract' }), ignoreWarnings: true, name: 'Car' });
+    const carFactoryContract = await Contract.newFrom({ code: read({ contract: 'new_contract' }), ignoreWarnings: true, name: 'CarFactory' });
     const liveCarFactoryContract = await session.upload(carFactoryContract);
 
     await expect(liveCarFactoryContract.create({ gas: 200_000 }, 
@@ -116,7 +136,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(registryLiveContract.greet()).resolves.toEqual("Hello World!");
   });
 
-  it("quering functions should succede giving back the expected answers", async () => {
+  it("querying functions should succeed giving back the expected answers", async () => {
     const liveContract = await load('function');
 
     await expect(liveContract.returnMany()).resolves.toEqual([new BigNumber(1), true, new BigNumber(2)]);
@@ -126,7 +146,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(liveContract.arrayOutput()).resolves.toEqual([]);
   });
 
-  it("executing functions with arguments should succede giving back the expected values", async () => {
+  it("executing functions with arguments should succeed giving back the expected values", async () => {
     const liveContract = await load('view_and_pure_functions');
 
     await expect(liveContract.addToX(69)).resolves.toEqual(new BigNumber(70));
@@ -157,7 +177,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(liveContract.testCustomError(0)).resolves.toBeUndefined();
   });
 
-  it("interacting with a contract's methods should set state variables approprietly", async () => {
+  it("interacting with a contract's methods should set state variables appropriately", async () => {
     const liveContract = await load('state_variables');
 
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(0));
@@ -168,7 +188,7 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(liveContract.num()).resolves.toEqual(new BigNumber(420));
   });
 
-  it("interacting with a contract's methods should be governed by their internel, conditional logic", async () => {
+  it("interacting with a contract's methods should be governed by their internal, conditional logic", async () => {
     const liveContract = await load('if_else');
 
     await expect(liveContract.foo(0)).resolves.toEqual(new BigNumber(0));
