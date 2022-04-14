@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import json from '@rollup/plugin-json';
 import nodePolyfills from 'rollup-plugin-node-polyfills';
 import resolve from '@rollup/plugin-node-resolve';
-import { terser } from "rollup-plugin-terser";
+import { terser } from 'rollup-plugin-terser';
 
 dotenv.config({ path: getPathOf('./.env') });
 
@@ -24,21 +24,23 @@ export default async function getConfig() {
   return {
     context: 'window',
     input: './node_modules/@hashgraph/sdk/src/index.js',
-    output: [ {
-      file: getPathOf('../../static/js/hashgraph-sdk.js'),
-      format: 'esm',
-      plugins: [terser()],
-      sourcemap: true,
-    } ],
+    output: [
+      {
+        file: getPathOf('../../static/js/hashgraph-sdk.js'),
+        format: 'esm',
+        plugins: [terser()],
+        sourcemap: true,
+      },
+    ],
     plugins: [
       resolve({
         extensions,
-        mainFields: [ "browser", "module", "main" ],
+        mainFields: ['browser', 'module', 'main'],
         preferBuiltins: false,
       }),
       commonjs({
         esmExternals: true,
-        requireReturnsDefault: "preferred",
+        requireReturnsDefault: 'preferred',
       }),
       nodePolyfills({
         sourceMap: true,
@@ -46,5 +48,5 @@ export default async function getConfig() {
       json(),
     ],
     treeshake: true,
-  }
+  };
 }

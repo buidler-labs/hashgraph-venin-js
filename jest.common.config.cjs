@@ -2,18 +2,14 @@
 
 module.exports = {
   collectCoverage: true,
-  coveragePathIgnorePatterns : [
-    "test/*",
-  ],
+  coveragePathIgnorePatterns: ['test/*'],
   displayName: 'hedera-strato',
   moduleFileExtensions: ['js', 'ts'],
-  preset: "ts-jest",
-  setupFiles: [
-    'dotenv/config',
-  ],
-  testRunner: "./test/hedera-test-runner.ts",
+  preset: 'ts-jest',
+  setupFiles: ['dotenv/config'],
+  testRunner: './test/hedera-test-runner.ts',
   testTimeout: 300000,
   transform: {
-    "^.+\\.ts?$": "ts-jest",
+    '^.+\\.ts?$': 'ts-jest',
   },
 };

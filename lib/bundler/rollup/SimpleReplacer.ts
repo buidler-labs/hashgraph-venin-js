@@ -8,20 +8,26 @@ export class SimpleReplacer {
   private readonly pattern: RegExp;
 
   constructor(
-    readonly values: { [k: string]: string }, 
-    private readonly sourceMap: boolean = false) {
+    readonly values: { [k: string]: string },
+    private readonly sourceMap: boolean = false
+  ) {
     this.functionValues = mapToFunctions(values);
     const keys = Object.keys(this.functionValues).sort(longest).map(escape);
-    this.pattern = new RegExp(`\\b(${keys.join('|')})\\b(?!\\.)(?!\\s*=[^=])`, 'g');  
+    this.pattern = new RegExp(
+      `\\b(${keys.join('|')})\\b(?!\\.)(?!\\s*=[^=])`,
+      'g'
+    );
   }
-  
+
   public tryReplacing(code, id) {
     const magicString = new MagicString(code);
     if (!this.codeHasReplacements(code, id, magicString)) {
       return null;
     }
 
-    const result: { code: string, map?: SourceMap } = { code: magicString.toString() };
+    const result: { code: string; map?: SourceMap } = {
+      code: magicString.toString(),
+    };
     if (this.sourceMap) {
       result.map = magicString.generateMap({ hires: true });
     }

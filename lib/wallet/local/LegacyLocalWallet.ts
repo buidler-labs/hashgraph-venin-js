@@ -3,7 +3,7 @@
 // NOTE: this wallet doesn't have a Provider on purpose. That's because we do expect it will go away really soon so there's no
 //       need to define one.
 
-import { 
+import {
   AccountBalance,
   AccountBalanceQuery,
   AccountId,
@@ -18,11 +18,11 @@ import {
   TransactionId,
   TransactionReceiptQuery,
   TransactionRecord,
-  Wallet, 
-} from "@hashgraph/sdk";
-import Executable from "@hashgraph/sdk/lib/Executable";
+  Wallet,
+} from '@hashgraph/sdk';
+import Executable from '@hashgraph/sdk/lib/Executable';
 
-import { HederaNetwork } from "../../HederaNetwork";
+import { HederaNetwork } from '../../HederaNetwork';
 
 export class LegacyLocalWallet extends Wallet {
   private readonly client: Client;
@@ -30,22 +30,24 @@ export class LegacyLocalWallet extends Wallet {
   private readonly signer: (messasge: Uint8Array) => Promise<Uint8Array>;
 
   constructor(
-      network: HederaNetwork, 
-      private readonly accountId: AccountId, 
-      operatorKey: PrivateKey) {
+    network: HederaNetwork,
+    private readonly accountId: AccountId,
+    operatorKey: PrivateKey
+  ) {
     super();
     this.client = network.getClient();
     this.publicKey = operatorKey.publicKey;
-    
+
     this.client.setOperator(accountId, operatorKey);
     this.signer = (message) => Promise.resolve(operatorKey.sign(message));
   }
 
   getProvider(): any {
     return {
-      getTransactionReceipt: async(transactionId) => new TransactionReceiptQuery()
-        .setTransactionId(transactionId)
-        .execute(this.client),
+      getTransactionReceipt: async (transactionId) =>
+        new TransactionReceiptQuery()
+          .setTransactionId(transactionId)
+          .execute(this.client),
     };
   }
 
@@ -110,7 +112,7 @@ export class LegacyLocalWallet extends Wallet {
     const transactionId = transaction.transactionId;
     if (
       transactionId.accountId != null &&
-            transactionId.accountId.compare(this.accountId) != 0
+      transactionId.accountId.compare(this.accountId) != 0
     ) {
       throw new Error(
         "transaction's ID constructed with a different account ID"
@@ -120,8 +122,8 @@ export class LegacyLocalWallet extends Wallet {
     const nodeAccountIds = (
       transaction.nodeAccountIds != null ? transaction.nodeAccountIds : []
     ).map((nodeAccountId) => nodeAccountId.toString());
-    const network = Object.values(this.getNetwork()).map(
-      (nodeAccountId) => nodeAccountId.toString()
+    const network = Object.values(this.getNetwork()).map((nodeAccountId) =>
+      nodeAccountId.toString()
     );
 
     if (
@@ -131,7 +133,7 @@ export class LegacyLocalWallet extends Wallet {
       )
     ) {
       throw new Error(
-        "Transaction already set node account IDs to values not within the current network"
+        'Transaction already set node account IDs to values not within the current network'
       );
     }
 
@@ -147,7 +149,9 @@ export class LegacyLocalWallet extends Wallet {
     return Promise.resolve(transaction.freeze());
   }
 
-  sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
+  sendRequest<RequestT, ResponseT, OutputT>(
+    request: Executable<RequestT, ResponseT, OutputT>
+  ): Promise<OutputT> {
     return request.execute(this.client);
   }
 }

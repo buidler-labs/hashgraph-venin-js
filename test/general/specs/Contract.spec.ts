@@ -1,14 +1,13 @@
 import * as path from 'path';
 
-import {
-  describe, expect, it,
-} from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 
 import { CompileIssues } from '../../../lib/errors/CompileIssues';
 import { Contract } from '../../../lib/static/upload/Contract';
 import { read } from '../../utils';
 
-const HELLO_IMPORTS_BYTECODE = read({ solo: 'hello_imports' }).evm.bytecode.object;
+const HELLO_IMPORTS_BYTECODE = read({ solo: 'hello_imports' }).evm.bytecode
+  .object;
 
 describe('Contract', () => {
   it('given an abstract solidity contract, it should permit creating a Contract with ABI definitions present yet have no byteCode associated with it', async () => {
@@ -21,37 +20,86 @@ describe('Contract', () => {
       expect(contract.interface.fragments.length).toBeGreaterThan(0);
       expect(contract.byteCode).toBeDefined();
       expect(contract.byteCode).toHaveLength(0);
-    } catch(e) {
-      throw new Error("Should permit loading of abstract solidity contracts but it doesn't.");
+    } catch (e) {
+      throw new Error(
+        "Should permit loading of abstract solidity contracts but it doesn't."
+      );
     }
   });
 
   it('equality testing suite', async () => {
-    expect(Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`).equals(Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`))).toBeTruthy();
-    expect(Contract.deserialize(`{"name": "A", "abi": []}`).equals(Contract.deserialize(`{"name": "A", "abi": []}`))).toBeTruthy();
-    expect(Contract.deserialize(`{"name": "A", "abi": ["function set(uint256 _num)"]}`).equals(Contract.deserialize(`{"name": "A", "abi": ["function set(uint256 _num)"]}`))).toBeTruthy();
-    expect(Contract.deserialize(`{"name": "B", "byteCode": "beef", "abi": ["function set(uint256 _num)"]}`).equals(Contract.deserialize(`{"name": "A", "byteCode": "beef", "abi": ["function set(uint256 _num)"]}`)))
-      .toBeTruthy();
-    expect(Contract.deserialize(`{"name": "B", "byteCode": "beef", "abi": ["function num() view returns (uint256)", "function set(uint256 _num)"]}`)
-      .equals(Contract.deserialize(`{"name": "A", "byteCode": "beef", "abi": ["function set(uint256 _num)", "function num() view returns (uint256)"]}`)))
-      .toBeTruthy();
+    expect(
+      Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`).equals(
+        Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`)
+      )
+    ).toBeTruthy();
+    expect(
+      Contract.deserialize(`{"name": "A", "abi": []}`).equals(
+        Contract.deserialize(`{"name": "A", "abi": []}`)
+      )
+    ).toBeTruthy();
+    expect(
+      Contract.deserialize(
+        `{"name": "A", "abi": ["function set(uint256 _num)"]}`
+      ).equals(
+        Contract.deserialize(
+          `{"name": "A", "abi": ["function set(uint256 _num)"]}`
+        )
+      )
+    ).toBeTruthy();
+    expect(
+      Contract.deserialize(
+        `{"name": "B", "byteCode": "beef", "abi": ["function set(uint256 _num)"]}`
+      ).equals(
+        Contract.deserialize(
+          `{"name": "A", "byteCode": "beef", "abi": ["function set(uint256 _num)"]}`
+        )
+      )
+    ).toBeTruthy();
+    expect(
+      Contract.deserialize(
+        `{"name": "B", "byteCode": "beef", "abi": ["function num() view returns (uint256)", "function set(uint256 _num)"]}`
+      ).equals(
+        Contract.deserialize(
+          `{"name": "A", "byteCode": "beef", "abi": ["function set(uint256 _num)", "function num() view returns (uint256)"]}`
+        )
+      )
+    ).toBeTruthy();
 
-    expect(Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`).equals(Contract.deserialize(`{"name": "A", "byteCode": "bc", "abi": []}`))).not.toBeTruthy();
-    expect(Contract.deserialize(`{"name": "A", "abi": ["function set(uint256 _num)"]}`).equals(Contract.deserialize(`{"name": "A", "abi": []}`))).not.toBeTruthy();
+    expect(
+      Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`).equals(
+        Contract.deserialize(`{"name": "A", "byteCode": "bc", "abi": []}`)
+      )
+    ).not.toBeTruthy();
+    expect(
+      Contract.deserialize(
+        `{"name": "A", "abi": ["function set(uint256 _num)"]}`
+      ).equals(Contract.deserialize(`{"name": "A", "abi": []}`))
+    ).not.toBeTruthy();
   });
 
   it('given neither the source code nor the source path, instantiating a Contract should not be permitted', async () => {
-    await expect(Contract.allFrom({ })).rejects.toThrow();
-    await expect(Contract.newFrom({ })).rejects.toThrow();
+    await expect(Contract.allFrom({})).rejects.toThrow();
+    await expect(Contract.newFrom({})).rejects.toThrow();
   });
 
   it('given several serialized contracts, deserializing them should behave accordingly', async () => {
-    expect(() => Contract.deserialize(`{"name": "A", "abi": []}`)).not.toThrow();
-    expect(() => Contract.deserialize(`{"name": "A", "abi": [], "byteCode": "beef"}`)).not.toThrow();
+    expect(() =>
+      Contract.deserialize(`{"name": "A", "abi": []}`)
+    ).not.toThrow();
+    expect(() =>
+      Contract.deserialize(`{"name": "A", "abi": [], "byteCode": "beef"}`)
+    ).not.toThrow();
 
-    expect(() => Contract.deserialize(`{"byteCode": "ab", "abi": []}`)).toThrow();
-    expect(() => Contract.deserialize(`{"name": "A", "byteCode": "$ab", "abi": []}`)).toThrow();
-    expect(() => Contract.deserialize(`{"name": "A", "byteCode": "ab"}`)).toThrow();
+    expect(() =>
+      Contract.deserialize(`{"byteCode": "ab", "abi": []}`)
+    ).toThrow();
+    expect(() =>
+      Contract.deserialize(`{"name": "A", "byteCode": "$ab", "abi": []}`)
+    ).toThrow();
+    expect(() =>
+      Contract.deserialize(`{"name": "A", "byteCode": "ab"}`)
+    ).toThrow();
   });
 
   it("given a solidity contract code which doesn't have a license, extracting all the Contracts should fail if we care about compiler warnings", async () => {
@@ -64,7 +112,9 @@ describe('Contract', () => {
       expect(e.constructor.name).toEqual(CompileIssues.name);
       return;
     }
-    throw new Error("Instantiating a Contract works even though it should fail having warnings reported");
+    throw new Error(
+      'Instantiating a Contract works even though it should fail having warnings reported'
+    );
   });
 
   it("given a solidity contract code which doesn't have a license, extracting all the Contracts should succede if we don't care about compiler warnings", async () => {
@@ -74,22 +124,34 @@ describe('Contract', () => {
     });
   });
 
-  it("given a valid contract that is inter-linked via chain-import-ing with others and its path-prefix not set in env, compiling it should not fail", async () => {
-    expect(process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/)).not.toContain('import_resolution');
+  it('given a valid contract that is inter-linked via chain-import-ing with others and its path-prefix not set in env, compiling it should not fail', async () => {
+    expect(
+      process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/)
+    ).not.toContain('import_resolution');
 
-    await expect(Contract.allFrom({ path: './general/contracts/import_resolution/hello_imports.sol' })).resolves.not.toThrow();
+    await expect(
+      Contract.allFrom({
+        path: './general/contracts/import_resolution/hello_imports.sol',
+      })
+    ).resolves.not.toThrow();
   });
 
-  it("given a valid contract via its absolute path, we should be able to load it", async () => {
-    await expect(Contract.allFrom({ path: path.join(__dirname, '../contracts/change_state_with_return.sol') })).resolves.not.toThrow();
+  it('given a valid contract via its absolute path, we should be able to load it', async () => {
+    await expect(
+      Contract.allFrom({
+        path: path.join(__dirname, '../contracts/change_state_with_return.sol'),
+      })
+    ).resolves.not.toThrow();
   });
 
-  it("given a valid contract that is inter-linked via chain-import-ing with others, compiling it should recurse to importing all of its dependencies", async () => {
+  it('given a valid contract that is inter-linked via chain-import-ing with others, compiling it should recurse to importing all of its dependencies', async () => {
     const path = './general/contracts/import_resolution/hello_imports.sol';
     const contracts = await Contract.allFrom({ path });
-        
+
     expect(contracts).toHaveLength(1);
-    await Contract.newFrom({ path }).then(resolvedContract => expect(contracts[0].equals(resolvedContract)).toBe(true));
+    await Contract.newFrom({ path }).then((resolvedContract) =>
+      expect(contracts[0].equals(resolvedContract)).toBe(true)
+    );
     expect(contracts[0].byteCode).toEqual(HELLO_IMPORTS_BYTECODE);
   });
 });

@@ -1,11 +1,15 @@
-import {
-  ContractCreateTransaction,
-} from "@hashgraph/sdk";
+import { ContractCreateTransaction } from '@hashgraph/sdk';
 import { Interface } from '@ethersproject/abi';
 
-import { ArgumentsOnFileUploaded, BasicUploadableEntity } from "./BasicUploadableEntity";
+import {
+  ArgumentsOnFileUploaded,
+  BasicUploadableEntity,
+} from './BasicUploadableEntity';
 import { LiveContract, LiveContractWithLogs } from '../../live/LiveContract';
-import { SolidityCompiler, VIRTUAL_SOURCE_CONTRACT_FILE_NAME } from '../../SolidityCompiler';
+import {
+  SolidityCompiler,
+  VIRTUAL_SOURCE_CONTRACT_FILE_NAME,
+} from '../../SolidityCompiler';
 import { CompileIssues } from '../../errors/CompileIssues';
 import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
 
@@ -17,26 +21,25 @@ type AllContractOptions = {
   /**
    * The Solidity full, human-readable, contract code
    */
-  code?: string,
+  code?: string;
   /**
    * Should we fail at compile-time warnings or not? Default: false
    */
-  ignoreWarnings?: boolean,
+  ignoreWarnings?: boolean;
   /**
    * The top-level Solidity code file path if not using the 'code' alternative.
    */
-  path?: string
-
+  path?: string;
 };
-type NewContractOptions = { 
+type NewContractOptions = {
   /**
    * The Contract index to retrieve (if the name is not provided). Defaults to 0
    */
-  index?: number, 
+  index?: number;
   /**
    * The Contract we wish to retrieve (if no index is provided).
    */
-  name?: string, 
+  name?: string;
 } & AllContractOptions;
 
 /**
@@ -44,52 +47,78 @@ type NewContractOptions = {
  */
 export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   /**
-   * Given an index or a name, this returns a specific {@link Contract} following the successful compilation of 
+   * Given an index or a name, this returns a specific {@link Contract} following the successful compilation of
    * either the contract code itself ({@link options.code}) or the solidity file located at the provided {@link options.path}
-   * 
+   *
    * In terms of precedence, it first checks to see if the {@link options.name} is provided and, if so, it uses that otherwise
    * it looks at the {@link options.index} one and goes with that.
-   * 
+   *
    * @param {Object} options - Provides a source and controls various {@see Contract} construction settings
    * @returns {Promise<Contract>}
    */
-  public static async newFrom({ code, index = 0, ignoreWarnings = false, name, path }: NewContractOptions): Promise<Contract> {
-    if (!code && ! path) {
-      throw new Error("In order to continue, either provide the direct solidity code or a file path where the top-level code resides.");
+  public static async newFrom({
+    code,
+    index = 0,
+    ignoreWarnings = false,
+    name,
+    path,
+  }: NewContractOptions): Promise<Contract> {
+    if (!code && !path) {
+      throw new Error(
+        'In order to continue, either provide the direct solidity code or a file path where the top-level code resides.'
+      );
     }
     if (!name && (!!index || (Number.isInteger(index) && index < 0))) {
-      throw new Error("Please provide either a non-negative index or the actual name of the contract to reference the Contract instance with.");
+      throw new Error(
+        'Please provide either a non-negative index or the actual name of the contract to reference the Contract instance with.'
+      );
     }
 
     const contracts = await Contract.allFrom({ code, ignoreWarnings, path });
 
     if (name) {
-      const contractOfInterest = contracts.find(contract => contract.name === name);
+      const contractOfInterest = contracts.find(
+        (contract) => contract.name === name
+      );
 
       if (!contractOfInterest) {
-        throw new Error(`There is no such contract named '${name}' present in the referenced code.`);
+        throw new Error(
+          `There is no such contract named '${name}' present in the referenced code.`
+        );
       }
       return contractOfInterest;
     } else if (index >= contracts.length) {
-      throw new Error(`Index out of range. Your requested contract-id ${index} is not in range of the ${contracts.length} contracts present in the given code.`);
+      throw new Error(
+        `Index out of range. Your requested contract-id ${index} is not in range of the ${contracts.length} contracts present in the given code.`
+      );
     }
     return contracts[index];
   }
 
   /**
    * Returns all the contracts present in the given 'options' (either from 'path' or from 'code').
-   * 
+   *
    * @param {Object} options - Provides a source and controls various {@see Contract} construction settings.
    * @returns {Promise<Array<Contract>>} - A list of {@link Contract}s parsed via Hedera's officially supported solidity version compiler (`solc`) from the code
    */
-  static async allFrom({ code, ignoreWarnings = false, path }: AllContractOptions): Promise<Array<Contract>> {
+  static async allFrom({
+    code,
+    ignoreWarnings = false,
+    path,
+  }: AllContractOptions): Promise<Array<Contract>> {
     if (!code && !path) {
-      throw new Error("Can only retrieve contracts if either the direct solidity code is provided or a file path where that top-level code resides.");
+      throw new Error(
+        'Can only retrieve contracts if either the direct solidity code is provided or a file path where that top-level code resides.'
+      );
     }
 
     const rawCompileResult = await SolidityCompiler.compile({ code, path });
-    const compileResult = Contract._tryParsingCompileResultFrom({ ignoreWarnings, rawCompileResult });
-    const compiledContractsInfo = compileResult.contracts[VIRTUAL_SOURCE_CONTRACT_FILE_NAME];
+    const compileResult = Contract._tryParsingCompileResultFrom({
+      ignoreWarnings,
+      rawCompileResult,
+    });
+    const compiledContractsInfo =
+      compileResult.contracts[VIRTUAL_SOURCE_CONTRACT_FILE_NAME];
     const contracts = [];
 
     for (const contractName of Object.keys(compiledContractsInfo)) {
@@ -113,14 +142,17 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     let jWhat: any = {};
 
     try {
-      jWhat = JSON.parse(what)
-    } catch(e) {
-      throw new Error("Please provide something valid to be deserialized.");
+      jWhat = JSON.parse(what);
+    } catch (e) {
+      throw new Error('Please provide something valid to be deserialized.');
     }
     return new Contract(jWhat);
   }
 
-  private static _tryParsingCompileResultFrom({ rawCompileResult, ignoreWarnings }) {
+  private static _tryParsingCompileResultFrom({
+    rawCompileResult,
+    ignoreWarnings,
+  }) {
     const compileResult = JSON.parse(rawCompileResult);
 
     CompileIssues.tryThrowingIfErrorsIn({ compileResult, ignoreWarnings });
@@ -128,12 +160,12 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   }
 
   /**
-   * The name of the referenced Solidity contract. 
+   * The name of the referenced Solidity contract.
    * Note: this can be different then the source-file used to host it.
    */
   public readonly name: string;
   /**
-   * The byte-code representation of the contract's code ready to be uploaded and executed inside an EVM. 
+   * The byte-code representation of the contract's code ready to be uploaded and executed inside an EVM.
    */
   public readonly byteCode: string;
   /**
@@ -143,16 +175,30 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
    */
   public readonly interface: Interface;
 
-  private constructor({ name, abi, byteCode }: { name: string, abi: any[], byteCode: string }) {
+  private constructor({
+    name,
+    abi,
+    byteCode,
+  }: {
+    name: string;
+    abi: any[];
+    byteCode: string;
+  }) {
     if (!name) {
-      throw new Error("Please provide a name for the Contract instance.");
-    } else if(!abi) {
-      throw new Error("Please provide a, valid, EthersProject-compatible, ABI definition for the Contract instance.");
+      throw new Error('Please provide a name for the Contract instance.');
+    } else if (!abi) {
+      throw new Error(
+        'Please provide a, valid, EthersProject-compatible, ABI definition for the Contract instance.'
+      );
     } else if (typeof byteCode === 'string' && byteCode.length !== 0) {
-      if(/.*__\$.*\$__.*/.test(byteCode)) {
-        throw new Error("Library linking is not currently supported. Please follow issue #38 for more info.");
-      } else if(!/^[0-9a-f]+$/.test(byteCode)) {
-        throw new Error("Please provide the valid formatted byte-code definition for the Contract in order to instantiate it.");
+      if (/.*__\$.*\$__.*/.test(byteCode)) {
+        throw new Error(
+          'Library linking is not currently supported. Please follow issue #38 for more info.'
+        );
+      } else if (!/^[0-9a-f]+$/.test(byteCode)) {
+        throw new Error(
+          'Please provide the valid formatted byte-code definition for the Contract in order to instantiate it.'
+        );
       }
     } else {
       // if byteCode.length === '', yet there is an ABI, this means that most likely the loaded contract is an abstract one
@@ -182,7 +228,11 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     let areAbisTheSame = true;
 
     for (const thisFragment of thisFragments) {
-      if (!otherFragments.find(otherFragment => otherFragment.format() === thisFragment.format())) {
+      if (
+        !otherFragments.find(
+          (otherFragment) => otherFragment.format() === thisFragment.format()
+        )
+      ) {
         areAbisTheSame = false;
         break;
       }
@@ -192,9 +242,9 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
 
   /**
    * Serializes the current entity. This then can be reversed via calling {@link Contract.deserialize}.
-   * 
-   * Note: when de-serializing, the properties exported here should allow for a complete re-instantiation of the original {@link Contract}. 
-   * 
+   *
+   * Note: when de-serializing, the properties exported here should allow for a complete re-instantiation of the original {@link Contract}.
+   *
    * @returns {string} - The serialized representation of the current instance
    */
   public serialize(): string {
@@ -207,7 +257,9 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
 
   protected override async getContent() {
     if (!this.byteCode) {
-      throw new Error("Won't upload contract to network because it's lacking the required byte-code data.");
+      throw new Error(
+        "Won't upload contract to network because it's lacking the required byte-code data."
+      );
     }
     return this.byteCode;
   }
@@ -215,13 +267,20 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   /**
    * Having a file-create {@link receipt} provided, this function uses it to create a contract via the Hedera Contract Service (HCS). The provided {@link args}
    * are used both to populate the {@link ContractCreateTransaction} constructor (if the first object from the list has a '_contract' property) and to pass along
-   * as constructor arguments when publishing the Contract. 
-   * If there is a constructor config object present (first args from list if it has the '_contract' property) this is consumed and the remainder of the arguments 
+   * as constructor arguments when publishing the Contract.
+   * If there is a constructor config object present (first args from list if it has the '_contract' property) this is consumed and the remainder of the arguments
    * are passed to the Contract constructor.
    */
-  protected override async onFileUploaded({ session, receipt, args = [] }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
-    const { createContractOptions, emitConstructorLogs } = await this._getContractCreateOptionsFor({ args, receipt, session });
-    const createContractTransaction = new ContractCreateTransaction(createContractOptions);
+  protected override async onFileUploaded({
+    session,
+    receipt,
+    args = [],
+  }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
+    const { createContractOptions, emitConstructorLogs } =
+      await this._getContractCreateOptionsFor({ args, receipt, session });
+    const createContractTransaction = new ContractCreateTransaction(
+      createContractOptions
+    );
 
     return await LiveContract.newFollowingUpload({
       contract: this,
@@ -231,17 +290,28 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     });
   }
 
-  private async _getContractCreateOptionsFor({ session, receipt, args = [] }: ArgumentsOnFileUploaded) {
+  private async _getContractCreateOptionsFor({
+    session,
+    receipt,
+    args = [],
+  }: ArgumentsOnFileUploaded) {
     const contractFileId = receipt.fileId;
     const constructorDefinition = this.interface.deploy;
     let contractCreationOverrides: any = {};
     let emitConstructorLogs = session.defaults.emitConstructorLogs;
 
-    if (args.length > 0 && Object.keys(args[0]).length !== 0 && Object.keys(args[0])[0] === '_contract') {
+    if (
+      args.length > 0 &&
+      Object.keys(args[0]).length !== 0 &&
+      Object.keys(args[0])[0] === '_contract'
+    ) {
       const contractCreationArgs = args[0]._contract;
 
       // try locking onto library-controlling behaviour flags
-      emitConstructorLogs = contractCreationArgs.emitConstructorLogs !== undefined ? contractCreationArgs.emitConstructorLogs : emitConstructorLogs;
+      emitConstructorLogs =
+        contractCreationArgs.emitConstructorLogs !== undefined
+          ? contractCreationArgs.emitConstructorLogs
+          : emitConstructorLogs;
       delete contractCreationArgs.emitConstructorLogs;
 
       // consider everything else as contract-creation constructor arguments
@@ -250,14 +320,20 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
       args = args.slice(1);
     }
     return {
-      createContractOptions: Object.assign({}, {
-        adminKey: session.wallet.account.publicKey,
-        bytecodeFileId: contractFileId,
-        constructorParameters: await ContractFunctionParameters.newFor(constructorDefinition, args),
-        gas: session.defaults.contractCreationGas,
-        ...contractCreationOverrides,
-      }),
+      createContractOptions: Object.assign(
+        {},
+        {
+          adminKey: session.wallet.account.publicKey,
+          bytecodeFileId: contractFileId,
+          constructorParameters: await ContractFunctionParameters.newFor(
+            constructorDefinition,
+            args
+          ),
+          gas: session.defaults.contractCreationGas,
+          ...contractCreationOverrides,
+        }
+      ),
       emitConstructorLogs,
-    }
+    };
   }
 }

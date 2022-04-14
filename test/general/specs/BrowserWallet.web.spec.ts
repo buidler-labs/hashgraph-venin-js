@@ -1,10 +1,11 @@
-import { 
-  AccountId, 
-  PrivateKey,
-} from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import {
-  afterAll, afterEach, beforeAll,
-  describe, expect, it,
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   jest,
 } from '@jest/globals';
 
@@ -33,10 +34,12 @@ describe('BrowserWallet', () => {
     bindBrowserWalletToTest();
     bindBrowserWalletToTest('hedera2');
   });
-  
+
   it('configuring an ApiSession to use a Browser wallet should do so', async () => {
-    const { session } = await ApiSession.default({ wallet: { type: 'Browser' } });
-    
+    const { session } = await ApiSession.default({
+      wallet: { type: 'Browser' },
+    });
+
     // check immediate preconditions
     expect(window['hedera'].getAccountId).not.toBeCalled();
     expect(window['hedera'].getAccountKey).not.toBeCalled();
@@ -45,9 +48,9 @@ describe('BrowserWallet', () => {
     expect(window['hedera'].sendRequest).not.toBeCalled();
     try {
       await session.upload({ foo: 'bazinga' });
-    } catch(e) {
-      // We discard this but keep in mind that the session.upload execution is bound to fail since we're not mocking the entire chain 
-      // just up until the transaction enters the sdk realm and becomes part of its responsibility. 
+    } catch (e) {
+      // We discard this but keep in mind that the session.upload execution is bound to fail since we're not mocking the entire chain
+      // just up until the transaction enters the sdk realm and becomes part of its responsibility.
     }
     expect(window['hedera'].sendRequest).toBeCalled();
 
@@ -61,15 +64,15 @@ describe('BrowserWallet', () => {
   });
 
   it('configuring an ApiSession to use a Browser wallet with a non-default window-prop location should do so', async () => {
-    const { session } = await ApiSession.default({ 
-      wallet: { 
+    const { session } = await ApiSession.default({
+      wallet: {
         type: 'Browser',
         window: {
           propName: 'hedera2',
         },
-      }, 
+      },
     });
-    
+
     // check immediate preconditions
     expect(window['hedera'].getAccountId).not.toBeCalled();
     expect(window['hedera'].getAccountKey).not.toBeCalled();

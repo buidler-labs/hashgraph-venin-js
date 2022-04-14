@@ -1,0 +1,5 @@
+lib.cjs
+lib.esm
+types
+docs
+coverage

@@ -8,31 +8,30 @@
 import * as React from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './styles.module.css';
-import ReactLive from "../ReactLive/ReactLive";
+import ReactLive from '../ReactLive/ReactLive';
 
-export default function Playground({children, ...props}) {
-    const {
-        siteConfig: {
-            themeConfig: {
-                liveCodeBlock: {playgroundPosition},
-            },
-        },
-    } = useDocusaurusContext();
+export default function Playground({ children, ...props }) {
+  const {
+    siteConfig: {
+      themeConfig: {
+        liveCodeBlock: { playgroundPosition },
+      },
+    },
+  } = useDocusaurusContext();
 
-    //convert .md metastring to props
-    const metaProps = props.metastring.split(' ').reduce((acc, curr) => {
-        const [key, value] = curr.split('=')
-        acc[key] = value
+  //convert .md metastring to props
+  const metaProps = props.metastring.split(' ').reduce((acc, curr) => {
+    const [key, value] = curr.split('=');
+    acc[key] = value;
 
-        return acc
-    }, {})
+    return acc;
+  }, {});
 
-    return (
-        <div className={styles.playgroundContainer}>
-            <ReactLive
-                playgroundPosition={playgroundPosition}
-                {...metaProps}
-            >{children}</ReactLive>
-        </div>
-    );
+  return (
+    <div className={styles.playgroundContainer}>
+      <ReactLive playgroundPosition={playgroundPosition} {...metaProps}>
+        {children}
+      </ReactLive>
+    </div>
+  );
 }

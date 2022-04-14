@@ -4,14 +4,15 @@ const shared = {
   presets: sharedPresets,
   plugins: [
     [
-      "@babel/plugin-transform-runtime", {
-        "absoluteRuntime": false,
-        "corejs": false,
-        "helpers": true,
-        "regenerator": true
-      }
-    ]
-  ]
+      '@babel/plugin-transform-runtime',
+      {
+        absoluteRuntime: false,
+        corejs: false,
+        helpers: true,
+        regenerator: true,
+      },
+    ],
+  ],
 };
 
 module.exports = {
@@ -19,16 +20,10 @@ module.exports = {
     esm: shared,
     cjs: {
       ...shared,
-      presets: [
-        ['@babel/env', { modules: 'commonjs' }], 
-        ...sharedPresets
-      ],
+      presets: [['@babel/env', { modules: 'commonjs' }], ...sharedPresets],
     },
     test: {
-      presets: [
-        ['@babel/env'], 
-        ...sharedPresets
-      ],
-    }
-  }
+      presets: [['@babel/env'], ...sharedPresets],
+    },
+  },
 };

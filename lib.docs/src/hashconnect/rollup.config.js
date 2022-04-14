@@ -13,39 +13,39 @@ function getPathOf(file) {
 export default async function getConfig() {
   return {
     context: 'window',
-    external: [ '@hashgraph/sdk' ],
+    external: ['@hashgraph/sdk'],
     input: './src/wallet.ts',
-    output: [ {
-      file: getPathOf('../../static/js/hashconnect-hip-338.js'),
-      format: 'esm',
-      paths: {
-        '@hashgraph/sdk': '/js/hashgraph-sdk.js',
+    output: [
+      {
+        file: getPathOf('../../static/js/hashconnect-hip-338.js'),
+        format: 'esm',
+        paths: {
+          '@hashgraph/sdk': '/js/hashgraph-sdk.js',
+        },
+        sourcemap: true,
       },
-      sourcemap: true,
-    } ],
+    ],
     plugins: [
       resolve({
-        extensions: [ '.ts' ],
-        mainFields: [ "browser", "module", "main" ],
+        extensions: ['.ts'],
+        mainFields: ['browser', 'module', 'main'],
         preferBuiltins: false,
         rootDir: getPathOf('.'),
       }),
       commonjs({
         esmExternals: true,
-        requireReturnsDefault: "preferred",
+        requireReturnsDefault: 'preferred',
       }),
-      babel({ 
-        babelHelpers: 'runtime', 
-        extensions: [ '.ts' ],
-        plugins: [
-          ["@babel/plugin-transform-runtime", { "regenerator": true }],
-        ],
+      babel({
+        babelHelpers: 'runtime',
+        extensions: ['.ts'],
+        plugins: [['@babel/plugin-transform-runtime', { regenerator: true }]],
         presets: [
-          ['@babel/env', { targets: "> 0.25%, not dead" }], 
+          ['@babel/env', { targets: '> 0.25%, not dead' }],
           ['@babel/typescript'],
         ],
       }),
     ],
     treeshake: true,
-  }
+  };
 }

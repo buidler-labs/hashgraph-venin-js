@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 import json from '@rollup/plugin-json';
 import nodePolyfills from 'rollup-plugin-node-polyfills';
 import resolve from '@rollup/plugin-node-resolve';
-import { terser } from "rollup-plugin-terser";
+import { terser } from 'rollup-plugin-terser';
 
 import strato from '@buidlerlabs/hedera-strato-js/rollup-plugin';
 dotenv.config({ path: getPathOf('./.env') });
@@ -16,7 +16,7 @@ dotenv.config({ path: getPathOf('./.env') });
 // Make sure we use the contracts defined for this bundle
 process.env.HEDERAS_CONTRACTS_RELATIVE_PATH = './lib.docs/src/strato/contracts';
 
-const extensions = ['.js', '.ts' ];
+const extensions = ['.js', '.ts'];
 
 function getPathOf(file) {
   return pathJoin(__dirname, file);
@@ -25,53 +25,53 @@ function getPathOf(file) {
 export default async function getConfig() {
   return {
     context: 'window',
-    external: [ '@hashgraph/sdk' ],
+    external: ['@hashgraph/sdk'],
     input: './lib/index.ts',
-    output: [ {
-      file: getPathOf('../../static/js/hedera-strato.js'),
-      format: 'esm',
-      paths: {
-        '@hashgraph/sdk': '/js/hashgraph-sdk.js',
+    output: [
+      {
+        file: getPathOf('../../static/js/hedera-strato.js'),
+        format: 'esm',
+        paths: {
+          '@hashgraph/sdk': '/js/hashgraph-sdk.js',
+        },
+        plugins: [terser()],
+        sourcemap: true,
       },
-      plugins: [terser()],
-      sourcemap: true,
-    } ],
+    ],
     plugins: [
-      strato({ 
+      strato({
         contracts: {
           path: pathJoin(__dirname, 'contracts'),
         },
         includeCompiler: true,
-        sourceMap: true, 
+        sourceMap: true,
       }),
       resolve({
         extensions,
-        mainFields: [ "browser", "module", "main" ],
+        mainFields: ['browser', 'module', 'main'],
         preferBuiltins: false,
         rootDir: getPathOf('.'),
       }),
       commonjs({
         esmExternals: true,
-        requireReturnsDefault: "preferred",
+        requireReturnsDefault: 'preferred',
       }),
       nodePolyfills({
         sourceMap: true,
       }),
-      babel({ 
-        babelHelpers: 'runtime', 
+      babel({
+        babelHelpers: 'runtime',
         exclude: './node_modules/**',
         extensions,
-        include: ['lib/**/*.ts'], 
-        plugins: [
-          ["@babel/plugin-transform-runtime", { "regenerator": true }],
-        ],
+        include: ['lib/**/*.ts'],
+        plugins: [['@babel/plugin-transform-runtime', { regenerator: true }]],
         presets: [
-          ['@babel/env', { targets: "> 0.25%, not dead" }], 
+          ['@babel/env', { targets: '> 0.25%, not dead' }],
           ['@babel/typescript'],
         ],
       }),
       json(),
     ],
     treeshake: true,
-  }
+  };
 }

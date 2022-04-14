@@ -1,6 +1,4 @@
-import {
-  describe, expect, it,
-} from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { ApiSession } from '../../../lib/ApiSession';
 
 import { LegacyLocalWallet } from '../../../lib/wallet/local/LegacyLocalWallet';

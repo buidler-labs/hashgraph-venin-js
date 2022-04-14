@@ -1,7 +1,5 @@
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
-import {
-  describe, expect, it,
-} from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 
 import { Account } from '../../../lib/static/create/Account';
 import { ApiSession } from '../../../lib/ApiSession';
@@ -20,7 +18,7 @@ describe('ApiSession.WalletController', () => {
     const { controller, session } = await ApiSession.default({
       wallet: {
         controller: {
-          type: "Hedera",
+          type: 'Hedera',
         },
       },
     });
@@ -29,7 +27,9 @@ describe('ApiSession.WalletController', () => {
     expect(controller).toBeInstanceOf(HederaWalletController);
     controller.changeAccount(account.id, account.privateKey);
     expect(session.wallet.account.id.toString()).toEqual(account.id.toString());
-    expect(session.wallet.account.publicKey.toStringDer()).toEqual(account.privateKey.publicKey.toStringDer());
+    expect(session.wallet.account.publicKey.toStringDer()).toEqual(
+      account.privateKey.publicKey.toStringDer()
+    );
   });
 
   it('a Default PrivateKey Wallet should allow full swapping of the underlying operator if a Default PrivateKey Controller is being used', async () => {
@@ -40,14 +40,16 @@ describe('ApiSession.WalletController', () => {
           default: {
             operatorKey: privateKey.toStringDer(),
           },
-          type: "DefaultPrivateKey",
+          type: 'DefaultPrivateKey',
         },
       },
     });
-    const accountId = AccountId.fromString("0.0.69");
+    const accountId = AccountId.fromString('0.0.69');
 
     expect(controller).toBeInstanceOf(DefaultPrivateKeyWalletController);
     controller.changeAccount(accountId);
-    expect(session.wallet.account.publicKey.toStringDer()).toEqual(privateKey.publicKey.toStringDer());
+    expect(session.wallet.account.publicKey.toStringDer()).toEqual(
+      privateKey.publicKey.toStringDer()
+    );
   });
 });

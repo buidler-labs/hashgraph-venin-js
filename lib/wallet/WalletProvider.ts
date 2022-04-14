@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { HederaNetwork } from "../HederaNetwork";
-import { StratoContext } from "../StratoContext";
-import { StratoWallet } from "../core/wallet/StratoWallet";
-import { WalletControllerEvents } from "../core/wallet/WalletController";
+import { HederaNetwork } from '../HederaNetwork';
+import { StratoContext } from '../StratoContext';
+import { StratoWallet } from '../core/wallet/StratoWallet';
+import { WalletControllerEvents } from '../core/wallet/WalletController';
 
 export abstract class WalletProvider<T extends StratoWallet = any, S = any> {
-  protected network: HederaNetwork
+  protected network: HederaNetwork;
 
-  protected constructor(
-    protected readonly ctx: StratoContext,
-  ) {
-    this.setNetwork(ctx.network);    
+  protected constructor(protected readonly ctx: StratoContext) {
+    this.setNetwork(ctx.network);
   }
 
   public setNetwork(network: HederaNetwork): this {
@@ -27,7 +25,9 @@ export abstract class WalletProvider<T extends StratoWallet = any, S = any> {
 
   protected sanityCheck() {
     if (!this.network) {
-      throw new Error("Please first provide a HederaNetwork to the WalletProvider in order to build a new Wallet.");
+      throw new Error(
+        'Please first provide a HederaNetwork to the WalletProvider in order to build a new Wallet.'
+      );
     }
   }
 
@@ -37,7 +37,9 @@ export abstract class WalletProvider<T extends StratoWallet = any, S = any> {
 export class NotSupportedWalletProvider extends WalletProvider {
   public constructor(ctx: StratoContext, controller?: WalletControllerEvents) {
     super(ctx);
-    throw new Error("You're trying to create a wallet-provider for a not-supported wallet-type. Something went wrong since you most likely would not want to ever do that.");
+    throw new Error(
+      "You're trying to create a wallet-provider for a not-supported wallet-type. Something went wrong since you most likely would not want to ever do that."
+    );
   }
 
   protected _buildCold(data: any): Promise<any> {

@@ -1,9 +1,9 @@
-import { DefaultPrivateKeyWalletController } from "./DefaultPrivateKeyWalletController";
-import { HederaWalletController } from "./HederaWalletController";
-import { ImpotentWalletController } from "./ImpotentWalletController";
-import { NamedValue } from "../../core/UsefulTypes";
-import { StratoContext } from "../../StratoContext";
-import { WalletController } from "../../core/wallet/WalletController";
+import { DefaultPrivateKeyWalletController } from './DefaultPrivateKeyWalletController';
+import { HederaWalletController } from './HederaWalletController';
+import { ImpotentWalletController } from './ImpotentWalletController';
+import { NamedValue } from '../../core/UsefulTypes';
+import { StratoContext } from '../../StratoContext';
+import { WalletController } from '../../core/wallet/WalletController';
 
 export class WalletControllers {
   private readonly impotentController: ImpotentWalletController;
@@ -13,8 +13,11 @@ export class WalletControllers {
     this.impotentController = new ImpotentWalletController();
 
     this.knownControllers = [
-      { name: "Hedera", value: new HederaWalletController(ctx) },
-      { name: "DefaultPrivateKey", value: new DefaultPrivateKeyWalletController(ctx) },
+      { name: 'Hedera', value: new HederaWalletController(ctx) },
+      {
+        name: 'DefaultPrivateKey',
+        value: new DefaultPrivateKeyWalletController(ctx),
+      },
     ];
   }
 
@@ -23,8 +26,12 @@ export class WalletControllers {
   }
 
   public getBy({ name }: { name: string }): WalletController {
-    const candidateWalletControllers = this.knownControllers.filter(controller => controller.name === name);
+    const candidateWalletControllers = this.knownControllers.filter(
+      (controller) => controller.name === name
+    );
 
-    return candidateWalletControllers.length === 0 ? this.Unknown : candidateWalletControllers[0].value;
+    return candidateWalletControllers.length === 0
+      ? this.Unknown
+      : candidateWalletControllers[0].value;
   }
 }

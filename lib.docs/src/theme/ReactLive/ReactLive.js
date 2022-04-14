@@ -1,11 +1,11 @@
-import * as React from "react";
-import LiveContainer from "./Components/LiveContainer";
-import LiveEventEmitter from "../ReactLive/LiveEventEmitter";
-import {LiveProvider} from "react-live";
-import LoadingSpinner from "./Components/LoadingSpinner";
-import clsx from "clsx";
-import styles from "../Playground/styles.module.css";
-import {usePrismTheme} from "@docusaurus/theme-common";
+import * as React from 'react';
+import LiveContainer from './Components/LiveContainer';
+import LiveEventEmitter from '../ReactLive/LiveEventEmitter';
+import { LiveProvider } from 'react-live';
+import LoadingSpinner from './Components/LoadingSpinner';
+import clsx from 'clsx';
+import styles from '../Playground/styles.module.css';
+import { usePrismTheme } from '@docusaurus/theme-common';
 
 const wrapAsync = (code, containerKey) => {
   return `  
@@ -25,7 +25,11 @@ const wrapAsync = (code, containerKey) => {
                     if(_arg._isBigNumber){
                         _parsed = <span>
                             {_parsed}
-                            <span className={ \`${clsx(styles.playgroundLogItem, styles.internal, styles.logHint)}\` }>(BigNumber)</span>
+                            <span className={ \`${clsx(
+                              styles.playgroundLogItem,
+                              styles.internal,
+                              styles.logHint
+                            )}\` }>(BigNumber)</span>
                         </span>;    
                     }
                     
@@ -105,10 +109,16 @@ const wrapAsync = (code, containerKey) => {
                 {logs.map((log, index) => {
                     { 
                         return log.logLevel 
-                            ? <p key={index} className={ \`${clsx(styles.playgroundLogItem, styles.internal)}\` }>
+                            ? <p key={index} className={ \`${clsx(
+                              styles.playgroundLogItem,
+                              styles.internal
+                            )}\` }>
                                     <LogLevelBadge text={log.logLevel}/> - {log.message}
                               </p>
-                            : <p key={index} className={ \`${clsx(styles.playgroundLogItem, styles.userInput)}\` }>{log}</p>
+                            : <p key={index} className={ \`${clsx(
+                              styles.playgroundLogItem,
+                              styles.userInput
+                            )}\` }>{log}</p>
                     }
                 })}
             </div>) 
@@ -138,11 +148,11 @@ const wrapAsync = (code, containerKey) => {
             liveEventEmitter.emit('done');
         })();
     `;
-}
+};
 
 const liveEventEmitter = new LiveEventEmitter();
 
-const ReactLive = ({children: code, playgroundPosition, ...props}) => {
+const ReactLive = ({ children: code, playgroundPosition, ...props }) => {
   const [disabled, setDisabled] = React.useState(true);
   const [updatedCode, setUpdatedCode] = React.useState(code);
   const [running, setRunning] = React.useState(false);
@@ -157,29 +167,29 @@ const ReactLive = ({children: code, playgroundPosition, ...props}) => {
 
   const onRunHandler = (emitterKey) => {
     if (emitterKey === props.containerKey) {
-      setError(null)
+      setError(null);
     }
 
-    setRunning(emitterKey === props.containerKey)
-    setDisabled(emitterKey !== props.containerKey)
-  }
+    setRunning(emitterKey === props.containerKey);
+    setDisabled(emitterKey !== props.containerKey);
+  };
 
   const onDoneHandler = () => {
-    setRunning(false)
-    setDisabled(false)
-  }
+    setRunning(false);
+    setDisabled(false);
+  };
 
   const onErrorHandler = (error) => {
-    setError(error)
+    setError(error);
     liveEventEmitter.emit(`done`);
-  }
+  };
 
-  const executionErrorHandler = ({error, emitterKey}) => {
+  const executionErrorHandler = ({ error, emitterKey }) => {
     if (emitterKey === props.containerKey) {
       setRunning(false);
-      onErrorHandler(error.toString())
+      onErrorHandler(error.toString());
     }
-  }
+  };
 
   React.useEffect(() => {
     isMounted.current = true;
@@ -199,18 +209,18 @@ const ReactLive = ({children: code, playgroundPosition, ...props}) => {
         if (isMounted.current) {
           liveEventEmitter.on(`running`, onRunHandler);
           liveEventEmitter.on(`done`, onDoneHandler);
-          liveEventEmitter.on('executionError', executionErrorHandler)
+          liveEventEmitter.on('executionError', executionErrorHandler);
 
           setDisabled(false);
         }
-      })
-    }
+      });
+    };
 
     const unbindEventListeners = () => {
       liveEventEmitter.removeListener('running', onRunHandler);
       liveEventEmitter.removeListener('done', onDoneHandler);
-      liveEventEmitter.removeListener('executionError', executionErrorHandler)
-    }
+      liveEventEmitter.removeListener('executionError', executionErrorHandler);
+    };
 
     bindEventListeners();
 
@@ -218,30 +228,35 @@ const ReactLive = ({children: code, playgroundPosition, ...props}) => {
       isMounted.current = false;
       unbindEventListeners();
     };
-  }, [props.categoryKey])
+  }, [props.categoryKey]);
 
-  return <React.Fragment>
-    <LiveProvider
-      code={updatedCode.replace(/\n$/, '')}
-      scope={scope}
-      transformCode={(_code) => running ? wrapAsync(_code, props.containerKey) : 'render(null)'}
-      theme={prismTheme}
-      noInline={true}
-      disabled={disabled}>
-
-      <LiveContainer
-        hasTopPosition={playgroundPosition === 'top'}
-        isRunning={running}
-        onRunAction={() => liveEventEmitter.emit('running', props.containerKey)}
-        onChange={setUpdatedCode}
+  return (
+    <React.Fragment>
+      <LiveProvider
+        code={updatedCode.replace(/\n$/, '')}
+        scope={scope}
+        transformCode={(_code) =>
+          running ? wrapAsync(_code, props.containerKey) : 'render(null)'
+        }
+        theme={prismTheme}
+        noInline={true}
         disabled={disabled}
-        error={error}
-        errorCallback={onErrorHandler}
-        {...props}
-      />
-    </LiveProvider>
-  </React.Fragment>
-
-}
+      >
+        <LiveContainer
+          hasTopPosition={playgroundPosition === 'top'}
+          isRunning={running}
+          onRunAction={() =>
+            liveEventEmitter.emit('running', props.containerKey)
+          }
+          onChange={setUpdatedCode}
+          disabled={disabled}
+          error={error}
+          errorCallback={onErrorHandler}
+          {...props}
+        />
+      </LiveProvider>
+    </React.Fragment>
+  );
+};
 
 export default ReactLive;

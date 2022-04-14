@@ -1,12 +1,15 @@
 {
-    "jest.autoRun": "off",
-    "jest.jestCommandLine": "node_modules/.bin/jest --config=./jest.node.config.cjs",
-    "cSpell.customDictionaries": {
-        "custom-dictionary-workspace": {
-            "name": "custom-dictionary-workspace",
-            "path": "${workspaceFolder:hedera-strato-js}/.cspell/custom-dictionary-workspace.txt",
-            "addWords": true,
-            "scope": "workspace"
-        }
-    },
+  "jest.autoRun": "off",
+  "liveServer.settings.root": "/docs/",
+  "jest.jestCommandLine": "node_modules/.bin/jest --config=./jest.node.config.cjs",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "cSpell.customDictionaries": {
+    "custom-dictionary-workspace": {
+      "name": "custom-dictionary-workspace",
+      "path": "${workspaceFolder:hedera-strato-js}/.cspell/custom-dictionary-workspace.txt",
+      "addWords": true,
+      "scope": "workspace"
+    }
+  }
 }

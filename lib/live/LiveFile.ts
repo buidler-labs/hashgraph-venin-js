@@ -1,27 +1,25 @@
+import {
+  FileContentsQuery,
+  FileDeleteTransaction,
+  FileId,
+  FileInfo,
+  FileInfoQuery,
+  FileUpdateTransaction,
+  Transaction,
+} from '@hashgraph/sdk';
 
-import { 
-  FileContentsQuery, 
-  FileDeleteTransaction, 
-  FileId, 
-  FileInfo, 
-  FileInfoQuery, 
-  FileUpdateTransaction, 
-  Transaction, 
-} from "@hashgraph/sdk";
-
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
 import { FileFeatures } from '../static/upload/File';
-import { LiveEntity } from "./LiveEntity";
+import { LiveEntity } from './LiveEntity';
 
 export type LiveFileConstructorArgs = {
-  session: ApiSession,
-  id: string | FileId,
-  data?: string|Uint8Array
-}
+  session: ApiSession;
+  id: string | FileId;
+  data?: string | Uint8Array;
+};
 
 export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
-
-  readonly data: string|Uint8Array;
+  readonly data: string | Uint8Array;
 
   public constructor({ session, id, data }: LiveFileConstructorArgs) {
     super(session, id instanceof FileId ? id : FileId.fromString(id));
@@ -30,7 +28,11 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
 
   public override getLiveEntityInfo(): Promise<FileInfo> {
     const fileInfoQuery = new FileInfoQuery({ fileId: this.id });
-    return this.session.execute(fileInfoQuery, TypeOfExecutionReturn.Result, false);
+    return this.session.execute(
+      fileInfoQuery,
+      TypeOfExecutionReturn.Result,
+      false
+    );
   }
 
   override getSolidityAddress(): string {
@@ -42,7 +44,9 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
     return new FileDeleteTransaction({ fileId: this.id });
   }
 
-  protected override async _getUpdateTransaction(args?: FileFeatures): Promise<Transaction> {
+  protected override async _getUpdateTransaction(
+    args?: FileFeatures
+  ): Promise<Transaction> {
     return new FileUpdateTransaction({
       ...args,
       fileId: this.id,
@@ -50,8 +54,12 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
   }
 
   public async getContents(): Promise<Uint8Array> {
-    const fileContentsQuery = new FileContentsQuery({fileId: this.id});
-    const queryResponse = await this.session.execute(fileContentsQuery, TypeOfExecutionReturn.Result, false);
+    const fileContentsQuery = new FileContentsQuery({ fileId: this.id });
+    const queryResponse = await this.session.execute(
+      fileContentsQuery,
+      TypeOfExecutionReturn.Result,
+      false
+    );
     return queryResponse;
   }
 }

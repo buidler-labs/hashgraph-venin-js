@@ -1,8 +1,5 @@
-import { 
-  HashConnect,
-  MessageTypes,
-} from 'hashconnect';
-import { AccountId } from "@hashgraph/sdk";
+import { HashConnect, MessageTypes } from 'hashconnect';
+import { AccountId } from '@hashgraph/sdk';
 
 export class HashConnectSender {
   public constructor(
@@ -10,7 +7,10 @@ export class HashConnectSender {
     private readonly topicId: string
   ) {}
 
-  public send(accountId: AccountId, message: Uint8Array): Promise<MessageTypes.TransactionResponse> {
+  public send(
+    accountId: AccountId,
+    message: Uint8Array
+  ): Promise<MessageTypes.TransactionResponse> {
     const transaction = {
       byteArray: message,
       metadata: {
@@ -19,7 +19,7 @@ export class HashConnectSender {
       },
       topic: this.topicId,
     };
-    
+
     return this.hashConnect.sendTransaction(this.topicId, transaction);
   }
 }

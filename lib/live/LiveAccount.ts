@@ -1,44 +1,54 @@
-import { 
-  AccountDeleteTransaction, 
-  AccountId, 
-  AccountInfo, 
-  AccountInfoQuery, 
-  AccountUpdateTransaction, 
-  PrivateKey, 
+import {
+  AccountDeleteTransaction,
+  AccountId,
+  AccountInfo,
+  AccountInfoQuery,
+  AccountUpdateTransaction,
+  PrivateKey,
   Transaction,
-  Wallet, 
-} from "@hashgraph/sdk";
+  Wallet,
+} from '@hashgraph/sdk';
 
-import { Account, AccountFeatures } from "../static/create/Account";
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
+import { Account, AccountFeatures } from '../static/create/Account';
+import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
+import { BaseLiveEntityWithBalance } from './BaseLiveEntityWithBalance';
 
 type LiveAccountConstructorArgs = {
-  session: ApiSession,
-  id: AccountId,
+  session: ApiSession;
+  id: AccountId;
 };
 
-export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInfo, AccountFeatures> {
-
+export class LiveAccount extends BaseLiveEntityWithBalance<
+  AccountId,
+  AccountInfo,
+  AccountFeatures
+> {
   constructor({ session, id }: LiveAccountConstructorArgs) {
     super(session, id);
   }
-  
+
   public getSolidityAddress(): string {
     return this.id.toSolidityAddress();
   }
 
   public getLiveEntityInfo(): Promise<AccountInfo> {
     const accountInfoQuery = new AccountInfoQuery().setAccountId(this.id);
-    return this.session.execute(accountInfoQuery, TypeOfExecutionReturn.Result, false);
+    return this.session.execute(
+      accountInfoQuery,
+      TypeOfExecutionReturn.Result,
+      false
+    );
   }
 
   protected override newDeleteTransaction(args?: any): Transaction {
     return new AccountDeleteTransaction({ accountId: this.id, ...args });
   }
-  
-  protected async _getUpdateTransaction(args?: AccountFeatures): Promise<Transaction> {
-    const propsUsedForUpdate = await Account.mapAccountFeaturesToAccountArguments(this.session, args);
+
+  protected async _getUpdateTransaction(
+    args?: AccountFeatures
+  ): Promise<Transaction> {
+    const propsUsedForUpdate =
+      await Account.mapAccountFeaturesToAccountArguments(this.session, args);
 
     return new AccountUpdateTransaction(propsUsedForUpdate);
   }
@@ -46,7 +56,6 @@ export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInf
   protected _getBalancePayload(): object {
     return { accountId: this.id };
   }
-
 }
 
 /**
@@ -56,7 +65,11 @@ export class LiveAccount extends BaseLiveEntityWithBalance<AccountId, AccountInf
 export class LiveAccountWithPrivateKey extends LiveAccount {
   public readonly privateKey: PrivateKey;
 
-  constructor({ session, id, privateKey }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {
+  constructor({
+    session,
+    id,
+    privateKey,
+  }: LiveAccountConstructorArgs & { privateKey: PrivateKey }) {
     super({ id, session });
     this.privateKey = privateKey;
   }
@@ -67,17 +80,19 @@ export class LiveAccountWithPrivateKey extends LiveAccount {
     transaction.addSignature(this.privateKey.publicKey, signature);
   }
 
-  protected async _getUpdateTransaction(args?: AccountFeatures): Promise<Transaction> {
+  protected async _getUpdateTransaction(
+    args?: AccountFeatures
+  ): Promise<Transaction> {
     const updateTransaction = await super._getUpdateTransaction(args);
     // TODO: freeze with signer similar to the delete op?
     this.tryToSign(updateTransaction);
-    
+
     return updateTransaction;
   }
 
   protected _getDeleteTransaction(args?: any): Transaction {
     const deleteTransaction = super._getDeleteTransaction(args);
-    
+
     deleteTransaction.freezeWithSigner(this.session.wallet.signer as Wallet);
     this.tryToSign(deleteTransaction);
     return deleteTransaction;

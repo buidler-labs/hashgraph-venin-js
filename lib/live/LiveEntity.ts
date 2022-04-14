@@ -1,15 +1,11 @@
-
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { Status, Transaction } from "@hashgraph/sdk";
-import { SolidityAddressable } from "../core/SolidityAddressable";
+import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
+import { Status, Transaction } from '@hashgraph/sdk';
+import { SolidityAddressable } from '../core/SolidityAddressable';
 /**
  * Common functionality exhibited by session-bounded, id-entifiable LiveEntity instances.
  */
 export abstract class LiveEntity<T, I, P> implements SolidityAddressable {
-  constructor(
-    public readonly session: ApiSession,
-    public readonly id: T
-  ) { }
+  constructor(public readonly session: ApiSession, public readonly id: T) {}
 
   protected get log() {
     return this.session.log;
@@ -36,9 +32,12 @@ export abstract class LiveEntity<T, I, P> implements SolidityAddressable {
     return false;
   }
 
-  protected async executeAndReturnStatus(transaction: Transaction): Promise<Status> {
-    return this.session.execute(transaction, TypeOfExecutionReturn.Receipt, false)
-      .then(receipt => receipt.status);
+  protected async executeAndReturnStatus(
+    transaction: Transaction
+  ): Promise<Status> {
+    return this.session
+      .execute(transaction, TypeOfExecutionReturn.Receipt, false)
+      .then((receipt) => receipt.status);
   }
 
   public abstract getSolidityAddress(): string;

@@ -1,4 +1,4 @@
-import { PublicAccountInfo } from "../../ApiSession";
+import { PublicAccountInfo } from '../../ApiSession';
 import { SignerInfo } from '../../core/wallet/SignerInfo';
 
 export interface WalletInfo {
