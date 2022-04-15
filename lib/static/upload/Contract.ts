@@ -1,17 +1,17 @@
-import { ContractCreateTransaction } from '@hashgraph/sdk';
-import { Interface } from '@ethersproject/abi';
+import { ContractCreateTransaction } from "@hashgraph/sdk";
+import { Interface } from "@ethersproject/abi";
 
 import {
   ArgumentsOnFileUploaded,
   BasicUploadableEntity,
-} from './BasicUploadableEntity';
-import { LiveContract, LiveContractWithLogs } from '../../live/LiveContract';
+} from "./BasicUploadableEntity";
+import { LiveContract, LiveContractWithLogs } from "../../live/LiveContract";
 import {
   SolidityCompiler,
   VIRTUAL_SOURCE_CONTRACT_FILE_NAME,
-} from '../../SolidityCompiler';
-import { CompileIssues } from '../../errors/CompileIssues';
-import { ContractFunctionParameters } from '../../hedera/ContractFunctionParameters';
+} from "../../SolidityCompiler";
+import { CompileIssues } from "../../errors/CompileIssues";
+import { ContractFunctionParameters } from "../../hedera/ContractFunctionParameters";
 
 export type ContractFeatures = {
   // TODO: add feature props here
@@ -65,12 +65,12 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   }: NewContractOptions): Promise<Contract> {
     if (!code && !path) {
       throw new Error(
-        'In order to continue, either provide the direct solidity code or a file path where the top-level code resides.'
+        "In order to continue, either provide the direct solidity code or a file path where the top-level code resides."
       );
     }
     if (!name && (!!index || (Number.isInteger(index) && index < 0))) {
       throw new Error(
-        'Please provide either a non-negative index or the actual name of the contract to reference the Contract instance with.'
+        "Please provide either a non-negative index or the actual name of the contract to reference the Contract instance with."
       );
     }
 
@@ -108,7 +108,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   }: AllContractOptions): Promise<Array<Contract>> {
     if (!code && !path) {
       throw new Error(
-        'Can only retrieve contracts if either the direct solidity code is provided or a file path where that top-level code resides.'
+        "Can only retrieve contracts if either the direct solidity code is provided or a file path where that top-level code resides."
       );
     }
 
@@ -144,7 +144,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     try {
       jWhat = JSON.parse(what);
     } catch (e) {
-      throw new Error('Please provide something valid to be deserialized.');
+      throw new Error("Please provide something valid to be deserialized.");
     }
     return new Contract(jWhat);
   }
@@ -185,19 +185,19 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     byteCode: string;
   }) {
     if (!name) {
-      throw new Error('Please provide a name for the Contract instance.');
+      throw new Error("Please provide a name for the Contract instance.");
     } else if (!abi) {
       throw new Error(
-        'Please provide a, valid, EthersProject-compatible, ABI definition for the Contract instance.'
+        "Please provide a, valid, EthersProject-compatible, ABI definition for the Contract instance."
       );
-    } else if (typeof byteCode === 'string' && byteCode.length !== 0) {
+    } else if (typeof byteCode === "string" && byteCode.length !== 0) {
       if (/.*__\$.*\$__.*/.test(byteCode)) {
         throw new Error(
-          'Library linking is not currently supported. Please follow issue #38 for more info.'
+          "Library linking is not currently supported. Please follow issue #38 for more info."
         );
       } else if (!/^[0-9a-f]+$/.test(byteCode)) {
         throw new Error(
-          'Please provide the valid formatted byte-code definition for the Contract in order to instantiate it.'
+          "Please provide the valid formatted byte-code definition for the Contract in order to instantiate it."
         );
       }
     } else {
@@ -303,7 +303,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     if (
       args.length > 0 &&
       Object.keys(args[0]).length !== 0 &&
-      Object.keys(args[0])[0] === '_contract'
+      Object.keys(args[0])[0] === "_contract"
     ) {
       const contractCreationArgs = args[0]._contract;
 

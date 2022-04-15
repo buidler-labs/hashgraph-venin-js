@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
-import Long from 'long';
+import { EventEmitter } from "events";
+import Long from "long";
 
 import {
   ContractCallQuery,
@@ -14,22 +14,22 @@ import {
   Hbar,
   Transaction,
   TransactionId,
-} from '@hashgraph/sdk';
-import { FunctionFragment, Interface } from '@ethersproject/abi';
-import BigNumber from 'bignumber.js';
-import { arrayify } from '@ethersproject/bytes';
-import traverse from 'traverse';
+} from "@hashgraph/sdk";
+import { FunctionFragment, Interface } from "@ethersproject/abi";
+import BigNumber from "bignumber.js";
+import { arrayify } from "@ethersproject/bytes";
+import traverse from "traverse";
 
-import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
-import { Contract, ContractFeatures } from '../static/upload/Contract';
-import { BaseLiveEntityWithBalance } from './BaseLiveEntityWithBalance';
-import { ContractFunctionParameters } from '../hedera/ContractFunctionParameters';
-import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber';
-import { StratoAddress } from '../core/StratoAddress';
-import { encodeToHex } from '../core/Hex';
-import { extractSolidityAddressFrom } from '../core/SolidityAddressable';
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { Contract, ContractFeatures } from "../static/upload/Contract";
+import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
+import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
+import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber";
+import { StratoAddress } from "../core/StratoAddress";
+import { encodeToHex } from "../core/Hex";
+import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
 
-const UNHANDLED_EVENT_NAME = 'UnhandledEventName';
+const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
 export type ContractFunctionCall =
   | ContractCallQuery
@@ -386,7 +386,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
         const isBytesTypeExpectedFor = (propKey: string) =>
           fDescription.outputs
             .find((o) => o.name === propKey)
-            .type.startsWith('bytes');
+            .type.startsWith("bytes");
         const tryMappingToHederaBytes = (propKey: string) =>
           isBytesTypeExpectedFor(propKey)
             ? arrayify(fResult[propKey])
@@ -402,7 +402,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
 
         // Map all Ethers HexString representations of bytes-type responses to their UInt8Array forms (same used by Hedera)
         fResponse = fDescription.outputs.map((dType, id) =>
-          dType.type.startsWith('bytes')
+          dType.type.startsWith("bytes")
             ? arrayify(fResponse[id])
             : fResponse[id]
         );
@@ -417,7 +417,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
         let wasMapped = false;
 
         if (
-          typeof what === 'string' &&
+          typeof what === "string" &&
           extractSolidityAddressFrom(what) !== undefined
         ) {
           // most likely, this is a solidity-address
@@ -471,7 +471,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
       try {
         this.events.emit(evNameToSendTo, payload);
       } catch (e) {
-        if (process.env.NODE_ENV === 'test') {
+        if (process.env.NODE_ENV === "test") {
           // We re-interpret and throw it so that any tests running will be aware of it
           throw new Error(
             `The event-emitter handle '${name}' failed to execute with the following reason: ${e.message}`
@@ -498,7 +498,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
   protected _getUpdateTransaction(
     args?: ContractFeatures
   ): Promise<Transaction> {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
 
   protected _getBalancePayload(): object {

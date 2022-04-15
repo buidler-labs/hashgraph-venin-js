@@ -1,29 +1,29 @@
-import { describe, expect, it } from '@jest/globals';
-import BigNumber from 'bignumber.js';
-import { Hbar } from '@hashgraph/sdk';
-import { arrayify } from '@ethersproject/bytes';
+import { describe, expect, it } from "@jest/globals";
+import BigNumber from "bignumber.js";
+import { Hbar } from "@hashgraph/sdk";
+import { arrayify } from "@ethersproject/bytes";
 
-import { ResourceReadOptions, read as readResource } from '../../utils';
-import { ApiSession } from '../../../lib/ApiSession';
-import { Contract } from '../../../lib/static/upload/Contract';
-import { StratoAddress } from '../../../lib/core/StratoAddress';
+import { ResourceReadOptions, read as readResource } from "../../utils";
+import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
+import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 function read(what: ResourceReadOptions) {
-  return readResource({ relativeTo: 'taskbar', ...what });
+  return readResource({ relativeTo: "taskbar", ...what });
 }
 
-describe('LiveContract.TaskBar', () => {
-  it('given the taskbar use-case contracts, initializing a task should allow for getting it back later on', async () => {
+describe("LiveContract.TaskBar", () => {
+  it("given the taskbar use-case contracts, initializing a task should allow for getting it back later on", async () => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
     const taskId = new BigNumber(1);
 
     const { session } = await ApiSession.default();
     const taskRegistryContract = await Contract.newFrom({
-      code: read({ contract: 'TaskRegistry' }),
+      code: read({ contract: "TaskRegistry" }),
       ignoreWarnings: true,
     });
     const cappedRegistryHelperContract = await Contract.newFrom({
-      code: read({ contract: 'CappedRegistryHelper' }),
+      code: read({ contract: "CappedRegistryHelper" }),
     });
     const cappedRegistryLiveContract = await session.upload(
       cappedRegistryHelperContract,
@@ -43,7 +43,7 @@ describe('LiveContract.TaskBar', () => {
         { gas: 200_000 },
         taskId,
         100,
-        new TextEncoder().encode('67347465687435726877747265676572'),
+        new TextEncoder().encode("67347465687435726877747265676572"),
         600,
         1,
         2
@@ -59,42 +59,42 @@ describe('LiveContract.TaskBar', () => {
     expect(gottenTask.needer.equals(session.wallet.account.id)).toBeTruthy();
     expect(gottenTask.tasker).toBeInstanceOf(StratoAddress);
     expect(
-      gottenTask.tasker.equals('0x0000000000000000000000000000000000000000')
+      gottenTask.tasker.equals("0x0000000000000000000000000000000000000000")
     ).toBeTruthy();
     expect(gottenTask).toMatchObject({
       disputed: [false, false],
       disputionTime: new BigNumber(0),
       dloc: arrayify(
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
       ),
       nploc: arrayify(
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
       ),
       ploc: arrayify(
-        '0x3637333437343635363837343335373236383737373437323635363736353732'
+        "0x3637333437343635363837343335373236383737373437323635363736353732"
       ),
       price: new BigNumber(200),
       taskType: 1,
       tploc: arrayify(
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
       ),
     });
   });
 
-  it.skip('given the taskbar contracts, do stuff', async () => {
+  it.skip("given the taskbar contracts, do stuff", async () => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
     const { session } = await ApiSession.default();
 
     // Contracts
     const taskRegistryContract = await Contract.newFrom({
-      code: read({ contract: 'TaskRegistry' }),
+      code: read({ contract: "TaskRegistry" }),
       ignoreWarnings: true,
     });
     const cappedRegistryHelperContract = await Contract.newFrom({
-      code: read({ contract: 'CappedRegistryHelper' }),
+      code: read({ contract: "CappedRegistryHelper" }),
     });
     const taskRegistryManagerContract = await Contract.newFrom({
-      code: read({ contract: 'RegistryManager' }),
+      code: read({ contract: "RegistryManager" }),
     });
 
     // Live Contracts
@@ -111,18 +111,18 @@ describe('LiveContract.TaskBar', () => {
 
     // Register events of interest
     taskRegistryLiveContract.onEvent(
-      'OwnershipTransferred',
+      "OwnershipTransferred",
       async ({ previousOwner, newOwner }) => {
         const hapAccountSolidityAddress = `0x${session.getSolidityAddress()}`;
 
         expect(previousOwner).toEqual(
-          '0x0000000000000000000000000000000000000002'
+          "0x0000000000000000000000000000000000000002"
         );
         expect(newOwner).toEqual(hapAccountSolidityAddress);
       }
     );
     taskRegistryManagerLiveContract.onEvent(
-      'NewRegistryCreated',
+      "NewRegistryCreated",
       ({ registry }) => {
         expect(registry).not.toBeNull();
       }

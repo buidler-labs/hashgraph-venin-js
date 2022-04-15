@@ -4,15 +4,15 @@ import {
   Hbar,
   Key,
   PrivateKey,
-} from '@hashgraph/sdk';
-import { BigNumber } from '@hashgraph/sdk/lib/Transfer';
-import Duration from '@hashgraph/sdk/lib/Duration';
+} from "@hashgraph/sdk";
+import { BigNumber } from "@hashgraph/sdk/lib/Transfer";
+import Duration from "@hashgraph/sdk/lib/Duration";
 
-import { ApiSession, TypeOfExecutionReturn } from '../../ApiSession';
-import { ArgumentsForCreate } from '../../core/CreatableEntity';
-import { BasicCreatableEntity } from './BasicCreatableEntity';
-import { LiveAccountWithPrivateKey } from '../../live/LiveAccount';
-import { StratoLogger } from '../../StratoLogger';
+import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
+import { ArgumentsForCreate } from "../../core/CreatableEntity";
+import { BasicCreatableEntity } from "./BasicCreatableEntity";
+import { LiveAccountWithPrivateKey } from "../../live/LiveAccount";
+import { StratoLogger } from "../../StratoLogger";
 
 export enum KeyType {
   ECDSA,
@@ -81,7 +81,7 @@ export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
   private accountFeatures: CreateAccountFeatures;
 
   public constructor(info?: CreateAccountFeatures) {
-    super('Account');
+    super("Account");
     this.accountFeatures = {
       keyType: KeyType.ED25519,
       ...info,

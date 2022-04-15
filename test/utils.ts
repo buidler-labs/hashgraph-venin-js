@@ -1,21 +1,21 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
-import { PrivateKey } from '@hashgraph/sdk';
-import elliptic from 'elliptic';
-import nacl from 'tweetnacl';
+import { PrivateKey } from "@hashgraph/sdk";
+import elliptic from "elliptic";
+import nacl from "tweetnacl";
 
 import {
   CreateTokenFeatures,
   Token,
   TokenType,
   TokenTypes,
-} from '../lib/static/create/Token';
-import { ApiSession } from '../lib/ApiSession';
-import { Contract } from '../lib/static/upload/Contract';
-import { ContractRegistry } from '../lib/ContractRegistry';
-import { KeyType } from '../lib/static/create/Account';
-import { LiveContract } from '../lib/live/LiveContract';
+} from "../lib/static/create/Token";
+import { ApiSession } from "../lib/ApiSession";
+import { Contract } from "../lib/static/upload/Contract";
+import { ContractRegistry } from "../lib/ContractRegistry";
+import { KeyType } from "../lib/static/create/Account";
+import { LiveContract } from "../lib/live/LiveContract";
 
 export type ResourceReadOptions = {
   relativeTo?: string;
@@ -23,19 +23,19 @@ export type ResourceReadOptions = {
   solo?: string;
 };
 
-const derPrefix = '3030020100300706052b8104000a04220420';
-const derPrefixBytes = Buffer.from(derPrefix, 'hex');
-const secp256k1 = new elliptic.ec('secp256k1');
+const derPrefix = "3030020100300706052b8104000a04220420";
+const derPrefixBytes = Buffer.from(derPrefix, "hex");
+const secp256k1 = new elliptic.ec("secp256k1");
 
 export function read({
-  relativeTo = 'general',
+  relativeTo = "general",
   contract,
   solo,
 }: ResourceReadOptions) {
   if (undefined != contract) {
     return fs.readFileSync(
       path.join(__dirname, `${relativeTo}/contracts`, `${contract}.sol`),
-      'utf8'
+      "utf8"
     );
   } else {
     return require(`./${relativeTo}/solos/${solo}.json`);
@@ -44,7 +44,7 @@ export function read({
 
 export async function load(
   liveContractPath: string,
-  relativeTo = 'general'
+  relativeTo = "general"
 ): Promise<LiveContract> {
   const { session } = await ApiSession.default();
   const sbeContract = await Contract.newFrom({
@@ -55,7 +55,7 @@ export async function load(
 }
 
 export function loadContractRegistry(
-  relativeTo = 'general',
+  relativeTo = "general",
   recurse = true
 ): ContractRegistry {
   const contractsPath = path.join(__dirname, `${relativeTo}/contracts`);
@@ -72,8 +72,8 @@ export function getTokenToTest(
     {
       decimals: 0,
       initialSupply: tokenType.equals(TokenTypes.FungibleCommon) ? 1000 : 0,
-      name: 'hbarRocks',
-      symbol: 'HROK',
+      name: "hbarRocks",
+      symbol: "HROK",
       type: tokenType,
     },
     featureOverrides,

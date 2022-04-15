@@ -7,11 +7,11 @@ import {
   PrivateKey,
   Transaction,
   Wallet,
-} from '@hashgraph/sdk';
+} from "@hashgraph/sdk";
 
-import { Account, AccountFeatures } from '../static/create/Account';
-import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
-import { BaseLiveEntityWithBalance } from './BaseLiveEntityWithBalance';
+import { Account, AccountFeatures } from "../static/create/Account";
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 
 type LiveAccountConstructorArgs = {
   session: ApiSession;

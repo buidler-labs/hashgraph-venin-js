@@ -1,4 +1,4 @@
-import { LiveFile, LiveFileConstructorArgs } from './LiveFile';
+import { LiveFile, LiveFileConstructorArgs } from "./LiveFile";
 
 /**
  * Represents a Hedera, HFS-managed, Json object
@@ -8,7 +8,7 @@ export class LiveJson extends LiveFile {
 
   constructor({ session, id, data }: LiveFileConstructorArgs) {
     super({ data, id, session });
-    if (typeof data === 'string') {
+    if (typeof data === "string") {
       data = JSON.parse(data);
     }
     // Dynamically bind 'data' properties to instance

@@ -7,11 +7,11 @@ import {
   TopicMessageSubmitTransaction,
   TopicUpdateTransaction,
   Transaction,
-} from '@hashgraph/sdk';
+} from "@hashgraph/sdk";
 
-import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
-import { Topic, TopicFeatures } from '../static/create/Topic';
-import { LiveEntity } from './LiveEntity';
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { Topic, TopicFeatures } from "../static/create/Topic";
+import { LiveEntity } from "./LiveEntity";
 
 type LiveTopicConstructorArgs = {
   session: ApiSession;

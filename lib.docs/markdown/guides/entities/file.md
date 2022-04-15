@@ -17,7 +17,7 @@ An `ApiSession` with this via it's `ApiSession.upload` method like so:
 
 ```js live=true containerKey=store_a_file
 const { session } = await ApiSession.default();
-const liveFile = await session.upload(new File('Strato is easy-peasy!'));
+const liveFile = await session.upload(new File("Strato is easy-peasy!"));
 
 console.log(`File is stored at ${liveFile.id}`);
 console.log(`The live file content is: ${liveFile.data}`);
@@ -29,8 +29,8 @@ If you need to tweak the underlying file-transaction options when storing the co
 
 ```js
 const { session } = await ApiSession.default();
-const liveFile = await session.upload('Strato is easy-peasy-er!', {
-  _file: { memo: 'true facts' },
+const liveFile = await session.upload("Strato is easy-peasy-er!", {
+  _file: { memo: "true facts" },
 });
 
 //...

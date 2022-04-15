@@ -1,25 +1,25 @@
-import { describe, expect, it } from '@jest/globals';
-import { Hbar } from '@hashgraph/sdk';
+import { describe, expect, it } from "@jest/globals";
+import { Hbar } from "@hashgraph/sdk";
 
 import {
   ResourceReadOptions,
   getTokenToTest,
   read as readResource,
-} from '../../utils';
-import { Account } from '../../../lib/static/create/Account';
-import { ApiSession } from '../../../lib/ApiSession';
-import { Contract } from '../../../lib/static/upload/Contract';
-import { GasFees } from '../../constants';
-import { TokenTypes } from '../../../lib/static/create/Token';
+} from "../../utils";
+import { Account } from "../../../lib/static/create/Account";
+import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
+import { GasFees } from "../../constants";
+import { TokenTypes } from "../../../lib/static/create/Token";
 
 function read(what: ResourceReadOptions) {
-  return readResource({ relativeTo: 'hscs', ...what });
+  return readResource({ relativeTo: "hscs", ...what });
 }
 
-describe('LiveContract.Strato', () => {
-  it('given a fungible, live, token, burning over a precompiled contract-service bridge should be permitted', async () => {
+describe("LiveContract.Strato", () => {
+  it("given a fungible, live, token, burning over a precompiled contract-service bridge should be permitted", async () => {
     const contract = await Contract.newFrom({
-      code: read({ contract: 'HelloWorldBurn' }),
+      code: read({ contract: "HelloWorldBurn" }),
       ignoreWarnings: true,
     });
     const token = getTokenToTest();
@@ -43,11 +43,11 @@ describe('LiveContract.Strato', () => {
     expect(tokenInfo.totalSupply.toNumber()).toEqual(newTotalSupply);
   });
 
-  it('given a fungible, live, token, associating it to a live-contract should allow the contract to control the supply and transfer to associated accounts', async () => {
+  it("given a fungible, live, token, associating it to a live-contract should allow the contract to control the supply and transfer to associated accounts", async () => {
     const token = getTokenToTest({ keys: { kyc: null } });
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const contract = await Contract.newFrom({
-      code: read({ contract: 'MintTransHTS' }),
+      code: read({ contract: "MintTransHTS" }),
       ignoreWarnings: true,
     });
 
@@ -83,13 +83,13 @@ describe('LiveContract.Strato', () => {
     expect(tokenInfo.totalSupply.toNumber()).toEqual(1000 + 150);
   });
 
-  it('given a non-fungible, live, token, a contract would make use of the HTS to mint and make the NFT transfer to associated accounts', async () => {
+  it("given a non-fungible, live, token, a contract would make use of the HTS to mint and make the NFT transfer to associated accounts", async () => {
     const account = new Account({
       initialBalance: new Hbar(10),
       maxAutomaticTokenAssociations: 1,
     });
     const contract = await Contract.newFrom({
-      code: read({ contract: 'MintTransHTS' }),
+      code: read({ contract: "MintTransHTS" }),
       ignoreWarnings: true,
     });
 
@@ -109,7 +109,7 @@ describe('LiveContract.Strato', () => {
     await liveToken.assignSupplyControlTo(liveContract);
     const serialNumbers = await liveContract.mintNonFungibleToken(
       { gas: GasFees.mintToken },
-      [Buffer.from('ipfs-hash')]
+      [Buffer.from("ipfs-hash")]
     );
     await liveContract.transferNFT(
       { gas: GasFees.transferToken },
@@ -125,10 +125,10 @@ describe('LiveContract.Strato', () => {
     expect(tokenInfo.totalSupply.toNumber()).toEqual(1);
   });
 
-  it('given a non-fungible, live, token, a contract would make use of the HTS to mint multiple and make the NFT transfers to associated accounts', async () => {
+  it("given a non-fungible, live, token, a contract would make use of the HTS to mint multiple and make the NFT transfers to associated accounts", async () => {
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const contract = await Contract.newFrom({
-      code: read({ contract: 'MintTransHTS' }),
+      code: read({ contract: "MintTransHTS" }),
       ignoreWarnings: true,
     });
 
@@ -149,7 +149,7 @@ describe('LiveContract.Strato', () => {
     await liveToken.assignSupplyControlTo(liveContract);
     const serialNumbers = await liveContract.mintNonFungibleToken(
       { gas: GasFees.mintToken },
-      [Buffer.from('ipfs-hash'), Buffer.from('another-ipfs-hash')]
+      [Buffer.from("ipfs-hash"), Buffer.from("another-ipfs-hash")]
     );
 
     await liveContract.transferNFTs(

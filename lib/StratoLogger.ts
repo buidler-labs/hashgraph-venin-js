@@ -1,6 +1,6 @@
-import { Logger, createLogger, format, transports } from 'winston';
-import { LoggerRuntimeParameters } from './StratoContext';
-import { SPLAT } from 'triple-beam';
+import { Logger, createLogger, format, transports } from "winston";
+import { LoggerRuntimeParameters } from "./StratoContext";
+import { SPLAT } from "triple-beam";
 
 export class StratoLogger {
   private readonly isLoggingEnabled: boolean;

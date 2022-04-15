@@ -1,6 +1,6 @@
-import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
-import { Status, Transaction } from '@hashgraph/sdk';
-import { SolidityAddressable } from '../core/SolidityAddressable';
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { Status, Transaction } from "@hashgraph/sdk";
+import { SolidityAddressable } from "../core/SolidityAddressable";
 /**
  * Common functionality exhibited by session-bounded, id-entifiable LiveEntity instances.
  */

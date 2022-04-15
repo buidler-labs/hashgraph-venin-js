@@ -32,11 +32,11 @@ You can, of course, pass in both `_file` and `_contract` options. Merging the ab
 ```js live=true containerKey=contract_and_file_options
 const { session } = await ApiSession.default();
 const helloWorldContract = await Contract.newFrom({
-  path: './hello_world.sol',
+  path: "./hello_world.sol",
 });
 const liveContract = await session.upload(helloWorldContract, {
   _contract: { gas: 100000 },
-  _file: { fileMemo: 'Hello Strato' },
+  _file: { fileMemo: "Hello Strato" },
 });
 
 console.log(await liveContract.greet());
@@ -64,7 +64,7 @@ const contract = await Contract.newFrom({ code });
 const liveContract = await session.upload(
   contract,
   { _contract: { gas: 100000 } },
-  'Strato is amazing!'
+  "Strato is amazing!"
 );
 
 console.log(await liveContract.message());
@@ -82,7 +82,7 @@ So if, for example, we were to upload [solidity-by-example](https://solidity-by-
 
 ```js live=true containerKey=call_deployed_contract_methods
 const { session } = await ApiSession.default();
-const contract = await Contract.newFrom({ path: './counter.sol' });
+const contract = await Contract.newFrom({ path: "./counter.sol" });
 const liveContract = await session.upload(contract);
 
 await liveContract.inc();
@@ -94,7 +94,7 @@ Of course, function arguments are also supported so if we have such a live-contr
 
 ```js live=true containerKey=function_arguments
 const { session } = await ApiSession.default();
-const contract = await Contract.newFrom({ path: './state_variables.sol' });
+const contract = await Contract.newFrom({ path: "./state_variables.sol" });
 const liveContract = await session.upload(contract);
 
 await liveContract.set(42);
@@ -111,10 +111,10 @@ Contract _events_ are propagated upwards from `LiveContract` through the `EventE
 
 ```js live=true containerKey=dealing_with_events
 const { session } = await ApiSession.default();
-const contract = await Contract.newFrom({ path: './events.sol' });
+const contract = await Contract.newFrom({ path: "./events.sol" });
 const liveContract = await session.upload(contract);
 
-liveContract.onEvent('Log', ({ sender, message }) => {
+liveContract.onEvent("Log", ({ sender, message }) => {
   console.log(`Log event received: ${message}`);
 });
 
@@ -127,7 +127,7 @@ To get access to the constructor logs, you would need to destructure the live-co
 
 ```js live=true containerKey=dealing_with_constructor_events
 const { session } = await ApiSession.default();
-const contract = await Contract.newFrom({ path: './events.sol' });
+const contract = await Contract.newFrom({ path: "./events.sol" });
 const { liveContract, logs } = await session.upload(contract, {
   _contract: { emitConstructorLogs: true },
 });
@@ -154,7 +154,7 @@ Of course, similar to the "upload contract operation" detailed above, any argume
 
 ```js live=true containerKey=transaction_meta_arguments
 const { session } = await ApiSession.default();
-const contract = await Contract.newFrom({ path: './state_variables.sol' });
+const contract = await Contract.newFrom({ path: "./state_variables.sol" });
 const liveContract = await session.upload(contract);
 
 await liveContract.set({ maxTransactionFee: 100000 }, 42);
@@ -170,11 +170,11 @@ Want to find out more? [Have a look at our test-case](https://github.com/buidler
 ```js live=true containerKey=retreive_deployed_contracts
 const { session } = await ApiSession.default();
 const liveContract = await session.getLiveContract({
-  id: '0.0.30771282',
+  id: "0.0.30771282",
   abi: [
-    'function get() view returns (uint256)',
-    'function num() view returns (uint256)',
-    'function set(uint256 _num)',
+    "function get() view returns (uint256)",
+    "function num() view returns (uint256)",
+    "function set(uint256 _num)",
   ],
 });
 const bigNumberGetResult = await liveContract.get();

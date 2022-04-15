@@ -1,16 +1,16 @@
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from "@hashgraph/sdk";
 
-import { NotSupportedWalletProvider, WalletProvider } from './WalletProvider';
-import { StratoContext, StratoParameters } from '../StratoContext';
+import { NotSupportedWalletProvider, WalletProvider } from "./WalletProvider";
+import { StratoContext, StratoParameters } from "../StratoContext";
 import {
   WalletController,
   WalletControllerEvents,
-} from '../core/wallet/WalletController';
-import { BrowserWalletProvider } from './BrowserWallet';
-import { CredentialsInvalidError } from '../errors/CredentialsInvalidError';
-import { HederaLocalWalletProvider } from './local/SdkWallet';
-import { HederaWalletController } from './controller/HederaWalletController';
-import { ImpotentWalletController } from './controller/ImpotentWalletController';
+} from "../core/wallet/WalletController";
+import { BrowserWalletProvider } from "./BrowserWallet";
+import { CredentialsInvalidError } from "../errors/CredentialsInvalidError";
+import { HederaLocalWalletProvider } from "./local/SdkWallet";
+import { HederaWalletController } from "./controller/HederaWalletController";
+import { ImpotentWalletController } from "./controller/ImpotentWalletController";
 
 const WALLET_TYPE_CONSTRUCTOR_GUARD = {};
 
@@ -31,7 +31,7 @@ export class WalletType {
   ) {
     if (constructorGuard !== WALLET_TYPE_CONSTRUCTOR_GUARD) {
       throw new Error(
-        'Wallet types cannot be defined from outside this module!'
+        "Wallet types cannot be defined from outside this module!"
       );
     }
   }
@@ -44,7 +44,7 @@ export class WalletType {
 export class WalletTypes {
   private readonly unknownWalletType = new WalletType(
     WALLET_TYPE_CONSTRUCTOR_GUARD,
-    'Unknown'
+    "Unknown"
   );
   private readonly knownWalletTypes: WalletType[];
 
@@ -52,7 +52,7 @@ export class WalletTypes {
     this.knownWalletTypes = [
       new WalletType(
         WALLET_TYPE_CONSTRUCTOR_GUARD,
-        'Sdk',
+        "Sdk",
         HederaWalletController, // Default WalletController
         HederaLocalWalletProvider, // Associated WalletProvider
         (params) => {
@@ -69,7 +69,7 @@ export class WalletTypes {
       ),
       new WalletType(
         WALLET_TYPE_CONSTRUCTOR_GUARD,
-        'Browser',
+        "Browser",
         ImpotentWalletController, // No WalletController
         BrowserWalletProvider, // Associated WalletProvider
         (params) => {

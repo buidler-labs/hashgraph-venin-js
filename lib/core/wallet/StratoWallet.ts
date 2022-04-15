@@ -3,10 +3,10 @@ import {
   Transaction,
   TransactionReceipt,
   TransactionResponse,
-} from '@hashgraph/sdk';
-import Executable from '@hashgraph/sdk/lib/Executable';
+} from "@hashgraph/sdk";
+import Executable from "@hashgraph/sdk/lib/Executable";
 
-import { WalletInfo } from './WalletInfo';
+import { WalletInfo } from "./WalletInfo";
 
 export interface StratoWallet extends WalletInfo {
   execute<T extends Transaction | Query<Q>, Q>(

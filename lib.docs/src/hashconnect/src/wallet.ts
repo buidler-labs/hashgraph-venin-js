@@ -9,13 +9,13 @@ import {
   Transaction,
   TransactionId,
   Wallet,
-} from '@hashgraph/sdk';
-import { HashConnect, HashConnectTypes } from 'hashconnect';
-import Executable from '@hashgraph/sdk/lib/Executable';
+} from "@hashgraph/sdk";
+import { HashConnect, HashConnectTypes } from "hashconnect";
+import Executable from "@hashgraph/sdk/lib/Executable";
 
-import { HashConnectProvider } from './provider';
-import { HashConnectSender } from './sender';
-import { HashPackSigner } from './signer';
+import { HashConnectProvider } from "./provider";
+import { HashConnectSender } from "./sender";
+import { HashPackSigner } from "./signer";
 
 export type PublicAccountInfo = {
   id: AccountId;
@@ -28,7 +28,7 @@ type HashPackConstructorArgs = {
   networkMaturity: string;
 };
 
-const HP_LOCAL_STORAGE_KEY = 'hashpack-session';
+const HP_LOCAL_STORAGE_KEY = "hashpack-session";
 const HP_WAIT_FOR_EXTENSION_RESPONSE_TIMEOUT = 2000;
 
 export class HashPackWallet extends Wallet {
@@ -64,7 +64,7 @@ export class HashPackWallet extends Wallet {
   }
 
   static async newConnection({
-    networkName = 'testnet',
+    networkName = "testnet",
     debug = false,
     appMetadata,
   }: {
@@ -84,7 +84,7 @@ export class HashPackWallet extends Wallet {
     const extensionCheckWatchdog = new Promise((_, reject) =>
       setTimeout(() => {
         reject(
-          'The HashPack browser extension could not be found. Please install it to continue.'
+          "The HashPack browser extension could not be found. Please install it to continue."
         );
       }, HP_WAIT_FOR_EXTENSION_RESPONSE_TIMEOUT)
     );
@@ -101,7 +101,7 @@ export class HashPackWallet extends Wallet {
     ]);
 
     // Depending on the execution context, either auto-trigger the extension or dump the pairing string in its console log
-    if (location.protocol !== 'https:') {
+    if (location.protocol !== "https:") {
       console.log(
         `Generated a new paring string: ${jLocalWalletData.pairingString}`
       );
@@ -138,7 +138,7 @@ export class HashPackWallet extends Wallet {
           );
           accept(wallet);
         } else {
-          reject('Did not receive back any paired accounts.');
+          reject("Did not receive back any paired accounts.");
         }
       });
     });
@@ -153,12 +153,12 @@ export class HashPackWallet extends Wallet {
 
     if (!accountPublicKey) {
       const mirrorSubdomain =
-        opts.networkMaturity === 'mainnet' ? 'mainnet-public' : 'testnet';
+        opts.networkMaturity === "mainnet" ? "mainnet-public" : "testnet";
       const accountInfoFetchUrl = `https://${mirrorSubdomain}.mirrornode.hedera.com/api/v1/accounts/${opts.account.id}`;
       const accountInfoResponse = await fetch(accountInfoFetchUrl);
 
       if (!accountInfoResponse.ok) {
-        throw new Error('Account Id could not be retrieved from the network');
+        throw new Error("Account Id could not be retrieved from the network");
       }
 
       const jAccountInfo = await accountInfoResponse.json();
@@ -274,7 +274,7 @@ export class HashPackWallet extends Wallet {
       );
     }
     return Promise.reject(
-      'Executable type is not yet supported by this wallet.'
+      "Executable type is not yet supported by this wallet."
     );
   }
 

@@ -1,9 +1,9 @@
-import { DefaultPrivateKeyWalletController } from './DefaultPrivateKeyWalletController';
-import { HederaWalletController } from './HederaWalletController';
-import { ImpotentWalletController } from './ImpotentWalletController';
-import { NamedValue } from '../../core/UsefulTypes';
-import { StratoContext } from '../../StratoContext';
-import { WalletController } from '../../core/wallet/WalletController';
+import { DefaultPrivateKeyWalletController } from "./DefaultPrivateKeyWalletController";
+import { HederaWalletController } from "./HederaWalletController";
+import { ImpotentWalletController } from "./ImpotentWalletController";
+import { NamedValue } from "../../core/UsefulTypes";
+import { StratoContext } from "../../StratoContext";
+import { WalletController } from "../../core/wallet/WalletController";
 
 export class WalletControllers {
   private readonly impotentController: ImpotentWalletController;
@@ -13,9 +13,9 @@ export class WalletControllers {
     this.impotentController = new ImpotentWalletController();
 
     this.knownControllers = [
-      { name: 'Hedera', value: new HederaWalletController(ctx) },
+      { name: "Hedera", value: new HederaWalletController(ctx) },
       {
-        name: 'DefaultPrivateKey',
+        name: "DefaultPrivateKey",
         value: new DefaultPrivateKeyWalletController(ctx),
       },
     ];

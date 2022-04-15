@@ -1,33 +1,33 @@
-import { describe, expect, it } from '@jest/globals';
-import { AccountId } from '@hashgraph/sdk';
-import BigNumber from 'bignumber.js';
+import { describe, expect, it } from "@jest/globals";
+import { AccountId } from "@hashgraph/sdk";
+import BigNumber from "bignumber.js";
 
 import {
   ResourceReadOptions,
   loadContractRegistry as loadContractRegistryResource,
   load as loadResource,
   read as readResource,
-} from '../../utils';
-import { ApiSession } from '../../../lib/ApiSession';
-import { Contract } from '../../../lib/static/upload/Contract';
-import { ContractRegistry } from '../../../lib/ContractRegistry';
-import { StratoAddress } from '../../../lib/core/StratoAddress';
+} from "../../utils";
+import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
+import { ContractRegistry } from "../../../lib/ContractRegistry";
+import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 function load(contractPath: string) {
-  return loadResource(contractPath, 'solidity-by-example');
+  return loadResource(contractPath, "solidity-by-example");
 }
 
 function read(what: ResourceReadOptions) {
-  return readResource({ relativeTo: 'solidity-by-example', ...what });
+  return readResource({ relativeTo: "solidity-by-example", ...what });
 }
 
 function loadContractRegistry(): ContractRegistry {
-  return loadContractRegistryResource('solidity-by-example');
+  return loadContractRegistryResource("solidity-by-example");
 }
 
-describe('LiveContract.Solidity-by-Example', () => {
+describe("LiveContract.Solidity-by-Example", () => {
   // Requires: https://github.com/buidler-labs/hedera-strato-js/issues/11
-  it.skip('not setting a query-payment should default to using the upper limit given by the maximum-query-payment available on the client which should allow the query to successfully resolve', async () => {
+  it.skip("not setting a query-payment should default to using the upper limit given by the maximum-query-payment available on the client which should allow the query to successfully resolve", async () => {
     const { session } = await ApiSession.default({
       session: {
         defaults: {
@@ -36,30 +36,30 @@ describe('LiveContract.Solidity-by-Example', () => {
       },
     });
     const contract = await Contract.newFrom({
-      code: read({ contract: 'hello_world' }),
+      code: read({ contract: "hello_world" }),
     });
     const liveContract = await session.upload(contract);
 
     await liveContract.greet();
   });
 
-  it('trying to create2 twice using the same salt should fail', async () => {
+  it("trying to create2 twice using the same salt should fail", async () => {
     const { session } = await ApiSession.default();
     const carFactoryContract = await Contract.newFrom({
-      code: read({ contract: 'new_contract' }),
+      code: read({ contract: "new_contract" }),
       ignoreWarnings: true,
-      name: 'CarFactory',
+      name: "CarFactory",
     });
     const liveCarFactoryContract = await session.upload(carFactoryContract);
-    const newCarOwner = AccountId.fromString('0.0.123').toSolidityAddress();
+    const newCarOwner = AccountId.fromString("0.0.123").toSolidityAddress();
     const salt =
-      '0xb7d7c82f47757be5f8f931c8ac65ab700ca1245ea02fff2c03fcd679e7f4bba9';
+      "0xb7d7c82f47757be5f8f931c8ac65ab700ca1245ea02fff2c03fcd679e7f4bba9";
 
     await expect(
       liveCarFactoryContract.create2(
         { gas: 200_000 },
         newCarOwner,
-        'Honda Civic',
+        "Honda Civic",
         salt
       )
     ).resolves.toBeUndefined();
@@ -68,24 +68,24 @@ describe('LiveContract.Solidity-by-Example', () => {
       liveCarFactoryContract.create2(
         { gas: 200_000 },
         newCarOwner,
-        'Honda Civic',
+        "Honda Civic",
         salt
       )
     ).rejects.toThrow();
   });
 
-  it('creating a contract should allow its live-address to be convertible to the underlying model', async () => {
+  it("creating a contract should allow its live-address to be convertible to the underlying model", async () => {
     const { session } = await ApiSession.default();
     const hapiSessionOwnerAddress = session.getSolidityAddress();
     const carContract = await Contract.newFrom({
-      code: read({ contract: 'new_contract' }),
+      code: read({ contract: "new_contract" }),
       ignoreWarnings: true,
-      name: 'Car',
+      name: "Car",
     });
     const carFactoryContract = await Contract.newFrom({
-      code: read({ contract: 'new_contract' }),
+      code: read({ contract: "new_contract" }),
       ignoreWarnings: true,
-      name: 'CarFactory',
+      name: "CarFactory",
     });
     const liveCarFactoryContract = await session.upload(carFactoryContract);
 
@@ -93,7 +93,7 @@ describe('LiveContract.Solidity-by-Example', () => {
       liveCarFactoryContract.create(
         { gas: 200_000 },
         hapiSessionOwnerAddress,
-        'Logan'
+        "Logan"
       )
     ).resolves.toBeUndefined();
 
@@ -103,14 +103,14 @@ describe('LiveContract.Solidity-by-Example', () => {
 
     const liveCar = await carAddr.toLiveContract(carContract.interface);
 
-    await expect(liveCar.model()).resolves.toEqual('Logan');
+    await expect(liveCar.model()).resolves.toEqual("Logan");
   });
 
-  it('deploying a contract with constructor arguments should work', async () => {
+  it("deploying a contract with constructor arguments should work", async () => {
     const uintArgForConstructor = new BigNumber(42);
     const { session } = await ApiSession.default();
     const immutableContract = await Contract.newFrom({
-      code: read({ contract: 'immutable' }),
+      code: read({ contract: "immutable" }),
     });
     const liveContract = await session.upload(
       immutableContract,
@@ -125,17 +125,17 @@ describe('LiveContract.Solidity-by-Example', () => {
     );
   });
 
-  it('uploading a contract should allow interacting with its live instance', async () => {
-    const liveContract = await load('/hello_world');
+  it("uploading a contract should allow interacting with its live instance", async () => {
+    const liveContract = await load("/hello_world");
 
-    await expect(liveContract.greet()).resolves.toEqual('Hello World!');
+    await expect(liveContract.greet()).resolves.toEqual("Hello World!");
   });
 
-  it('uploading a contract followed by a cold retrieval should be permitted through the deployed contract-Id and its original ABI', async () => {
+  it("uploading a contract followed by a cold retrieval should be permitted through the deployed contract-Id and its original ABI", async () => {
     // prepare the session and the solidity contract
     const { session } = await ApiSession.default();
     const helloWorldContract = await Contract.newFrom({
-      code: read({ contract: 'hello_world' }),
+      code: read({ contract: "hello_world" }),
     });
 
     // upload it but don't get a hold on the actual resulting live contract instance. We only take note of its deployed id and,
@@ -147,14 +147,14 @@ describe('LiveContract.Solidity-by-Example', () => {
       id,
     });
 
-    await expect(simpleLiveContract.greet()).resolves.toEqual('Hello World!');
+    await expect(simpleLiveContract.greet()).resolves.toEqual("Hello World!");
   });
 
-  it('uploading a contract followed by a cold retrieval should be permitted through the deployed contract-Id and its contract-registry stored ABI', async () => {
+  it("uploading a contract followed by a cold retrieval should be permitted through the deployed contract-Id and its contract-registry stored ABI", async () => {
     // prepare the session and the solidity contract
     const { session } = await ApiSession.default();
     const helloWorldContract = await Contract.newFrom({
-      code: read({ contract: 'hello_world' }),
+      code: read({ contract: "hello_world" }),
     });
     const contractRegistry = loadContractRegistry();
 
@@ -167,11 +167,11 @@ describe('LiveContract.Solidity-by-Example', () => {
       id,
     });
 
-    await expect(registryLiveContract.greet()).resolves.toEqual('Hello World!');
+    await expect(registryLiveContract.greet()).resolves.toEqual("Hello World!");
   });
 
-  it('querying functions should succeed giving back the expected answers', async () => {
-    const liveContract = await load('function');
+  it("querying functions should succeed giving back the expected answers", async () => {
+    const liveContract = await load("function");
 
     await expect(liveContract.returnMany()).resolves.toEqual([
       new BigNumber(1),
@@ -198,15 +198,15 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(liveContract.arrayOutput()).resolves.toEqual([]);
   });
 
-  it('executing functions with arguments should succeed giving back the expected values', async () => {
-    const liveContract = await load('view_and_pure_functions');
+  it("executing functions with arguments should succeed giving back the expected values", async () => {
+    const liveContract = await load("view_and_pure_functions");
 
     await expect(liveContract.addToX(69)).resolves.toEqual(new BigNumber(70));
     await expect(liveContract.add(2, 5)).resolves.toEqual(new BigNumber(7));
   });
 
-  it('interacting with a mutable contract should change its state as expected', async () => {
-    const liveContract = await load('first_app');
+  it("interacting with a mutable contract should change its state as expected", async () => {
+    const liveContract = await load("first_app");
 
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(0));
     await expect(liveContract.inc()).resolves.toBeUndefined();
@@ -217,8 +217,8 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(1));
   });
 
-  it('interacting with a contract should error out as expected when appropriate', async () => {
-    const liveContract = await load('error');
+  it("interacting with a contract should error out as expected when appropriate", async () => {
+    const liveContract = await load("error");
 
     await expect(liveContract.testRequire(9)).rejects.toThrow();
     await expect(liveContract.testRequire(11)).resolves.toBeUndefined();
@@ -226,13 +226,13 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(liveContract.testRevert(11)).resolves.toBeUndefined();
     await expect(liveContract.testAssert()).resolves.toBeUndefined();
     await expect(
-      liveContract.testCustomError(new BigNumber('5032485723458348569331745'))
+      liveContract.testCustomError(new BigNumber("5032485723458348569331745"))
     ).rejects.toThrow();
     await expect(liveContract.testCustomError(0)).resolves.toBeUndefined();
   });
 
   it("interacting with a contract's methods should set state variables appropriately", async () => {
-    const liveContract = await load('state_variables');
+    const liveContract = await load("state_variables");
 
     await expect(liveContract.get()).resolves.toEqual(new BigNumber(0));
     await expect(liveContract.set(69)).resolves.toBeUndefined();
@@ -243,7 +243,7 @@ describe('LiveContract.Solidity-by-Example', () => {
   });
 
   it("interacting with a contract's methods should be governed by their internal, conditional logic", async () => {
-    const liveContract = await load('if_else');
+    const liveContract = await load("if_else");
 
     await expect(liveContract.foo(0)).resolves.toEqual(new BigNumber(0));
     await expect(liveContract.foo(11)).resolves.toEqual(new BigNumber(1));
@@ -252,14 +252,14 @@ describe('LiveContract.Solidity-by-Example', () => {
     await expect(liveContract.ternary(10)).resolves.toEqual(new BigNumber(2));
   });
 
-  it.skip('doing the signature verification flow should work', async () => {
+  it.skip("doing the signature verification flow should work", async () => {
     // TODO: activate this once secp is working on Hedera (and available through SDK ?)
-    const liveContract = await load('signature');
+    const liveContract = await load("signature");
     const { session } = await ApiSession.default();
     const signer = session.wallet.account.id.toSolidityAddress();
-    const to = AccountId.fromString('0.0.3').toSolidityAddress();
+    const to = AccountId.fromString("0.0.3").toSolidityAddress();
     const amount = 123;
-    const message = 'coffee and donuts';
+    const message = "coffee and donuts";
     const nonce = 1;
     const messageHash = await liveContract.getMessageHash(
       to,
@@ -277,41 +277,41 @@ describe('LiveContract.Solidity-by-Example', () => {
   });
 
   // Requires: https://github.com/buidler-labs/hedera-strato-js/issues/38
-  it.skip('uploading a public library-dependent contract should succede', async () => {
+  it.skip("uploading a public library-dependent contract should succede", async () => {
     const { session } = await ApiSession.default();
     const testArrayContract = await Contract.newFrom({
-      code: read({ contract: 'library' }),
-      name: 'TestArray',
+      code: read({ contract: "library" }),
+      name: "TestArray",
     });
 
     await expect(session.upload(testArrayContract)).resolves.not.toThrow();
   });
 
-  it('trying to register a non-existing event should error out', async () => {
-    const liveContract = await load('events');
+  it("trying to register a non-existing event should error out", async () => {
+    const liveContract = await load("events");
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     expect(() =>
-      liveContract.onEvent('non-existing-event', () => {})
+      liveContract.onEvent("non-existing-event", () => {})
     ).toThrow();
   });
 
   it("interacting with a contract's single method should trigger the expected events", async () => {
-    const liveContract = await load('events');
+    const liveContract = await load("events");
 
     return new Promise<void>((accept) => {
       const receivedMessages = [];
 
       // Register all events of interest
-      liveContract.onEvent('Log', ({ sender, message }) => {
+      liveContract.onEvent("Log", ({ sender, message }) => {
         expect(sender).not.toBeNull();
         expect(receivedMessages).not.toContain(message);
         receivedMessages.push(message);
       });
-      liveContract.onEvent('AnotherLog', () => {
+      liveContract.onEvent("AnotherLog", () => {
         expect(receivedMessages).toHaveLength(2);
-        expect(receivedMessages[0]).toEqual('Hello World!');
-        expect(receivedMessages[1]).toEqual('Hello EVM!');
+        expect(receivedMessages[0]).toEqual("Hello World!");
+        expect(receivedMessages[1]).toEqual("Hello EVM!");
         accept();
       });
 
@@ -320,21 +320,21 @@ describe('LiveContract.Solidity-by-Example', () => {
     });
   });
 
-  it('registering a catch-all-if-none-defined handler should get called if one is provided and an unhandled event gets triggered', async () => {
-    const liveContract = await load('events');
+  it("registering a catch-all-if-none-defined handler should get called if one is provided and an unhandled event gets triggered", async () => {
+    const liveContract = await load("events");
 
     return new Promise<void>((accept) => {
       const receivedMessages = [];
 
-      liveContract.onEvent('Log', ({ sender, message }) => {
+      liveContract.onEvent("Log", ({ sender, message }) => {
         expect(sender).not.toBeNull();
         expect(receivedMessages).not.toContain(message);
         receivedMessages.push(message);
       });
       liveContract.onUnhandledEvents(() => {
         expect(receivedMessages).toHaveLength(2);
-        expect(receivedMessages[0]).toEqual('Hello World!');
-        expect(receivedMessages[1]).toEqual('Hello EVM!');
+        expect(receivedMessages[0]).toEqual("Hello World!");
+        expect(receivedMessages[1]).toEqual("Hello EVM!");
         accept();
       });
 
@@ -342,25 +342,25 @@ describe('LiveContract.Solidity-by-Example', () => {
     });
   });
 
-  it('de-registering an event should not call it any further when triggered from the contract', async () => {
-    const liveContract = await load('events');
+  it("de-registering an event should not call it any further when triggered from the contract", async () => {
+    const liveContract = await load("events");
 
     return new Promise<void>((accept, reject) => {
       const receivedMessages = [];
 
-      liveContract.onEvent('Log', ({ sender, message }) => {
+      liveContract.onEvent("Log", ({ sender, message }) => {
         expect(sender).not.toBeNull();
         expect(receivedMessages).not.toContain(message);
         receivedMessages.push(message);
       });
-      liveContract.onEvent('AnotherLog', () => {
+      liveContract.onEvent("AnotherLog", () => {
         reject();
       });
-      liveContract.onEvent('AnotherLog', undefined);
+      liveContract.onEvent("AnotherLog", undefined);
       liveContract.onUnhandledEvents(() => {
         expect(receivedMessages).toHaveLength(2);
-        expect(receivedMessages[0]).toEqual('Hello World!');
-        expect(receivedMessages[1]).toEqual('Hello EVM!');
+        expect(receivedMessages[0]).toEqual("Hello World!");
+        expect(receivedMessages[1]).toEqual("Hello EVM!");
         accept();
       });
 

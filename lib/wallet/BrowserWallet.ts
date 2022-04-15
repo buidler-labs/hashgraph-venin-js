@@ -1,7 +1,7 @@
-import { BasicStratoWallet } from './BasicStratoWallet';
-import { StratoContext } from '../StratoContext';
-import { WalletControllerEvents } from '../core/wallet/WalletController';
-import { WalletProvider } from './WalletProvider';
+import { BasicStratoWallet } from "./BasicStratoWallet";
+import { StratoContext } from "../StratoContext";
+import { WalletControllerEvents } from "../core/wallet/WalletController";
+import { WalletProvider } from "./WalletProvider";
 
 export type BrowserWalletColdStartData = {
   propName: string;

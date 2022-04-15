@@ -1,7 +1,7 @@
 // Code heavily inspired and slimed down from the the @rollup/plugin-replace repo
 
-import MagicString from 'magic-string';
-import { SourceMap } from 'rollup';
+import MagicString from "magic-string";
+import { SourceMap } from "rollup";
 
 export class SimpleReplacer {
   private readonly functionValues: any;
@@ -14,8 +14,8 @@ export class SimpleReplacer {
     this.functionValues = mapToFunctions(values);
     const keys = Object.keys(this.functionValues).sort(longest).map(escape);
     this.pattern = new RegExp(
-      `\\b(${keys.join('|')})\\b(?!\\.)(?!\\s*=[^=])`,
-      'g'
+      `\\b(${keys.join("|")})\\b(?!\\.)(?!\\s*=[^=])`,
+      "g"
     );
   }
 
@@ -52,11 +52,11 @@ export class SimpleReplacer {
 }
 
 function escape(str) {
-  return str.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
+  return str.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
 }
 
 function ensureFunction(functionOrValue) {
-  if (typeof functionOrValue === 'function') return functionOrValue;
+  if (typeof functionOrValue === "function") return functionOrValue;
   return () => functionOrValue;
 }
 

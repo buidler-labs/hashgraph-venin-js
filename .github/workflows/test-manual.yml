@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'The branch to run the tests against'
+        description: "The branch to run the tests against"
         required: true
         default: main
       environment:
-        description: 'Hedera network to run the tests on'
+        description: "Hedera network to run the tests on"
         required: true
         type: environment
         default: hedera-testnet
@@ -23,7 +23,7 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     strategy:
       matrix:
-        npm_test_script: ['test:node', 'test:jsdom', 'test:browser']
+        npm_test_script: ["test:node", "test:jsdom", "test:browser"]
     steps:
       - uses: actions/checkout@v2
         with:

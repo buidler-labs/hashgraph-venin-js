@@ -52,8 +52,8 @@ and `create` it via an `ApiSession`:
 ```js live=true containerKey=create_a_token
 const { session } = await ApiSession.default();
 const token = new Token({
-  name: 'Wrapped HBAR',
-  symbol: 'wHBAR',
+  name: "Wrapped HBAR",
+  symbol: "wHBAR",
   initialSupply: 1000,
   decimals: 3,
   type: TokenTypes.FungibleCommon,
@@ -74,8 +74,8 @@ The following code does the same thing as above except that it leaves the `kyc` 
 ```js
 const { session } = await ApiSession.default();
 const token = new Token({
-  name: 'Wrapped HBAR',
-  symbol: 'wHBAR',
+  name: "Wrapped HBAR",
+  symbol: "wHBAR",
   initialSupply: 1000,
   decimals: 3,
   keys: { kyc: null },

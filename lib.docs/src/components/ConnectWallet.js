@@ -1,9 +1,9 @@
 /* eslint-env browser */
 
-import './ConnectWallet.style.css';
-import React from 'react';
+import "./ConnectWallet.style.css";
+import React from "react";
 
-const HASHCONNECT_DATA_KEY = 'hashpack-data';
+const HASHCONNECT_DATA_KEY = "hashpack-data";
 
 export const HeadStarterConnectWallet = () => {
   const tryToSetWallet = (wallet) => {
@@ -39,7 +39,7 @@ export const HeadStarterConnectWallet = () => {
 
   const handleOnConnect = async () => {
     const operator = await fetch(
-      'https://eu2.contabostorage.com/963797152a304f4bb7f75cc0af884bd7:buidler-labs/projects/hedera-strato-js/docs-operator.json'
+      "https://eu2.contabostorage.com/963797152a304f4bb7f75cc0af884bd7:buidler-labs/projects/hedera-strato-js/docs-operator.json"
     )
       .then((docsOperatorResponse) =>
         docsOperatorResponse.body.getReader().read()
@@ -68,26 +68,26 @@ export const HeadStarterConnectWallet = () => {
     });
   };
 
-  window.addEventListener('message', ({ data: key }) => {
-    if (key !== 'WalletLoaded') return;
+  window.addEventListener("message", ({ data: key }) => {
+    if (key !== "WalletLoaded") return;
 
-    tryToSetWallet(window['hedera']);
+    tryToSetWallet(window["hedera"]);
   });
   if (!state.wallet) {
-    tryToSetWallet(window['hedera']);
+    tryToSetWallet(window["hedera"]);
   }
 
-  window.addEventListener('storage', (e) => {
+  window.addEventListener("storage", (e) => {
     if (e.key === HASHCONNECT_DATA_KEY && !e.newValue) {
       window.disconnectWallet();
     }
   });
 
   return (
-    <center style={{ margin: '16px' }}>
+    <center style={{ margin: "16px" }}>
       {state.connected && state.wallet ? (
         <ConnectedStats
-          accountId={state.wallet.getAccountId().toString() || ''}
+          accountId={state.wallet.getAccountId().toString() || ""}
           balance={state.balance}
           onDisconnect={handleOnDisconnect}
         />

@@ -5,7 +5,7 @@ export class CompileIssues extends Error {
   }) {
     if (null != compileResult && Array.isArray(compileResult.errors)) {
       const issuesReported = compileResult.errors.filter(
-        (err) => (ignoreWarnings && err.type !== 'Warning') || !ignoreWarnings
+        (err) => (ignoreWarnings && err.type !== "Warning") || !ignoreWarnings
       );
 
       if (issuesReported.length != 0) {
@@ -28,7 +28,7 @@ export class CompileIssues extends Error {
     super(
       `There are issues with the contract code:\n${CompileIssues._listOfSimpleIssueMessagesFor(
         issues
-      ).join('\n')}`
+      ).join("\n")}`
     );
   }
 }

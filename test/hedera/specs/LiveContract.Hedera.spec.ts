@@ -1,16 +1,16 @@
-import { describe, expect, it } from '@jest/globals';
-import { Hbar } from '@hashgraph/sdk';
+import { describe, expect, it } from "@jest/globals";
+import { Hbar } from "@hashgraph/sdk";
 
-import { getTokenToTest, read } from '../../utils';
-import { Account } from '../../../lib/static/create/Account';
-import { ApiSession } from '../../../lib/ApiSession';
-import { Contract } from '../../../lib/static/upload/Contract';
-import { GasFees } from '../../constants';
+import { getTokenToTest, read } from "../../utils";
+import { Account } from "../../../lib/static/create/Account";
+import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
+import { GasFees } from "../../constants";
 
-describe('LiveContract.Hedera', () => {
-  it('given a fungible, live, token, minting over a precompiled contract-service bridge should be permitted', async () => {
+describe("LiveContract.Hedera", () => {
+  it("given a fungible, live, token, minting over a precompiled contract-service bridge should be permitted", async () => {
     const contract = await Contract.newFrom({
-      code: read({ contract: 'HelloWorldMint', relativeTo: 'hedera' }),
+      code: read({ contract: "HelloWorldMint", relativeTo: "hedera" }),
       ignoreWarnings: true,
     });
 
@@ -31,13 +31,13 @@ describe('LiveContract.Hedera', () => {
     expect(liveTokenInfo.totalSupply.toNumber()).toEqual(newTotalSupply);
   });
 
-  it('given a fungible, live, token, associating it to the client account using the hedera token service precompiled contract works as expected', async () => {
+  it("given a fungible, live, token, associating it to the client account using the hedera token service precompiled contract works as expected", async () => {
     const token = getTokenToTest();
     const account = new Account({ initialBalance: new Hbar(10) });
     const contract = await Contract.newFrom({
       code: read({
-        contract: 'AssociateDissociateTokens',
-        relativeTo: 'hedera',
+        contract: "AssociateDissociateTokens",
+        relativeTo: "hedera",
       }),
       ignoreWarnings: true,
     });
@@ -66,13 +66,13 @@ describe('LiveContract.Hedera', () => {
     ).toBeTruthy();
   });
 
-  it('given a fungible, live, token, associating and dissociating it to the client account using the hedera token service precompiled works as expected', async () => {
+  it("given a fungible, live, token, associating and dissociating it to the client account using the hedera token service precompiled works as expected", async () => {
     const token = getTokenToTest();
     const account = new Account({ initialBalance: new Hbar(10) });
     const contract = await Contract.newFrom({
       code: read({
-        contract: 'AssociateDissociateTokens',
-        relativeTo: 'hedera',
+        contract: "AssociateDissociateTokens",
+        relativeTo: "hedera",
       }),
       ignoreWarnings: true,
     });
@@ -106,16 +106,16 @@ describe('LiveContract.Hedera', () => {
     ).toBeFalsy();
   });
 
-  it('given 2 fungible, live, tokens, associating them to the client account using the hedera token service precompiled contract works as expected', async () => {
+  it("given 2 fungible, live, tokens, associating them to the client account using the hedera token service precompiled contract works as expected", async () => {
     const token = getTokenToTest();
-    const token2 = getTokenToTest({ name: 'Token2', symbol: 'T2' });
+    const token2 = getTokenToTest({ name: "Token2", symbol: "T2" });
 
     const account = new Account({ initialBalance: new Hbar(10) });
 
     const contract = await Contract.newFrom({
       code: read({
-        contract: 'AssociateDissociateTokens',
-        relativeTo: 'hedera',
+        contract: "AssociateDissociateTokens",
+        relativeTo: "hedera",
       }),
       ignoreWarnings: true,
     });
@@ -148,14 +148,14 @@ describe('LiveContract.Hedera', () => {
     ).toBeTruthy();
   });
 
-  it('given 2 fungible, live, tokens, associating and dissociating them to the client account using the hedera token service precompiled contract works as expected', async () => {
+  it("given 2 fungible, live, tokens, associating and dissociating them to the client account using the hedera token service precompiled contract works as expected", async () => {
     const token = getTokenToTest();
-    const token2 = getTokenToTest({ name: 'Token2', symbol: 'T2' });
+    const token2 = getTokenToTest({ name: "Token2", symbol: "T2" });
     const account = new Account({ initialBalance: new Hbar(10) });
     const contract = await Contract.newFrom({
       code: read({
-        contract: 'AssociateDissociateTokens',
-        relativeTo: 'hedera',
+        contract: "AssociateDissociateTokens",
+        relativeTo: "hedera",
       }),
       ignoreWarnings: true,
     });

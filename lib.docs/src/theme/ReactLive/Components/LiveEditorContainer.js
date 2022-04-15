@@ -1,9 +1,9 @@
-import * as React from 'react';
-import { LiveEditor } from 'react-live';
-import Translate from '@docusaurus/core/lib/client/exports/Translate';
-import clsx from 'clsx';
-import styles from '../../Playground/styles.module.css';
-import useIsBrowser from '@docusaurus/core/lib/client/exports/useIsBrowser';
+import * as React from "react";
+import { LiveEditor } from "react-live";
+import Translate from "@docusaurus/core/lib/client/exports/Translate";
+import clsx from "clsx";
+import styles from "../../Playground/styles.module.css";
+import useIsBrowser from "@docusaurus/core/lib/client/exports/useIsBrowser";
 
 const LiveEditorContainer = ({
   isRunning,

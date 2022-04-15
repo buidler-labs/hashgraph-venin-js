@@ -1,8 +1,8 @@
-import type { TestFileEvent, TestResult } from '@jest/test-result';
-import type { Config } from '@jest/types';
-import type { JestEnvironment } from '@jest/environment';
-import type Runtime from 'jest-runtime';
-import { default as runOnCircus } from 'jest-circus/runner';
+import type { TestFileEvent, TestResult } from "@jest/test-result";
+import type { Config } from "@jest/types";
+import type { JestEnvironment } from "@jest/environment";
+import type Runtime from "jest-runtime";
+import { default as runOnCircus } from "jest-circus/runner";
 
 export default async function hederaTestRunner(
   globalConfig: Config.GlobalConfig,
@@ -23,10 +23,10 @@ export default async function hederaTestRunner(
   const shouldRerun =
     circusRunResult.testResults.find(
       (result) =>
-        result.status === 'failed' &&
+        result.status === "failed" &&
         result.failureMessages
-          .join('')
-          .includes('failed precheck with status TRANSACTION_EXPIRED')
+          .join("")
+          .includes("failed precheck with status TRANSACTION_EXPIRED")
     ) !== undefined;
 
   if (shouldRerun) {

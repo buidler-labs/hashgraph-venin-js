@@ -1,14 +1,14 @@
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 
-import { AVAILABLE_NETWORK_NAMES, NetworkDefaults } from './HederaNetwork';
-import { WalletType, WalletTypes } from './wallet/WalletType';
-import { HederaNetwork } from './HederaNetwork';
-import { RecursivePartial } from './core/UsefulTypes';
-import { SessionDefaults } from './ApiSession';
-import { StratoLogger } from './StratoLogger';
-import { StratoWallet } from './core/wallet/StratoWallet';
-import { WalletController } from './core/wallet/WalletController';
-import { WalletControllers } from './wallet/controller/WalletControllers';
+import { AVAILABLE_NETWORK_NAMES, NetworkDefaults } from "./HederaNetwork";
+import { WalletType, WalletTypes } from "./wallet/WalletType";
+import { HederaNetwork } from "./HederaNetwork";
+import { RecursivePartial } from "./core/UsefulTypes";
+import { SessionDefaults } from "./ApiSession";
+import { StratoLogger } from "./StratoLogger";
+import { StratoWallet } from "./core/wallet/StratoWallet";
+import { WalletController } from "./core/wallet/WalletController";
+import { WalletControllers } from "./wallet/controller/WalletControllers";
 
 export type ControlledWallet = {
   controller: WalletController;
@@ -98,14 +98,14 @@ export class StratoContext {
       dEnv = process.env;
     }
     Object.keys(dEnv)
-      .filter((rrParamKey) => rrParamKey.startsWith('HEDERAS_'))
+      .filter((rrParamKey) => rrParamKey.startsWith("HEDERAS_"))
       .forEach((acceptedParamKey) => {
         eParams[acceptedParamKey] = dEnv[acceptedParamKey];
       });
 
     // Parse and extract the managed values
     const networkName =
-      rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? 'unspecified';
+      rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? "unspecified";
 
     this.walletTypes = new WalletTypes();
     this.params = {
@@ -113,16 +113,16 @@ export class StratoContext {
         enabled:
           (rParams.logger?.enabled ??
             eParams.HEDERAS_LOGGER_ENABLED ??
-            'false') === 'true',
-        level: rParams.logger?.level ?? eParams.HEDERAS_LOGGER_LEVEL ?? 'info',
+            "false") === "true",
+        level: rParams.logger?.level ?? eParams.HEDERAS_LOGGER_LEVEL ?? "info",
       },
       network: {
         defaults:
           DefinedNetworkDefaults[
-            rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? 'unspecified'
+            rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? "unspecified"
           ],
         name: networkName,
-        nodes: rParams.network?.nodes ?? eParams.HEDERAS_NODES ?? '',
+        nodes: rParams.network?.nodes ?? eParams.HEDERAS_NODES ?? "",
       },
       session: {
         defaults: this.parseSessionDefaultsFrom(networkName, rParams, eParams),
@@ -138,7 +138,7 @@ export class StratoContext {
     controller?: WalletController
   ): Promise<ControlledWallet> {
     const walletType =
-      typeof this.params.wallet.type === 'string'
+      typeof this.params.wallet.type === "string"
         ? this.walletTypes.getBy({ name: this.params.wallet.type })
         : this.params.wallet.type;
     const resolvedController =
@@ -157,7 +157,7 @@ export class StratoContext {
       };
     } else {
       throw new Error(
-        'Please provide either the cold-start data or a saved-state from where to create the bounded underlying Wallet with.'
+        "Please provide either the cold-start data or a saved-state from where to create the bounded underlying Wallet with."
       );
     }
   }
@@ -172,19 +172,19 @@ export class StratoContext {
     const walletControllerType =
       rParams.wallet?.controller?.type ??
       eParams.HEDERAS_WALLET_CONTROLLER ??
-      'Hedera';
+      "Hedera";
     const walletType = this.walletTypes.getBy({
       name:
-        typeof rParams.wallet?.type === 'string'
+        typeof rParams.wallet?.type === "string"
           ? rParams.wallet?.type
           : eParams.HEDERAS_WALLET_TYPE
           ? eParams.HEDERAS_WALLET_TYPE
-          : 'Sdk',
+          : "Sdk",
     });
     const walletWindowPropName =
       rParams.wallet?.window?.propName ??
       eParams.HEDERAS_WALLET_WINDOW_PROPERTY_NAME ??
-      'hedera';
+      "hedera";
 
     if (!this.walletTypes.isKnown(walletType)) {
       throw new Error(
@@ -225,31 +225,31 @@ export class StratoContext {
       contractCreationGas:
         rParams.session?.defaults?.contractCreationGas ??
         parseInt(
-          resolveSessionDefaultValueFor('contract_creation_gas') ?? '150000'
+          resolveSessionDefaultValueFor("contract_creation_gas") ?? "150000"
         ),
       contractTransactionGas:
         rParams.session?.defaults?.contractCreationGas ??
         parseInt(
-          resolveSessionDefaultValueFor('contract_transaction_gas') ?? '169000'
+          resolveSessionDefaultValueFor("contract_transaction_gas") ?? "169000"
         ),
       emitConstructorLogs:
         rParams.session?.defaults?.emitConstructorLogs ??
-        (resolveSessionDefaultValueFor('emit_constructor_logs') ?? 'true') ===
-          'true',
+        (resolveSessionDefaultValueFor("emit_constructor_logs") ?? "true") ===
+          "true",
       emitLiveContractReceipts:
         rParams.session?.defaults?.emitLiveContractReceipts ??
-        (resolveSessionDefaultValueFor('emit_live_contracts_receipts') ??
-          'false') === 'true',
+        (resolveSessionDefaultValueFor("emit_live_contracts_receipts") ??
+          "false") === "true",
       onlyReceiptsFromContractRequests:
         rParams.session?.defaults?.onlyReceiptsFromContractRequests ??
         (resolveSessionDefaultValueFor(
-          'contract_requests_return_only_receipts'
-        ) ?? 'true') === 'true',
+          "contract_requests_return_only_receipts"
+        ) ?? "true") === "true",
       paymentForContractQuery:
         rParams.session?.defaults?.paymentForContractQuery ??
         parseInt(
-          resolveSessionDefaultValueFor('payment_for_contract_query') ??
-            '1000000'
+          resolveSessionDefaultValueFor("payment_for_contract_query") ??
+            "1000000"
         ),
     };
   }

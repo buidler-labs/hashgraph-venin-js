@@ -40,7 +40,7 @@ Interacting with it via Strato could be as simple as:
 
 ```js live=true containerKey=increment_from_path
 const { session } = await ApiSession.default();
-const counterContract = await Contract.newFrom({ path: './increment.sol' });
+const counterContract = await Contract.newFrom({ path: "./increment.sol" });
 const liveContract = await session.upload(counterContract);
 
 // Increment then retrieve the counter

@@ -1,17 +1,17 @@
-import * as React from 'react';
-import LiveEditorContainer from './LiveEditorContainer';
-import LiveResultContainer from './LiveResultContainer';
+import * as React from "react";
+import LiveEditorContainer from "./LiveEditorContainer";
+import LiveResultContainer from "./LiveResultContainer";
 
 const LiveContainer = ({ hasTopPosition, ...props }) => {
   const containerElements = [
     {
       Component: LiveEditorContainer,
-      name: 'editor',
+      name: "editor",
       props,
     },
     {
       Component: LiveResultContainer,
-      name: 'result',
+      name: "result",
       props,
     },
   ];

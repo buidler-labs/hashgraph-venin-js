@@ -12,10 +12,10 @@ import {
   TransactionId,
   TransactionReceiptQuery,
   TransactionResponse,
-} from '@hashgraph/sdk';
-import Executable from '@hashgraph/sdk/lib/Executable';
+} from "@hashgraph/sdk";
+import Executable from "@hashgraph/sdk/lib/Executable";
 
-import { HashConnectSender } from './sender';
+import { HashConnectSender } from "./sender";
 
 export class HashConnectProvider extends Provider {
   private readonly client: Client;
@@ -102,7 +102,7 @@ export class HashConnectProvider extends Provider {
       return request.toBytes();
     } else {
       throw new Error(
-        'Only Transactions and Queries can be serialized to be sent for signing by the HashPack wallet.'
+        "Only Transactions and Queries can be serialized to be sent for signing by the HashPack wallet."
       );
     }
   }

@@ -1,11 +1,11 @@
-import * as fs from 'fs/promises';
-import * as legacyFs from 'fs';
-import * as path from 'path';
+import * as fs from "fs/promises";
+import * as legacyFs from "fs";
+import * as path from "path";
 
 // @ts-ignore: Must use self-referencing imports here otherwise we risk getting into strange cyclic-dependency issues
-import { Contract } from '@buidlerlabs/hedera-strato-js';
-import { SimpleReplacer } from './SimpleReplacer';
-import { getSolidityCompilerCode } from './CompilerBundler';
+import { Contract } from "@buidlerlabs/hedera-strato-js";
+import { SimpleReplacer } from "./SimpleReplacer";
+import { getSolidityCompilerCode } from "./CompilerBundler";
 
 type StratoRollupOptions = {
   contracts?: {
@@ -17,14 +17,14 @@ type StratoRollupOptions = {
   sourceMap?: boolean;
 };
 
-const CONTRACT_REGISTRY_ID = '\0hedera-strato:ContractRegistry';
-const CONTRACTS_IN_FILE_STORAGE_ID = '\0hedera-strato:ContractsInFileStorage';
-const SOLIDITY_COMPILER_ID = '\0hedera-strato:SolidityCompiler';
+const CONTRACT_REGISTRY_ID = "\0hedera-strato:ContractRegistry";
+const CONTRACTS_IN_FILE_STORAGE_ID = "\0hedera-strato:ContractsInFileStorage";
+const SOLIDITY_COMPILER_ID = "\0hedera-strato:SolidityCompiler";
 
 export default function strato(options: StratoRollupOptions = {}) {
   const {
     contracts: {
-      path: contractsPath = 'contracts',
+      path: contractsPath = "contracts",
       recurse: recurseInContractsPath,
     },
     environment = process.env,
@@ -34,9 +34,9 @@ export default function strato(options: StratoRollupOptions = {}) {
   const replacer = new SimpleReplacer(
     {
       // don't take away the HEDERAS_ENV_PATH otherwise ApiSession.default definition will fail
-      'process.env': JSON.stringify(getHederasSettingsFrom(environment)),
-      'process.env.HEDERAS_ENV_PATH': environment.HEDERAS_ENV_PATH,
-      'process.env.NODE_ENV': `'${environment.NODE_ENV ?? 'test'}'`,
+      "process.env": JSON.stringify(getHederasSettingsFrom(environment)),
+      "process.env.HEDERAS_ENV_PATH": environment.HEDERAS_ENV_PATH,
+      "process.env.NODE_ENV": `'${environment.NODE_ENV ?? "test"}'`,
     },
     sourceMap
   );
@@ -50,17 +50,17 @@ export default function strato(options: StratoRollupOptions = {}) {
     },
     SolidityCompiler: { external: false, id: SOLIDITY_COMPILER_ID },
 
-    StratoLogger: { external: false, id: getPoliePathOf('StratoLogger.js') },
-    'bignumber.js': {
+    StratoLogger: { external: false, id: getPoliePathOf("StratoLogger.js") },
+    "bignumber.js": {
       // Strato is using both @ethersproject/bignumber and bignumber.js. They don't play well together
       // There is a tendency to mess up @ethersproject inner-dependencies
       // We try to leave it alone to bundle its own thing
       excludeImporter: /@ethersproject/g,
       external: true,
-      id: 'https://unpkg.com/bignumber.js@9.0.2/bignumber.mjs',
+      id: "https://unpkg.com/bignumber.js@9.0.2/bignumber.mjs",
     },
-    'core/Hex': { external: false, id: getPoliePathOf('Hex.js') },
-    dotenv: { external: false, id: getPoliePathOf('dotenv.js') },
+    "core/Hex": { external: false, id: getPoliePathOf("Hex.js") },
+    dotenv: { external: false, id: getPoliePathOf("dotenv.js") },
   };
 
   return {
@@ -81,7 +81,7 @@ export default function strato(options: StratoRollupOptions = {}) {
           : getStorageCodeFor(contractsPath, relativeSolFiles));
       } else if (SOLIDITY_COMPILER_ID === id) {
         const solCompilerEntryPoint = getPoliePathOf(
-          `compiler/${includeCompiler ? 'worker' : 'none'}/SolidityCompiler.js`
+          `compiler/${includeCompiler ? "worker" : "none"}/SolidityCompiler.js`
         );
 
         source = await getSolidityCompilerCode(
@@ -91,7 +91,7 @@ export default function strato(options: StratoRollupOptions = {}) {
       }
       return source;
     },
-    name: 'hedera-strato',
+    name: "hedera-strato",
     renderChunk(code: string, chunk) {
       const id = chunk.fileName;
       return replacer.tryReplacing(code, id);
@@ -115,7 +115,7 @@ export default function strato(options: StratoRollupOptions = {}) {
       if (resolvedImporteeKey) {
         const resolvedImportee = resolvableIds[resolvedImporteeKey];
 
-        if (resolvedImportee.id.startsWith('\0') || resolvedImportee.external) {
+        if (resolvedImportee.id.startsWith("\0") || resolvedImportee.external) {
           return resolvedImportee;
         }
         return this.resolve(resolvedImportee.id, importer, {
@@ -151,7 +151,7 @@ async function getRegistryCodeFor(solPaths: string[]) {
         ({ contract, vLocation }) =>
           `"${vLocation}": ${JSON.stringify(contract.interface.format())}`
       )
-      .join(',')}
+      .join(",")}
   }`;
 
   return contractsRegistryCode;
@@ -174,7 +174,7 @@ async function getRegistryCodeFor(solPaths: string[]) {
 async function getAllVirtuallyLocalizedContracts(solPath: string) {
   if (path.isAbsolute(solPath)) {
     throw new Error(
-      'Only relative solidity paths can be virtually localisable'
+      "Only relative solidity paths can be virtually localisable"
     );
   }
 
@@ -184,15 +184,15 @@ async function getAllVirtuallyLocalizedContracts(solPath: string) {
   });
   const solDirName = path.dirname(solPath);
   const normalizedPathSegments =
-    solDirName === '.'
+    solDirName === "."
       ? []
       : solDirName
           .split(path.sep)
-          .map((pathSegment) => pathSegment.replace(/[ \\."']+/g, '_'));
+          .map((pathSegment) => pathSegment.replace(/[ \\."']+/g, "_"));
 
   return contracts.map((contract) => ({
     contract,
-    vLocation: [...normalizedPathSegments, contract.name].join('/'),
+    vLocation: [...normalizedPathSegments, contract.name].join("/"),
   }));
 }
 
@@ -210,7 +210,7 @@ async function getAllVirtuallyLocalizedContracts(solPath: string) {
 async function getSolFiles(
   basePath: string,
   recurse = false,
-  relativePath = ''
+  relativePath = ""
 ): Promise<legacyFs.Dirent[]> {
   const finalPath = `${basePath}/${relativePath}`;
   let filesInPath: legacyFs.Dirent[] = [];
@@ -226,11 +226,11 @@ async function getSolFiles(
   const solFilesInPath = filesInPath
     .filter(
       (potentialSolFile) =>
-        potentialSolFile.isFile() && potentialSolFile.name.endsWith('.sol')
+        potentialSolFile.isFile() && potentialSolFile.name.endsWith(".sol")
     )
     .map((solFile) => {
       solFile.name =
-        relativePath !== '' ? `${relativePath}/${solFile.name}` : solFile.name;
+        relativePath !== "" ? `${relativePath}/${solFile.name}` : solFile.name;
 
       return solFile;
     });
@@ -244,7 +244,7 @@ async function getSolFiles(
       getSolFiles(
         basePath,
         recurse,
-        relativePath !== '' ? `${relativePath}/${directory}` : directory
+        relativePath !== "" ? `${relativePath}/${directory}` : directory
       )
     )
   );
@@ -269,7 +269,7 @@ async function getStorageCodeFor(
   const contractsRegistryCode = `export default {
     ${contractSources
       .map((contract) => `"${contract.name}": \`${contract.code.toString()}\``)
-      .join(',')}
+      .join(",")}
   }`;
 
   return contractsRegistryCode;
@@ -279,7 +279,7 @@ function getHederasSettingsFrom(obj) {
   const toReturn = {};
 
   Object.keys(obj).forEach((oKey) => {
-    if (oKey.startsWith('HEDERAS_')) {
+    if (oKey.startsWith("HEDERAS_")) {
       toReturn[oKey] = obj[oKey];
     }
   });

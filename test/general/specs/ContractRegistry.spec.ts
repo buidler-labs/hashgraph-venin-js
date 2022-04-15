@@ -1,10 +1,10 @@
-import { describe, expect, it, jest } from '@jest/globals';
-import { Interface } from '@ethersproject/abi';
+import { describe, expect, it, jest } from "@jest/globals";
+import { Interface } from "@ethersproject/abi";
 
-describe('ContractRegistry', () => {
-  it('a non-default contract-registry without recursion should extract the expected contract references', async () => {
+describe("ContractRegistry", () => {
+  it("a non-default contract-registry without recursion should extract the expected contract references", async () => {
     const contractRegistry = await loadContractRegistry(
-      'test/general/contracts/registry',
+      "test/general/contracts/registry",
       false,
       false
     );
@@ -17,13 +17,13 @@ describe('ContractRegistry', () => {
 
     expect(Interface.isInterface(AInterface)).toBeTruthy();
     expect(AInterface).toEqual(
-      new Interface(['function theNumber() pure returns (uint256)'])
+      new Interface(["function theNumber() pure returns (uint256)"])
     );
   });
 
-  it('generating the default contract-registry without recursion should extract the expected contract references', async () => {
+  it("generating the default contract-registry without recursion should extract the expected contract references", async () => {
     const defaultContractRegistry = await loadContractRegistry(
-      'test/general/contracts/registry',
+      "test/general/contracts/registry",
       false
     );
 
@@ -35,32 +35,32 @@ describe('ContractRegistry', () => {
 
     expect(Interface.isInterface(AInterface)).toBeTruthy();
     expect(AInterface).toEqual(
-      new Interface(['function theNumber() pure returns (uint256)'])
+      new Interface(["function theNumber() pure returns (uint256)"])
     );
   });
 
-  it('generating the default contract-registry with recursion should extract the expected contract references', async () => {
+  it("generating the default contract-registry with recursion should extract the expected contract references", async () => {
     const defaultContractRegistry = await loadContractRegistry(
-      './test/general/contracts/registry',
+      "./test/general/contracts/registry",
       true
     );
 
     expect(defaultContractRegistry).toBeDefined();
     expect(Object.values(defaultContractRegistry)).toHaveLength(2);
     expect(defaultContractRegistry.a).toBeInstanceOf(Promise);
-    expect(defaultContractRegistry['inner/b']).toBeInstanceOf(Promise);
+    expect(defaultContractRegistry["inner/b"]).toBeInstanceOf(Promise);
 
     const AInterface = await defaultContractRegistry.a;
-    const BInterface = await defaultContractRegistry['inner/b'];
+    const BInterface = await defaultContractRegistry["inner/b"];
 
     expect(Interface.isInterface(AInterface)).toBeTruthy();
     expect(AInterface).toEqual(
-      new Interface(['function theNumber() pure returns (uint256)'])
+      new Interface(["function theNumber() pure returns (uint256)"])
     );
     expect(Interface.isInterface(BInterface)).toBeTruthy();
     expect(BInterface).toEqual(
       new Interface([
-        'function add(uint256 a, uint256 b) pure returns (uint256)',
+        "function add(uint256 a, uint256 b) pure returns (uint256)",
       ])
     );
   });
@@ -80,7 +80,7 @@ async function loadContractRegistry(
   process.env.HEDERAS_CONTRACT_REGISTRY_RECURSE = `${recurse}`;
 
   const { default: defaultContractRegistry, ContractRegistry } = await import(
-    '../../../lib/ContractRegistry'
+    "../../../lib/ContractRegistry"
   );
   const toReturn = returnDefault
     ? defaultContractRegistry

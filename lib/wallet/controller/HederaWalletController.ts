@@ -1,9 +1,9 @@
-import { AccountId } from '@hashgraph/sdk';
-import { PrivateKey } from '@hashgraph/sdk';
+import { AccountId } from "@hashgraph/sdk";
+import { PrivateKey } from "@hashgraph/sdk";
 
-import { BasicWalletController } from './BasicWalletController';
-import { HederaClientAccount } from '../local/SdkWallet';
-import { StratoContext } from '../../StratoContext';
+import { BasicWalletController } from "./BasicWalletController";
+import { HederaClientAccount } from "../local/SdkWallet";
+import { StratoContext } from "../../StratoContext";
 
 export class HederaWalletController extends BasicWalletController<HederaClientAccount> {
   public constructor(ctx: StratoContext) {
@@ -16,7 +16,7 @@ export class HederaWalletController extends BasicWalletController<HederaClientAc
   ): HederaClientAccount {
     if (args.length === 0) {
       throw new Error(
-        'The private-key must also be provided in order to switch the account.'
+        "The private-key must also be provided in order to switch the account."
       );
     }
     try {

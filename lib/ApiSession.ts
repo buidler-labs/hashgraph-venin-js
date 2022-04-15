@@ -15,34 +15,34 @@ import {
   TransactionRecord,
   TransactionRecordQuery,
   TransactionResponse,
-} from '@hashgraph/sdk';
-import { EventEmitter } from 'events';
-import { Interface } from '@ethersproject/abi';
+} from "@hashgraph/sdk";
+import { EventEmitter } from "events";
+import { Interface } from "@ethersproject/abi";
 
-import { ContractFunctionCall, LiveContract } from './live/LiveContract';
-import { Promised, RecursivePartial } from './core/UsefulTypes';
+import { ContractFunctionCall, LiveContract } from "./live/LiveContract";
+import { Promised, RecursivePartial } from "./core/UsefulTypes";
 import {
   StratoContext,
   StratoContextSource,
   StratoParameters,
-} from './StratoContext';
-import { BasicUploadableEntity } from './static/upload/BasicUploadableEntity';
-import { CreatableEntity } from './core/CreatableEntity';
-import { File } from './static/upload/File';
-import { HederaNetwork } from './HederaNetwork';
-import { Json } from './static/upload/Json';
-import { LiveEntity } from './live/LiveEntity';
-import { LiveFile } from './live/LiveFile';
-import { LiveJson } from './live/LiveJson';
-import { SolidityAddressable } from './core/SolidityAddressable';
-import { StratoLogger } from './StratoLogger';
-import { StratoWallet } from './core/wallet/StratoWallet';
-import { Subscription } from './core/Subscription';
-import { UploadableEntity } from './core/UploadableEntity';
-import { WalletController } from './core/wallet/WalletController';
-import { WalletInfo } from './core/wallet/WalletInfo';
+} from "./StratoContext";
+import { BasicUploadableEntity } from "./static/upload/BasicUploadableEntity";
+import { CreatableEntity } from "./core/CreatableEntity";
+import { File } from "./static/upload/File";
+import { HederaNetwork } from "./HederaNetwork";
+import { Json } from "./static/upload/Json";
+import { LiveEntity } from "./live/LiveEntity";
+import { LiveFile } from "./live/LiveFile";
+import { LiveJson } from "./live/LiveJson";
+import { SolidityAddressable } from "./core/SolidityAddressable";
+import { StratoLogger } from "./StratoLogger";
+import { StratoWallet } from "./core/wallet/StratoWallet";
+import { Subscription } from "./core/Subscription";
+import { UploadableEntity } from "./core/UploadableEntity";
+import { WalletController } from "./core/wallet/WalletController";
+import { WalletInfo } from "./core/wallet/WalletInfo";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { WalletTypes } from './wallet/WalletType';
+import { WalletTypes } from "./wallet/WalletType";
 
 type ApiSessionConstructorArgs = {
   ctx: StratoContext;
@@ -59,9 +59,9 @@ type TransactionedReceipt<R> = {
 };
 
 export const enum TypeOfExecutionReturn {
-  Receipt = 'Receipt',
-  Record = 'Record',
-  Result = 'Result',
+  Receipt = "Receipt",
+  Record = "Record",
+  Result = "Result",
 }
 
 type ExecutionReturnTypes<T> = {
@@ -88,7 +88,7 @@ const SESSION_CONSTRUCTOR_GUARD = {};
 
 // The inner-name for the receipt pub-sub event slot
 const TRANSACTION_ON_RECEIPT_EVENT_NAME =
-  '__TransactionOnReceiptAvailable_EventName__';
+  "__TransactionOnReceiptAvailable_EventName__";
 
 /**
  * The core class used for all business-logic, runtime network-interactions.
@@ -117,10 +117,10 @@ export class ApiSession implements SolidityAddressable {
    */
   public static async default(
     params: RecursivePartial<StratoParameters> | string = {},
-    path = process.env.HEDERAS_ENV_PATH || '.env'
+    path = process.env.HEDERAS_ENV_PATH || ".env"
   ): Promise<ControlledSession> {
     const ctxArgs: StratoContextSource =
-      typeof params === 'string'
+      typeof params === "string"
         ? { params: {}, path: params }
         : { params, path };
     const ctx = new StratoContext(ctxArgs);
@@ -160,7 +160,7 @@ export class ApiSession implements SolidityAddressable {
   ) {
     if (constructorGuard !== SESSION_CONSTRUCTOR_GUARD) {
       throw new Error(
-        'API sessions can only be constructed through a SessionBuilder instance!'
+        "API sessions can only be constructed through a SessionBuilder instance!"
       );
     }
 
@@ -312,7 +312,7 @@ export class ApiSession implements SolidityAddressable {
         id instanceof ContractId ? id : ContractId.fromString(id);
     } catch (e) {
       throw new Error(
-        'Please provide a valid Hedera contract id in order try to lock onto an already-deployed contract.'
+        "Please provide a valid Hedera contract id in order try to lock onto an already-deployed contract."
       );
     }
     return new LiveContract({
@@ -338,7 +338,7 @@ export class ApiSession implements SolidityAddressable {
       targetedFileId = id instanceof FileId ? id : FileId.fromString(id);
     } catch (e) {
       throw new Error(
-        'Please provide a valid Hedera file id in order try to lock onto an already-deployed Json object.'
+        "Please provide a valid Hedera file id in order try to lock onto an already-deployed Json object."
       );
     }
     const fileContentsQuery = new FileContentsQuery().setFileId(targetedFileId);
@@ -347,7 +347,7 @@ export class ApiSession implements SolidityAddressable {
       TypeOfExecutionReturn.Result,
       false
     );
-    const fileContents = new TextDecoder('utf8').decode(fileContentsBuffer);
+    const fileContents = new TextDecoder("utf8").decode(fileContentsBuffer);
 
     // TODO: use file Memo to store hash of file-contents and only return LiveJson instance if the 2 values match
     return new LiveJson({
@@ -433,7 +433,7 @@ export class ApiSession implements SolidityAddressable {
     let uploadableWhat: BasicUploadableEntity<T, R, I>;
 
     if (what instanceof BasicUploadableEntity === false) {
-      if (typeof what === 'string' || what instanceof Uint8Array) {
+      if (typeof what === "string" || what instanceof Uint8Array) {
         uploadableWhat = new File(what) as unknown as BasicUploadableEntity<
           T,
           R,
@@ -447,7 +447,7 @@ export class ApiSession implements SolidityAddressable {
         >;
       } else {
         throw new Error(
-          'Can only upload UploadableFile-s or Json-file acceptable content.'
+          "Can only upload UploadableFile-s or Json-file acceptable content."
         );
       }
     } else {

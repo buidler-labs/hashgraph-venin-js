@@ -1,4 +1,4 @@
-import { ParamType } from '@ethersproject/abi';
+import { ParamType } from "@ethersproject/abi";
 
 function upperCaseFirstOf(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -7,7 +7,7 @@ function upperCaseFirstOf(string) {
 export class ParamTypeToFunctionNameMapper {
   public constructor(private readonly paramType: ParamType) {}
 
-  public map({ prefix = '' }) {
+  public map({ prefix = "" }) {
     const defTypeToTarget = this._geCanonicalTypeFor(this.paramType);
 
     return `${prefix}${this._getFunctionParticleFor(defTypeToTarget)}`;
@@ -18,10 +18,10 @@ export class ParamTypeToFunctionNameMapper {
    *   See {@link https://docs.soliditylang.org/en/v0.8.10/abi-spec.html#types} for a list of such mappings.
    */
   private _geCanonicalTypeFor(paramType: ParamType): string {
-    if ('int' === paramType.type) return 'int256';
-    if ('int[]' === paramType.type) return 'int256[]';
-    if ('uint' === paramType.type) return 'uint256';
-    if ('uint[]' === paramType.type) return 'uint256[]';
+    if ("int" === paramType.type) return "int256";
+    if ("int[]" === paramType.type) return "int256[]";
+    if ("uint" === paramType.type) return "uint256";
+    if ("uint[]" === paramType.type) return "uint256[]";
     return paramType.type;
   }
 
@@ -33,8 +33,8 @@ export class ParamTypeToFunctionNameMapper {
   private _getFunctionParticleFor(typeName: string): string {
     let functionParticle = upperCaseFirstOf(typeName);
 
-    if (functionParticle.endsWith('[]')) {
-      functionParticle = functionParticle.replace('[]', 'Array');
+    if (functionParticle.endsWith("[]")) {
+      functionParticle = functionParticle.replace("[]", "Array");
     }
     return functionParticle;
   }

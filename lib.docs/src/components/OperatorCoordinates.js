@@ -1,14 +1,14 @@
 /* eslint-env browser */
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
-import React from 'react';
+import BrowserOnly from "@docusaurus/BrowserOnly";
+import React from "react";
 
 let promisedS3OperatorInfo = null;
 
 async function getS3Operator() {
   if (!promisedS3OperatorInfo) {
     promisedS3OperatorInfo = fetch(
-      'https://eu2.contabostorage.com/963797152a304f4bb7f75cc0af884bd7:buidler-labs/projects/hedera-strato-js/docs-operator.json'
+      "https://eu2.contabostorage.com/963797152a304f4bb7f75cc0af884bd7:buidler-labs/projects/hedera-strato-js/docs-operator.json"
     )
       .then((docsOperatorResponse) =>
         docsOperatorResponse.body.getReader().read()
@@ -21,8 +21,8 @@ async function getS3Operator() {
 
 export const OperatorId = () => {
   const [operator, setOperator] = React.useState({
-    accountId: 'unknown',
-    network: 'unknown',
+    accountId: "unknown",
+    network: "unknown",
   });
 
   React.useEffect(() => {
@@ -32,10 +32,10 @@ export const OperatorId = () => {
   return (
     <BrowserOnly fallback={<code>unknown</code>}>
       {() =>
-        operator.network === 'testnet' ? (
+        operator.network === "testnet" ? (
           <a
             href={
-              'https://testnet.dragonglass.me/hedera/accounts/' +
+              "https://testnet.dragonglass.me/hedera/accounts/" +
               operator.accountId
             }
           >
@@ -51,8 +51,8 @@ export const OperatorId = () => {
 
 export const OperatorNetwork = () => {
   const [operator, setOperator] = React.useState({
-    accountId: 'unknown',
-    network: 'unknown',
+    accountId: "unknown",
+    network: "unknown",
   });
 
   React.useEffect(() => {

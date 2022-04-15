@@ -1,15 +1,15 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
-import { AccountId } from '@hashgraph/sdk';
+import { AccountId } from "@hashgraph/sdk";
 
-import { HederaNetwork } from '../../HederaNetwork';
-import { StratoContext } from '../../StratoContext';
-import { Subscription } from '../../core/Subscription';
-import { WalletController } from '../../core/wallet/WalletController';
+import { HederaNetwork } from "../../HederaNetwork";
+import { StratoContext } from "../../StratoContext";
+import { Subscription } from "../../core/Subscription";
+import { WalletController } from "../../core/wallet/WalletController";
 
 export abstract class BasicWalletController<T> implements WalletController<T> {
-  protected static NETWORK_CHANGE_REQUESTED = 'NETWORK_CHANGE_REQUESTED';
-  protected static ACCOUNT_CHANGE_REQUESTED = 'ACCOUNT_CHANGE_REQUESTED';
+  protected static NETWORK_CHANGE_REQUESTED = "NETWORK_CHANGE_REQUESTED";
+  protected static ACCOUNT_CHANGE_REQUESTED = "ACCOUNT_CHANGE_REQUESTED";
 
   private readonly pubSub: EventEmitter;
 

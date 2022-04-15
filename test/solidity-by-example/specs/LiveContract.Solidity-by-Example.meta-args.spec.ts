@@ -1,22 +1,22 @@
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, jest } from "@jest/globals";
 import {
   ContractCallQuery,
   ContractExecuteTransaction,
   Hbar,
   TransactionId,
-} from '@hashgraph/sdk';
+} from "@hashgraph/sdk";
 
-import { load as loadResource } from '../../utils';
-import Long from 'long';
+import { load as loadResource } from "../../utils";
+import Long from "long";
 
 function load(contractPath: string) {
-  return loadResource(contractPath, 'solidity-by-example');
+  return loadResource(contractPath, "solidity-by-example");
 }
 
-describe('LiveContract.Solidity-by-Example.meta-arguments', () => {
-  it('when calling a non state-changing contract method (aka `a query`), passing in meta-arguments should get propagated to the actual transaction', async () => {
-    const liveContract = await load('hello_world');
-    const sessionExecuteSpy = jest.spyOn(liveContract.session, 'execute');
+describe("LiveContract.Solidity-by-Example.meta-arguments", () => {
+  it("when calling a non state-changing contract method (aka `a query`), passing in meta-arguments should get propagated to the actual transaction", async () => {
+    const liveContract = await load("hello_world");
+    const sessionExecuteSpy = jest.spyOn(liveContract.session, "execute");
     const metaArgs = {
       gas: 50_969,
       maxQueryPayment: new Hbar(1),
@@ -27,7 +27,7 @@ describe('LiveContract.Solidity-by-Example.meta-arguments', () => {
     };
 
     // Do the actual live-contract query passing in the meta-arguments
-    await expect(liveContract.greet(metaArgs)).resolves.toEqual('Hello World!');
+    await expect(liveContract.greet(metaArgs)).resolves.toEqual("Hello World!");
 
     // Test to see that the meta-arguments got indeed unpacked into the end transaction
     expect(sessionExecuteSpy.mock.calls.length === 1).toBeTruthy();
@@ -46,16 +46,16 @@ describe('LiveContract.Solidity-by-Example.meta-arguments', () => {
     expect(queryTransaction._queryPayment).toEqual(metaArgs.queryPayment);
   });
 
-  it('when calling a state-changing contract method, passing in meta-arguments should get propagated to the actual transaction', async () => {
-    const liveContract = await load('payable');
-    const sessionExecuteSpy = jest.spyOn(liveContract.session, 'execute');
+  it("when calling a state-changing contract method, passing in meta-arguments should get propagated to the actual transaction", async () => {
+    const liveContract = await load("payable");
+    const sessionExecuteSpy = jest.spyOn(liveContract.session, "execute");
     const metaArgs = {
       amount: new Hbar(42),
       maxTransactionFee: new Hbar(2),
       transactionId: TransactionId.generate(
         liveContract.session.wallet.account.id
       ),
-      transactionMemo: 'Custom memo',
+      transactionMemo: "Custom memo",
       transactionValidDuration: 69,
     };
 
@@ -85,6 +85,6 @@ describe('LiveContract.Solidity-by-Example.meta-arguments', () => {
   });
 
   it.todo(
-    'test setting the nodeAccountIds meta-args on state-changing contract method calls'
+    "test setting the nodeAccountIds meta-args on state-changing contract method calls"
   );
 });

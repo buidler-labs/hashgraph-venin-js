@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { HederaNetwork } from '../HederaNetwork';
-import { StratoContext } from '../StratoContext';
-import { StratoWallet } from '../core/wallet/StratoWallet';
-import { WalletControllerEvents } from '../core/wallet/WalletController';
+import { HederaNetwork } from "../HederaNetwork";
+import { StratoContext } from "../StratoContext";
+import { StratoWallet } from "../core/wallet/StratoWallet";
+import { WalletControllerEvents } from "../core/wallet/WalletController";
 
 export abstract class WalletProvider<T extends StratoWallet = any, S = any> {
   protected network: HederaNetwork;
@@ -26,7 +26,7 @@ export abstract class WalletProvider<T extends StratoWallet = any, S = any> {
   protected sanityCheck() {
     if (!this.network) {
       throw new Error(
-        'Please first provide a HederaNetwork to the WalletProvider in order to build a new Wallet.'
+        "Please first provide a HederaNetwork to the WalletProvider in order to build a new Wallet."
       );
     }
   }

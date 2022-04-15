@@ -1,9 +1,9 @@
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, jest } from "@jest/globals";
 
-import { ApiSession } from '../../../lib/ApiSession';
+import { ApiSession } from "../../../lib/ApiSession";
 
-describe('ApiSession.Receipts', () => {
-  it('uploading a json should generate appropriate receipts', async () => {
+describe("ApiSession.Receipts", () => {
+  it("uploading a json should generate appropriate receipts", async () => {
     const { session } = await ApiSession.default();
 
     return new Promise<void>((accept) => {

@@ -29,7 +29,7 @@ If you need to pass in/tweak file-transaction options when storing the Json obje
 const { session } = await ApiSession.default();
 const liveJson = await session.upload(
   { theAnswer: 42 },
-  { _file: { memo: 'my json' } }
+  { _file: { memo: "my json" } }
 );
 
 //...
@@ -47,7 +47,7 @@ You'll need its `liveJson.id` for that which will need to be passed to `ApiSessi
 
 ```js live=true containerKey=retrieve_a_json
 const { session } = await ApiSession.default();
-const liveJson = await session.getLiveJson({ id: '0.0.30771386' });
+const liveJson = await session.getLiveJson({ id: "0.0.30771386" });
 
 console.log(`The answer is still: ${liveJson.theAnswer}`);
 ```

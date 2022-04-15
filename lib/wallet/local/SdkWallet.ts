@@ -1,11 +1,11 @@
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from "@hashgraph/sdk";
 
-import { BasicStratoWallet } from '../BasicStratoWallet';
-import { HederaNetwork } from '../../HederaNetwork';
-import { LegacyLocalWallet } from './LegacyLocalWallet';
-import { StratoContext } from '../../StratoContext';
-import { WalletControllerEvents } from '../../core/wallet/WalletController';
-import { WalletProvider } from '../WalletProvider';
+import { BasicStratoWallet } from "../BasicStratoWallet";
+import { HederaNetwork } from "../../HederaNetwork";
+import { LegacyLocalWallet } from "./LegacyLocalWallet";
+import { StratoContext } from "../../StratoContext";
+import { WalletControllerEvents } from "../../core/wallet/WalletController";
+import { WalletProvider } from "../WalletProvider";
 
 export type HederaClientColdStartData = {
   accountId: string;
@@ -45,10 +45,10 @@ export class HederaLocalWalletProvider extends WalletProvider<
     return new SdkWallet(
       this.controller,
       this.ctx.network,
-      typeof operatorId === 'string'
+      typeof operatorId === "string"
         ? AccountId.fromString(operatorId)
         : operatorId,
-      typeof operatorKey === 'string'
+      typeof operatorKey === "string"
         ? PrivateKey.fromString(operatorKey)
         : operatorKey
     );

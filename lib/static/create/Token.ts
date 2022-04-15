@@ -5,13 +5,13 @@ import {
   Timestamp,
   TokenCreateTransaction,
   TokenSupplyType,
-} from '@hashgraph/sdk';
-import Duration from '@hashgraph/sdk/lib/Duration';
+} from "@hashgraph/sdk";
+import Duration from "@hashgraph/sdk/lib/Duration";
 
-import { ApiSession, TypeOfExecutionReturn } from '../../ApiSession';
-import { ArgumentsForCreate } from '../../core/CreatableEntity';
-import { BasicCreatableEntity } from './BasicCreatableEntity';
-import { LiveToken } from '../../live/LiveToken';
+import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
+import { ArgumentsForCreate } from "../../core/CreatableEntity";
+import { BasicCreatableEntity } from "./BasicCreatableEntity";
+import { LiveToken } from "../../live/LiveToken";
 
 export type TokenFeatures = {
   name?: string;
@@ -52,7 +52,7 @@ export class TokenType {
   public constructor(gObj: any, readonly hTokenType: HederaTokenType) {
     if (gObj !== _GUARD_OBJ) {
       throw new Error(
-        'TokenType-s can only be created from within the static/Token module'
+        "TokenType-s can only be created from within the static/Token module"
       );
     }
   }
@@ -80,24 +80,24 @@ export class Token extends BasicCreatableEntity<LiveToken> {
   ) {
     const upgradeFeatures = {};
     tokenFeatures.keys?.admin &&
-      (upgradeFeatures['adminKey'] = tokenFeatures.keys?.admin);
+      (upgradeFeatures["adminKey"] = tokenFeatures.keys?.admin);
     tokenFeatures.keys?.feeSchedule &&
-      (upgradeFeatures['feeScheduleKey'] = tokenFeatures.keys?.feeSchedule);
+      (upgradeFeatures["feeScheduleKey"] = tokenFeatures.keys?.feeSchedule);
     tokenFeatures.keys?.freeze &&
-      (upgradeFeatures['freezeKey'] = tokenFeatures.keys?.freeze);
+      (upgradeFeatures["freezeKey"] = tokenFeatures.keys?.freeze);
     tokenFeatures.keys?.kyc &&
-      (upgradeFeatures['kycKey'] = tokenFeatures.keys?.kyc);
+      (upgradeFeatures["kycKey"] = tokenFeatures.keys?.kyc);
     tokenFeatures.keys?.pause &&
-      (upgradeFeatures['pauseKey'] = tokenFeatures.keys?.pause);
+      (upgradeFeatures["pauseKey"] = tokenFeatures.keys?.pause);
     tokenFeatures.keys?.supply &&
-      (upgradeFeatures['supplyKey'] = tokenFeatures.keys?.supply);
+      (upgradeFeatures["supplyKey"] = tokenFeatures.keys?.supply);
     tokenFeatures.keys?.wipe &&
-      (upgradeFeatures['wipeKey'] = tokenFeatures.keys?.wipe);
-    tokenFeatures.name && (upgradeFeatures['tokenName'] = tokenFeatures.name);
+      (upgradeFeatures["wipeKey"] = tokenFeatures.keys?.wipe);
+    tokenFeatures.name && (upgradeFeatures["tokenName"] = tokenFeatures.name);
     tokenFeatures.symbol &&
-      (upgradeFeatures['tokenSymbol'] = tokenFeatures.symbol);
+      (upgradeFeatures["tokenSymbol"] = tokenFeatures.symbol);
     tokenFeatures.treasuryAccountId &&
-      (upgradeFeatures['treasuryAccountId'] = tokenFeatures.treasuryAccountId);
+      (upgradeFeatures["treasuryAccountId"] = tokenFeatures.treasuryAccountId);
     return { ...upgradeFeatures, ...tokenFeatures };
   }
 
@@ -150,7 +150,7 @@ export class Token extends BasicCreatableEntity<LiveToken> {
   }
 
   public constructor(public readonly info: CreateTokenFeatures) {
-    super('Token');
+    super("Token");
   }
 
   public async createVia({ session }: ArgumentsForCreate): Promise<LiveToken> {

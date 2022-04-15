@@ -72,7 +72,7 @@ Here's how you would do it in Strato:
 ```js live=true containerKey=greet_from_path
 const { session } = await ApiSession.default();
 const helloWorldContract = await Contract.newFrom({
-  path: './hello_world.sol',
+  path: "./hello_world.sol",
 });
 const liveContract = await session.upload(helloWorldContract);
 
@@ -93,8 +93,8 @@ import {
   ContractCallQuery,
   Hbar,
   AccountId,
-} from '@hashgraph/sdk';
-import helloWorld from './hello_world.json';
+} from "@hashgraph/sdk";
+import helloWorld from "./hello_world.json";
 
 // highlight-start
 const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
@@ -117,7 +117,7 @@ const contractId = contractReceipt.contractId;
 const contractCallResult = await new ContractCallQuery()
   .setGas(75000)
   .setContractId(contractId)
-  .setFunction('greet')
+  .setFunction("greet")
   .setQueryPayment(new Hbar(1))
   .execute(client);
 const greet = contractCallResult.getString(0);

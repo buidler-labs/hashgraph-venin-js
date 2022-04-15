@@ -1,10 +1,10 @@
-import { Key, KeyList } from '@hashgraph/sdk';
+import { Key, KeyList } from "@hashgraph/sdk";
 
 import {
   ArgumentsOnFileUploaded,
   BasicUploadableEntity,
-} from './BasicUploadableEntity';
-import { LiveFile } from '../../live/LiveFile';
+} from "./BasicUploadableEntity";
+import { LiveFile } from "../../live/LiveFile";
 
 export type FileFeatures = {
   keys?: KeyList | Key[];
@@ -15,7 +15,7 @@ export type FileFeatures = {
 
 export class File extends BasicUploadableEntity<LiveFile> {
   public constructor(private readonly info: string | Uint8Array) {
-    super('File');
+    super("File");
   }
 
   protected override async getContent() {

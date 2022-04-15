@@ -1,10 +1,10 @@
-import { AccountId, Key, TopicCreateTransaction } from '@hashgraph/sdk';
-import Duration from '@hashgraph/sdk/lib/Duration';
+import { AccountId, Key, TopicCreateTransaction } from "@hashgraph/sdk";
+import Duration from "@hashgraph/sdk/lib/Duration";
 
-import { ArgumentsForCreate } from '../../core/CreatableEntity';
-import { BasicCreatableEntity } from './BasicCreatableEntity';
-import { LiveTopic } from '../../live/LiveTopic';
-import { TypeOfExecutionReturn } from '../../ApiSession';
+import { ArgumentsForCreate } from "../../core/CreatableEntity";
+import { BasicCreatableEntity } from "./BasicCreatableEntity";
+import { LiveTopic } from "../../live/LiveTopic";
+import { TypeOfExecutionReturn } from "../../ApiSession";
 
 export type TopicFeatures = {
   autoRenewAccountId?: string | AccountId;
@@ -32,7 +32,7 @@ export class Topic extends BasicCreatableEntity<LiveTopic> {
   }
 
   public constructor(private readonly topicFeatures: TopicFeatures = {}) {
-    super('Topic');
+    super("Topic");
   }
 
   public async createVia({ session }: ArgumentsForCreate): Promise<LiveTopic> {

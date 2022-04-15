@@ -1,15 +1,15 @@
-import * as sdkPath from 'path';
-import fs from 'fs';
+import * as sdkPath from "path";
+import fs from "fs";
 
-import { Contract } from './static/upload/Contract';
-import { Interface } from '@ethersproject/abi';
+import { Contract } from "./static/upload/Contract";
+import { Interface } from "@ethersproject/abi";
 
 export class ContractRegistry {
   readonly [k: string]: Promise<Interface> | any;
 
   public constructor(path: string, recurse: boolean) {
     getSolFiles(path, recurse)
-      .map((solFileLocation) => solFileLocation.replace(`${path}/`, ''))
+      .map((solFileLocation) => solFileLocation.replace(`${path}/`, ""))
       .forEach((baseStrippedSolFileLocation) => {
         Object.defineProperty(this, baseStrippedSolFileLocation, {
           enumerable: true,
@@ -23,12 +23,12 @@ export class ContractRegistry {
             .catch((err) => {
               if (
                 err.message.indexOf(
-                  'Library linking is not currently supported'
+                  "Library linking is not currently supported"
                 ) !== -1
               ) {
                 // No-op
                 console.error(
-                  'ContractRegistry could not load a Contract due to library linking not currently being supported. This will be supported once https://github.com/buidler-labs/hedera-strato-js/issues/38 is resolved.'
+                  "ContractRegistry could not load a Contract due to library linking not currently being supported. This will be supported once https://github.com/buidler-labs/hedera-strato-js/issues/38 is resolved."
                 );
               } else {
                 // no mercy
@@ -52,7 +52,7 @@ function getSolFiles(path: string, recurse: boolean): string[] {
   const solFilesInPath = filesInPath
     .filter(
       (potentialSolFile) =>
-        potentialSolFile.isFile() && potentialSolFile.name.endsWith('.sol')
+        potentialSolFile.isFile() && potentialSolFile.name.endsWith(".sol")
     )
     .map(basePathAppender)
     .map((solSuffixedPath) =>
@@ -75,6 +75,6 @@ function getSolFiles(path: string, recurse: boolean): string[] {
 }
 
 export default new ContractRegistry(
-  process.env.HEDERAS_CONTRACTS_RELATIVE_PATH || 'contracts',
-  process.env.HEDERAS_CONTRACT_REGISTRY_RECURSE === 'true'
+  process.env.HEDERAS_CONTRACTS_RELATIVE_PATH || "contracts",
+  process.env.HEDERAS_CONTRACT_REGISTRY_RECURSE === "true"
 );

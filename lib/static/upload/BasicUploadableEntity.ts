@@ -1,15 +1,15 @@
-import { ApiSession, TypeOfExecutionReturn } from '../../ApiSession';
+import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
 import {
   ArgumentsForUpload,
   UploadableEntity,
-} from '../../core/UploadableEntity';
+} from "../../core/UploadableEntity";
 import {
   FileAppendTransaction,
   FileCreateTransaction,
   Status,
   TransactionReceipt,
-} from '@hashgraph/sdk';
-import { LiveEntity } from '../../live/LiveEntity';
+} from "@hashgraph/sdk";
+import { LiveEntity } from "../../live/LiveEntity";
 
 export type ArgumentsOnFileUploaded = {
   session: ApiSession;
@@ -109,7 +109,7 @@ export abstract class BasicUploadableEntity<
     if (
       args.length > 0 &&
       Object.keys(args[0]).length !== 0 &&
-      Object.keys(args[0])[0] === '_file'
+      Object.keys(args[0])[0] === "_file"
     ) {
       fileCreationOverrides = args[0]._file;
     }

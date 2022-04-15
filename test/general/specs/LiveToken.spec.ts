@@ -1,13 +1,13 @@
-import { PublicKey, Status } from '@hashgraph/sdk';
-import { beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
+import { PublicKey, Status } from "@hashgraph/sdk";
+import { beforeAll, beforeEach, describe, expect, it } from "@jest/globals";
 
-import { getTokenToTest, read } from '../../utils';
-import { Account } from '../../../lib/static/create/Account';
-import { ApiSession } from '../../../lib/ApiSession';
-import { Contract } from '../../../lib/static/upload/Contract';
-import { LiveToken } from '../../../lib/live/LiveToken';
+import { getTokenToTest, read } from "../../utils";
+import { Account } from "../../../lib/static/create/Account";
+import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
+import { LiveToken } from "../../../lib/live/LiveToken";
 
-describe('LiveToken', () => {
+describe("LiveToken", () => {
   let session: ApiSession;
   let liveToken: LiveToken;
 
@@ -19,13 +19,13 @@ describe('LiveToken', () => {
     liveToken = await session.create(getTokenToTest());
   });
 
-  it('given a token, solidity address is returned as expected', async () => {
+  it("given a token, solidity address is returned as expected", async () => {
     expect(liveToken.getSolidityAddress()).toEqual(
       liveToken.id.toSolidityAddress()
     );
   });
 
-  it('getting info of newly created token, info is correct', async () => {
+  it("getting info of newly created token, info is correct", async () => {
     const info = await liveToken.getLiveEntityInfo();
     const accPubKey = session.wallet.account.publicKey.toString();
     const testedTokenInfo = getTokenToTest().info;
@@ -45,7 +45,7 @@ describe('LiveToken', () => {
     expect(info.decimals).toEqual(testedTokenInfo.decimals);
   });
 
-  it('given a token, assigning the supply control to a new account should work as expected', async () => {
+  it("given a token, assigning the supply control to a new account should work as expected", async () => {
     const account = await session.create(new Account());
 
     await liveToken.assignSupplyControlTo(account.privateKey.publicKey);
@@ -56,10 +56,10 @@ describe('LiveToken', () => {
     );
   });
 
-  it('given a token, assigning the supply control to a new contract should work as expected', async () => {
+  it("given a token, assigning the supply control to a new contract should work as expected", async () => {
     const { session } = await ApiSession.default();
     const bytesContract = await Contract.newFrom({
-      code: read({ contract: 'bytes' }),
+      code: read({ contract: "bytes" }),
     });
     const liveContract = await session.upload(bytesContract);
 
@@ -69,15 +69,15 @@ describe('LiveToken', () => {
     expect(liveContract.id.toString()).toEqual(info.supplyKey.toString());
   });
 
-  it('given a token, deleting it should return status success', async () => {
+  it("given a token, deleting it should return status success", async () => {
     const status = await liveToken.deleteEntity();
 
     expect(status).toEqual(Status.Success);
   });
 
-  it('given a token, updating it should return status success', async () => {
+  it("given a token, updating it should return status success", async () => {
     const liveAccount = await session.create(new Account());
-    const newName = 'newName';
+    const newName = "newName";
     const status = await liveToken.updateEntity({
       keys: {
         freeze: liveAccount.privateKey.publicKey,

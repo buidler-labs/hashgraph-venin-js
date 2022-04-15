@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as React from 'react';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import styles from './styles.module.css';
-import ReactLive from '../ReactLive/ReactLive';
+import * as React from "react";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import styles from "./styles.module.css";
+import ReactLive from "../ReactLive/ReactLive";
 
 export default function Playground({ children, ...props }) {
   const {
@@ -20,8 +20,8 @@ export default function Playground({ children, ...props }) {
   } = useDocusaurusContext();
 
   //convert .md metastring to props
-  const metaProps = props.metastring.split(' ').reduce((acc, curr) => {
-    const [key, value] = curr.split('=');
+  const metaProps = props.metastring.split(" ").reduce((acc, curr) => {
+    const [key, value] = curr.split("=");
     acc[key] = value;
 
     return acc;

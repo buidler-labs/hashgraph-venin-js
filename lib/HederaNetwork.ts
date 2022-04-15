@@ -1,8 +1,8 @@
-import { AccountId, Client } from '@hashgraph/sdk';
-import { NetworkName } from '@hashgraph/sdk/lib/client/Client';
+import { AccountId, Client } from "@hashgraph/sdk";
+import { NetworkName } from "@hashgraph/sdk/lib/client/Client";
 
-import { EnvironmentInvalidError } from './errors/EnvironmentInvalidError';
-import { NetworkRuntimeParameters } from './StratoContext';
+import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
+import { NetworkRuntimeParameters } from "./StratoContext";
 
 export type HederaNodesAddressBook = { [key: string]: string | AccountId };
 
@@ -27,13 +27,13 @@ export type HederaNodesAddressBook = { [key: string]: string | AccountId };
  * Please see our [dockerized-hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) for more info as to how to run a local, [dockerized](https://hub.docker.com/r/buidlerlabs/hedera-services),
  * [hedera-services](https://github.com/hashgraph/hedera-services) network.
  */
-export const HEDERA_CUSTOM_NET_NAME = 'customnet';
+export const HEDERA_CUSTOM_NET_NAME = "customnet";
 
 export const AVAILABLE_NETWORK_NAMES = {
   CustomNet: HEDERA_CUSTOM_NET_NAME,
-  MainNet: 'mainnet',
-  PreviewNet: 'previewnet',
-  TestNet: 'testnet',
+  MainNet: "mainnet",
+  PreviewNet: "previewnet",
+  TestNet: "testnet",
 };
 
 export type NetworkDefaults = {
@@ -58,7 +58,7 @@ export class HederaNetwork {
     public readonly name: string,
     public readonly nodesInfo: HederaNodesAddressBook | string
   ) {
-    if (typeof nodesInfo === 'string') {
+    if (typeof nodesInfo === "string") {
       this.nodes = this.parseNetworkAddressBookFrom(nodesInfo);
     } else {
       this.nodes = nodesInfo;
@@ -71,7 +71,7 @@ export class HederaNetwork {
         `There is no such '${
           this.name
         }' network available. In order to continue, please choose a valid name from: ${acceptedNetworkNames.join(
-          ', '
+          ", "
         )}`
       );
     }
@@ -91,7 +91,7 @@ export class HederaNetwork {
           `There is no such ${
             this.name
           } network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(
-            ', '
+            ", "
           )}`
         );
       }
@@ -123,13 +123,13 @@ export class HederaNetwork {
     if (val) {
       const nodeEntries = val.split(/\s*,\s*/);
       const nodeDefinitions = nodeEntries.map((entry) => {
-        if (entry.indexOf('#') === -1) {
+        if (entry.indexOf("#") === -1) {
           throw new EnvironmentInvalidError(
             `Node definition entry '${entry}' is missing the account-id separator (#)`
           );
         }
 
-        const [address, rawAccountNr] = entry.split('#');
+        const [address, rawAccountNr] = entry.split("#");
         const accountNr = parseInt(rawAccountNr);
 
         return { [address]: new AccountId(accountNr) };

@@ -1,10 +1,10 @@
-const sharedPresets = ['@babel/preset-typescript'];
+const sharedPresets = ["@babel/preset-typescript"];
 const shared = {
-  ignore: ['test/**/*.spec.ts'],
+  ignore: ["test/**/*.spec.ts"],
   presets: sharedPresets,
   plugins: [
     [
-      '@babel/plugin-transform-runtime',
+      "@babel/plugin-transform-runtime",
       {
         absoluteRuntime: false,
         corejs: false,
@@ -20,10 +20,10 @@ module.exports = {
     esm: shared,
     cjs: {
       ...shared,
-      presets: [['@babel/env', { modules: 'commonjs' }], ...sharedPresets],
+      presets: [["@babel/env", { modules: "commonjs" }], ...sharedPresets],
     },
     test: {
-      presets: [['@babel/env'], ...sharedPresets],
+      presets: [["@babel/env"], ...sharedPresets],
     },
   },
 };

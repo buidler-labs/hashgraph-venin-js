@@ -1,22 +1,22 @@
 /* eslint-env node */
 
-import { join as pathJoin } from 'path';
+import { join as pathJoin } from "path";
 
-import babel from '@rollup/plugin-babel';
-import commonjs from '@rollup/plugin-commonjs';
-import json from '@rollup/plugin-json';
-import nodePolyfills from 'rollup-plugin-node-polyfills';
-import resolve from '@rollup/plugin-node-resolve';
-import strato from '@buidlerlabs/hedera-strato-js/rollup-plugin';
-import { terser } from 'rollup-plugin-terser';
+import babel from "@rollup/plugin-babel";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
+import nodePolyfills from "rollup-plugin-node-polyfills";
+import resolve from "@rollup/plugin-node-resolve";
+import strato from "@buidlerlabs/hedera-strato-js/rollup-plugin";
+import { terser } from "rollup-plugin-terser";
 
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 // Make sure we use the contracts defined for this bundle
-process.env.HEDERAS_CONTRACTS_RELATIVE_PATH = './test/rollup/contracts';
+process.env.HEDERAS_CONTRACTS_RELATIVE_PATH = "./test/rollup/contracts";
 
-const extensions = ['.js', '.ts'];
+const extensions = [".js", ".ts"];
 
 function getPathOf(file) {
   return pathJoin(__dirname, file);
@@ -24,12 +24,12 @@ function getPathOf(file) {
 
 export default async function getConfig() {
   return {
-    context: 'window',
-    input: './lib/index.ts',
+    context: "window",
+    input: "./lib/index.ts",
     output: [
       {
-        file: getPathOf('./lib.esm/hedera-strato.js'),
-        format: 'esm',
+        file: getPathOf("./lib.esm/hedera-strato.js"),
+        format: "esm",
         plugins: [terser()],
         sourcemap: true,
       },
@@ -37,32 +37,32 @@ export default async function getConfig() {
     plugins: [
       strato({
         contracts: {
-          path: pathJoin(__dirname, 'contracts'),
+          path: pathJoin(__dirname, "contracts"),
         },
         includeCompiler: true,
         sourceMap: true,
       }),
       resolve({
         extensions,
-        mainFields: ['browser', 'module', 'main'],
+        mainFields: ["browser", "module", "main"],
         preferBuiltins: false,
       }),
       commonjs({
         esmExternals: true,
-        requireReturnsDefault: 'preferred',
+        requireReturnsDefault: "preferred",
       }),
       nodePolyfills({
         sourceMap: true,
       }),
       babel({
-        babelHelpers: 'runtime',
-        exclude: './node_modules/**',
+        babelHelpers: "runtime",
+        exclude: "./node_modules/**",
         extensions,
-        include: ['lib/**/*.ts'],
-        plugins: [['@babel/plugin-transform-runtime', { regenerator: true }]],
+        include: ["lib/**/*.ts"],
+        plugins: [["@babel/plugin-transform-runtime", { regenerator: true }]],
         presets: [
-          ['@babel/env', { targets: '> 0.25%, not dead' }],
-          ['@babel/typescript'],
+          ["@babel/env", { targets: "> 0.25%, not dead" }],
+          ["@babel/typescript"],
         ],
       }),
       json(),

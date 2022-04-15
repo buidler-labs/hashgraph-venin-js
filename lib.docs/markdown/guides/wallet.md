@@ -16,7 +16,7 @@ Want to give it a spin? Make sure you have [HashPack installed](https://www.hash
 Then get a hold of [a Session that targets a `Browser` wallet](../configuration.md#HEDERAS_WALLET_TYPE) and use it normally:
 
 ```js live
-const { session } = await ApiSession.default({ wallet: { type: 'Browser' } });
+const { session } = await ApiSession.default({ wallet: { type: "Browser" } });
 const liveJson = await session.upload(new Json({ theAnswer: 42 }));
 
 console.log(`Wallet account id used: ${session.wallet.account.id}`);

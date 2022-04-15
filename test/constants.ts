@@ -1,4 +1,4 @@
-import { Hbar } from '@hashgraph/sdk';
+import { Hbar } from "@hashgraph/sdk";
 
 export const GasFees = {
   // Taken from 'Precompile Gas Costs' @ https://hips.hedera.com/hip/hip-206

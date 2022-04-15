@@ -1,5 +1,5 @@
-import { ApiSession } from '../ApiSession';
-import { LiveEntity } from '../live/LiveEntity';
+import { ApiSession } from "../ApiSession";
+import { LiveEntity } from "../live/LiveEntity";
 
 export type ArgumentsForCreate = {
   session: ApiSession;

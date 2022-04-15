@@ -1,8 +1,8 @@
-import * as React from 'react';
-import BrowserOnly from '@docusaurus/core/lib/client/exports/BrowserOnly';
-import { LiveContext } from 'react-live';
-import { renderToString } from 'react-dom/server';
-import styles from '../../Playground/styles.module.css';
+import * as React from "react";
+import BrowserOnly from "@docusaurus/core/lib/client/exports/BrowserOnly";
+import { LiveContext } from "react-live";
+import { renderToString } from "react-dom/server";
+import styles from "../../Playground/styles.module.css";
 
 function LivePreviewLoader() {
   return <div>Loading...</div>;
@@ -59,7 +59,7 @@ const ErrorResult = ({ error, errorCallback }) => {
     }
   }, [context]);
 
-  return error ? <pre style={{ color: 'red' }}>{error}</pre> : null;
+  return error ? <pre style={{ color: "red" }}>{error}</pre> : null;
 };
 
 export default LiveResultContainer;

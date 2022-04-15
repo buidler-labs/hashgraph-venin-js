@@ -6,7 +6,7 @@ export function isSolidityAddressable(arg: any): arg is SolidityAddressable {
   return (
     arg &&
     arg.getSolidityAddress &&
-    typeof arg.getSolidityAddress === 'function'
+    typeof arg.getSolidityAddress === "function"
   );
 }
 

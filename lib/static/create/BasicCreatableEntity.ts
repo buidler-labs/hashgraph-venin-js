@@ -1,8 +1,8 @@
 import {
   ArgumentsForCreate,
   CreatableEntity,
-} from '../../core/CreatableEntity';
-import { LiveEntity } from '../../live/LiveEntity';
+} from "../../core/CreatableEntity";
+import { LiveEntity } from "../../live/LiveEntity";
 
 export abstract class BasicCreatableEntity<
   T extends LiveEntity<R, I, P>,

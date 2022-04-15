@@ -3,9 +3,9 @@ import {
   AccountInfo,
   LedgerId,
   TransactionRecord,
-} from '@hashgraph/sdk';
+} from "@hashgraph/sdk";
 
-import { HederaNodesAddressBook } from '../../HederaNetwork';
+import { HederaNodesAddressBook } from "../../HederaNetwork";
 
 /**
  * A set of sub-definitions for HIP-338's Signer interface

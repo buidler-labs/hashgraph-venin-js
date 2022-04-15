@@ -1,6 +1,6 @@
-import { AccountId, Transaction } from '@hashgraph/sdk';
+import { AccountId, Transaction } from "@hashgraph/sdk";
 
-import { HashConnectSender } from './sender';
+import { HashConnectSender } from "./sender";
 
 export class HashPackSigner {
   public constructor(
@@ -25,7 +25,7 @@ export class HashPackSigner {
       const signedTransactions = hSignedTransaction._signedTransactions;
 
       if (signedTransactions.isEmpty) {
-        throw new Error('No transaction has been signed.');
+        throw new Error("No transaction has been signed.");
       }
 
       const fTransactionSignaturePairs =

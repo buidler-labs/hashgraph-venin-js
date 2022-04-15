@@ -1,8 +1,8 @@
 /* eslint-env browser */
 
-import EventEmitter from 'events';
+import EventEmitter from "events";
 
-import { LoggerRuntimeParameters } from '../../StratoContext';
+import { LoggerRuntimeParameters } from "../../StratoContext";
 
 const LEVELS = {
   error: 0,
@@ -33,30 +33,30 @@ export class StratoLogger extends EventEmitter {
 
   debug(message, ...meta) {
     if (this._isLevelEnabled(LEVELS.debug))
-      this.emit('debug', message, ...meta);
+      this.emit("debug", message, ...meta);
     return this;
   }
   error(message, ...meta) {
     if (this._isLevelEnabled(LEVELS.error))
-      this.emit('error', message, ...meta);
+      this.emit("error", message, ...meta);
     return this;
   }
   info(message, ...meta) {
-    if (this._isLevelEnabled(LEVELS.info)) this.emit('info', message, ...meta);
+    if (this._isLevelEnabled(LEVELS.info)) this.emit("info", message, ...meta);
     return this;
   }
   silly(message, ...meta) {
     if (this._isLevelEnabled(LEVELS.silly))
-      this.emit('debug', message, ...meta);
+      this.emit("debug", message, ...meta);
     return this;
   }
   verbose(message, ...meta) {
     if (this._isLevelEnabled(LEVELS.verbose))
-      this.emit('debug', message, ...meta);
+      this.emit("debug", message, ...meta);
     return this;
   }
   warn(message, ...meta) {
-    if (this._isLevelEnabled(LEVELS.warn)) this.emit('warn', message, ...meta);
+    if (this._isLevelEnabled(LEVELS.warn)) this.emit("warn", message, ...meta);
     return this;
   }
 

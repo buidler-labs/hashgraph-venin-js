@@ -1,5 +1,5 @@
-import { HashConnect, MessageTypes } from 'hashconnect';
-import { AccountId } from '@hashgraph/sdk';
+import { HashConnect, MessageTypes } from "hashconnect";
+import { AccountId } from "@hashgraph/sdk";
 
 export class HashConnectSender {
   public constructor(

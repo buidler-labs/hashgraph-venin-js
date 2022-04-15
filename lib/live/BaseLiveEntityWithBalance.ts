@@ -7,10 +7,10 @@ import {
   TokenId,
   Transaction,
   TransferTransaction,
-} from '@hashgraph/sdk';
+} from "@hashgraph/sdk";
 
-import { LiveEntity } from './LiveEntity';
-import { TypeOfExecutionReturn } from '../ApiSession';
+import { LiveEntity } from "./LiveEntity";
+import { TypeOfExecutionReturn } from "../ApiSession";
 
 export abstract class BaseLiveEntityWithBalance<T, I, P> extends LiveEntity<
   T,
@@ -58,8 +58,8 @@ export abstract class BaseLiveEntityWithBalance<T, I, P> extends LiveEntity<
 
     if (
       !args ||
-      !args.has('transferAccountId') ||
-      !args.has('transferContractId')
+      !args.has("transferAccountId") ||
+      !args.has("transferContractId")
     ) {
       argsToReturn = {
         ...args,

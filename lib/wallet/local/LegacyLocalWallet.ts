@@ -19,10 +19,10 @@ import {
   TransactionReceiptQuery,
   TransactionRecord,
   Wallet,
-} from '@hashgraph/sdk';
-import Executable from '@hashgraph/sdk/lib/Executable';
+} from "@hashgraph/sdk";
+import Executable from "@hashgraph/sdk/lib/Executable";
 
-import { HederaNetwork } from '../../HederaNetwork';
+import { HederaNetwork } from "../../HederaNetwork";
 
 export class LegacyLocalWallet extends Wallet {
   private readonly client: Client;
@@ -133,7 +133,7 @@ export class LegacyLocalWallet extends Wallet {
       )
     ) {
       throw new Error(
-        'Transaction already set node account IDs to values not within the current network'
+        "Transaction already set node account IDs to values not within the current network"
       );
     }
 

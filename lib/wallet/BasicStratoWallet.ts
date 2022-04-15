@@ -5,11 +5,11 @@ import {
   TransactionReceipt,
   TransactionResponse,
   Wallet,
-} from '@hashgraph/sdk';
-import Executable from '@hashgraph/sdk/lib/Executable';
-import { PublicAccountInfo } from '../ApiSession';
-import { SignerInfo } from '../core/wallet/SignerInfo';
-import { StratoWallet } from '../core/wallet/StratoWallet';
+} from "@hashgraph/sdk";
+import Executable from "@hashgraph/sdk/lib/Executable";
+import { PublicAccountInfo } from "../ApiSession";
+import { SignerInfo } from "../core/wallet/SignerInfo";
+import { StratoWallet } from "../core/wallet/StratoWallet";
 
 export class BasicStratoWallet implements StratoWallet {
   public signer: SignerInfo;

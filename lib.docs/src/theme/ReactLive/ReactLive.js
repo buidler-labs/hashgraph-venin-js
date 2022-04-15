@@ -1,11 +1,11 @@
-import * as React from 'react';
-import LiveContainer from './Components/LiveContainer';
-import LiveEventEmitter from '../ReactLive/LiveEventEmitter';
-import { LiveProvider } from 'react-live';
-import LoadingSpinner from './Components/LoadingSpinner';
-import clsx from 'clsx';
-import styles from '../Playground/styles.module.css';
-import { usePrismTheme } from '@docusaurus/theme-common';
+import * as React from "react";
+import LiveContainer from "./Components/LiveContainer";
+import LiveEventEmitter from "../ReactLive/LiveEventEmitter";
+import { LiveProvider } from "react-live";
+import LoadingSpinner from "./Components/LoadingSpinner";
+import clsx from "clsx";
+import styles from "../Playground/styles.module.css";
+import { usePrismTheme } from "@docusaurus/theme-common";
 
 const wrapAsync = (code, containerKey) => {
   return `  
@@ -205,11 +205,11 @@ const ReactLive = ({ children: code, playgroundPosition, ...props }) => {
     };
 
     const bindEventListeners = async () => {
-      waitFor('ApiSession', () => {
+      waitFor("ApiSession", () => {
         if (isMounted.current) {
           liveEventEmitter.on(`running`, onRunHandler);
           liveEventEmitter.on(`done`, onDoneHandler);
-          liveEventEmitter.on('executionError', executionErrorHandler);
+          liveEventEmitter.on("executionError", executionErrorHandler);
 
           setDisabled(false);
         }
@@ -217,9 +217,9 @@ const ReactLive = ({ children: code, playgroundPosition, ...props }) => {
     };
 
     const unbindEventListeners = () => {
-      liveEventEmitter.removeListener('running', onRunHandler);
-      liveEventEmitter.removeListener('done', onDoneHandler);
-      liveEventEmitter.removeListener('executionError', executionErrorHandler);
+      liveEventEmitter.removeListener("running", onRunHandler);
+      liveEventEmitter.removeListener("done", onDoneHandler);
+      liveEventEmitter.removeListener("executionError", executionErrorHandler);
     };
 
     bindEventListeners();
@@ -233,20 +233,20 @@ const ReactLive = ({ children: code, playgroundPosition, ...props }) => {
   return (
     <React.Fragment>
       <LiveProvider
-        code={updatedCode.replace(/\n$/, '')}
+        code={updatedCode.replace(/\n$/, "")}
         scope={scope}
         transformCode={(_code) =>
-          running ? wrapAsync(_code, props.containerKey) : 'render(null)'
+          running ? wrapAsync(_code, props.containerKey) : "render(null)"
         }
         theme={prismTheme}
         noInline={true}
         disabled={disabled}
       >
         <LiveContainer
-          hasTopPosition={playgroundPosition === 'top'}
+          hasTopPosition={playgroundPosition === "top"}
           isRunning={running}
           onRunAction={() =>
-            liveEventEmitter.emit('running', props.containerKey)
+            liveEventEmitter.emit("running", props.containerKey)
           }
           onChange={setUpdatedCode}
           disabled={disabled}

@@ -1,14 +1,14 @@
-import { AccountId, ContractId } from '@hashgraph/sdk';
-import { Interface } from '@ethersproject/abi';
+import { AccountId, ContractId } from "@hashgraph/sdk";
+import { Interface } from "@ethersproject/abi";
 
 import {
   SolidityAddressable,
   extractSolidityAddressFrom,
-} from '../core/SolidityAddressable';
-import { ApiSession } from '../ApiSession';
-import { LiveAccount } from '../live/LiveAccount';
-import { LiveContract } from '../live/LiveContract';
-import { LiveEntity } from '../live/LiveEntity';
+} from "../core/SolidityAddressable";
+import { ApiSession } from "../ApiSession";
+import { LiveAccount } from "../live/LiveAccount";
+import { LiveContract } from "../live/LiveContract";
+import { LiveEntity } from "../live/LiveEntity";
 
 export class StratoAddress implements SolidityAddressable {
   public readonly id: string;
@@ -49,7 +49,7 @@ export class StratoAddress implements SolidityAddressable {
     if (what instanceof LiveEntity) {
       return what.id.toString() === this.id.toString();
     }
-    return typeof what === 'string'
+    return typeof what === "string"
       ? extractSolidityAddressFrom(what).toLocaleLowerCase() === this.id
       : what instanceof AccountId
       ? what.toSolidityAddress() === this.id

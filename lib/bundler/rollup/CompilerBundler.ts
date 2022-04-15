@@ -1,8 +1,8 @@
-import { RollupBuild, rollup } from 'rollup';
-import commonjs from '@rollup/plugin-commonjs';
-import nodePolyfills from 'rollup-plugin-node-polyfills';
-import resolve from '@rollup/plugin-node-resolve';
-import webWorkerLoader from 'rollup-plugin-web-worker-loader';
+import { RollupBuild, rollup } from "rollup";
+import commonjs from "@rollup/plugin-commonjs";
+import nodePolyfills from "rollup-plugin-node-polyfills";
+import resolve from "@rollup/plugin-node-resolve";
+import webWorkerLoader from "rollup-plugin-web-worker-loader";
 
 export async function getSolidityCompilerCode(
   entryModule: string,
@@ -13,18 +13,18 @@ export async function getSolidityCompilerCode(
 
   try {
     bundle = await rollup({
-      external: ['ContractsInFileStorage'],
+      external: ["ContractsInFileStorage"],
       input: entryModule,
       plugins: [
         webWorkerLoader({ sourcemap }),
         resolve({
-          extensions: ['.js'],
-          mainFields: ['browser', 'module', 'main'],
+          extensions: [".js"],
+          mainFields: ["browser", "module", "main"],
           preferBuiltins: false,
         }),
         commonjs({
           esmExternals: true,
-          requireReturnsDefault: 'preferred',
+          requireReturnsDefault: "preferred",
         }),
         nodePolyfills({
           sourceMap: sourcemap,
@@ -32,7 +32,7 @@ export async function getSolidityCompilerCode(
       ],
     });
     const { output } = await bundle.generate({
-      format: 'esm',
+      format: "esm",
       sourcemap,
     });
 

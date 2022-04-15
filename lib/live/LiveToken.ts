@@ -6,11 +6,11 @@ import {
   TokenInfoQuery,
   TokenUpdateTransaction,
   Transaction,
-} from '@hashgraph/sdk';
+} from "@hashgraph/sdk";
 
-import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
-import { Token, TokenFeatures } from '../static/create/Token';
-import { LiveEntity } from './LiveEntity';
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { Token, TokenFeatures } from "../static/create/Token";
+import { LiveEntity } from "./LiveEntity";
 
 type LiveTokenConstructorArgs = {
   session: ApiSession;

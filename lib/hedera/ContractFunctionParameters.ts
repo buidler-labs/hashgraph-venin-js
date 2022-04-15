@@ -1,14 +1,14 @@
-import { ConstructorFragment, FunctionFragment } from '@ethersproject/abi';
+import { ConstructorFragment, FunctionFragment } from "@ethersproject/abi";
 import {
   Hbar,
   ContractFunctionParameters as HederaContractFunctionParameters,
-} from '@hashgraph/sdk';
-import BigNumber from 'bignumber.js';
-import { arrayify } from '@ethersproject/bytes';
+} from "@hashgraph/sdk";
+import BigNumber from "bignumber.js";
+import { arrayify } from "@ethersproject/bytes";
 
-import { ParamTypeToFunctionNameMapper } from '../ParamTypeToFunctionNameMapper';
-import { isSolidityAddressable } from '../core/SolidityAddressable';
-import { transform } from '../core/UsefulOps';
+import { ParamTypeToFunctionNameMapper } from "../ParamTypeToFunctionNameMapper";
+import { isSolidityAddressable } from "../core/SolidityAddressable";
+import { transform } from "../core/UsefulOps";
 
 export class ContractFunctionParameters extends HederaContractFunctionParameters {
   /**
@@ -24,7 +24,7 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
   ) {
     if (!Array.isArray(args)) {
       throw new ContractFunctionParametersParser(
-        'I need an array of args in order to construct the ContractFunctionParameters instance for.'
+        "I need an array of args in order to construct the ContractFunctionParameters instance for."
       );
     } else if (fDescription.inputs.length !== args.length) {
       throw new ContractFunctionParametersParser(
@@ -38,12 +38,12 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
       const fInputDescription = fDescription.inputs[id];
       const fctCallName = new ParamTypeToFunctionNameMapper(
         fInputDescription
-      ).map({ prefix: 'add' });
+      ).map({ prefix: "add" });
       const shouldUseBigNumbers =
-        fctCallName.indexOf('64') !== -1 || fctCallName.indexOf('256') !== -1;
+        fctCallName.indexOf("64") !== -1 || fctCallName.indexOf("256") !== -1;
       let argToAdd = args[id];
 
-      if (fInputDescription.type.startsWith('address')) {
+      if (fInputDescription.type.startsWith("address")) {
         const considerMappingSolidityAddressableToAddress = (
           arg: any
         ): string =>
@@ -53,7 +53,7 @@ export class ContractFunctionParameters extends HederaContractFunctionParameters
           considerMappingSolidityAddressableToAddress
         );
       } else if (
-        fInputDescription.type.startsWith('bytes') &&
+        fInputDescription.type.startsWith("bytes") &&
         !(argToAdd instanceof Uint8Array)
       ) {
         argToAdd = transform(argToAdd, arrayify);

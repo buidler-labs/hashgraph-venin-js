@@ -1,6 +1,6 @@
 /* eslint-env browser */
 
-import { default as merge } from 'lodash-es/merge';
+import { default as merge } from "lodash-es/merge";
 
 import {
   Account,
@@ -12,20 +12,20 @@ import {
   Token,
   TokenTypes,
   Topic,
-} from '@buidlerlabs/hedera-strato-js';
+} from "@buidlerlabs/hedera-strato-js";
 
-import { HashPackWallet } from 'hashconnect-hip-338';
+import { HashPackWallet } from "hashconnect-hip-338";
 
 const hpAppMetaData = {
-  description: 'Hedera Strato Documentation',
-  icon: 'https://www.hashpack.app/img/logo.svg',
-  name: 'hStrato',
+  description: "Hedera Strato Documentation",
+  icon: "https://www.hashpack.app/img/logo.svg",
+  name: "hStrato",
 };
 
 async function injectStrato() {
   try {
     const docsOperatorResponse = await fetch(
-      'https://eu2.contabostorage.com/963797152a304f4bb7f75cc0af884bd7:buidler-labs/projects/hedera-strato-js/docs-operator.json'
+      "https://eu2.contabostorage.com/963797152a304f4bb7f75cc0af884bd7:buidler-labs/projects/hedera-strato-js/docs-operator.json"
     );
     const { value: uint8ArrayDocsOperator } = await docsOperatorResponse.body
       .getReader()
@@ -48,7 +48,7 @@ async function injectStrato() {
     console.log(
       `ApiSession will default to using account-id '${docsOperator.accountId}' on network '${docsOperator.network}'.`
     );
-    window['ApiSession'] = {
+    window["ApiSession"] = {
       default: function (...args) {
         let operatorCoordsProvided = false;
 
@@ -74,26 +74,26 @@ async function injectStrato() {
     };
   } catch (e) {
     console.error(
-      'There was an error while fetching the docs-client operator. Falling back to the bundled operator.',
+      "There was an error while fetching the docs-client operator. Falling back to the bundled operator.",
       e
     );
-    window['ApiSession'] = ApiSession;
+    window["ApiSession"] = ApiSession;
   } finally {
-    window['Account'] = Account;
-    window['Contract'] = Contract;
-    window['File'] = File;
-    window['Json'] = Json;
-    window['KeyType'] = KeyType;
-    window['Token'] = Token;
-    window['TokenTypes'] = TokenTypes;
-    window['Topic'] = Topic;
+    window["Account"] = Account;
+    window["Contract"] = Contract;
+    window["File"] = File;
+    window["Json"] = Json;
+    window["KeyType"] = KeyType;
+    window["Token"] = Token;
+    window["TokenTypes"] = TokenTypes;
+    window["Topic"] = Topic;
   }
 }
 
 (async function () {
   await injectStrato();
 
-  window['connectWallet'] = async (networkName) => {
+  window["connectWallet"] = async (networkName) => {
     const wallet = await HashPackWallet.newConnection({
       appMetadata: hpAppMetaData,
       debug: false,
@@ -104,10 +104,10 @@ async function injectStrato() {
     return wallet;
   };
 
-  window['disconnectWallet'] = () => {
-    if (window['hedera']) {
-      window['hedera'].wipePairingData();
-      window['hedera'] = null;
+  window["disconnectWallet"] = () => {
+    if (window["hedera"]) {
+      window["hedera"].wipePairingData();
+      window["hedera"] = null;
     }
   };
 
@@ -116,7 +116,7 @@ async function injectStrato() {
 
 function setWallet(wallet) {
   if (wallet) {
-    window['hedera'] = wallet;
-    window.postMessage('WalletLoaded');
+    window["hedera"] = wallet;
+    window.postMessage("WalletLoaded");
   }
 }

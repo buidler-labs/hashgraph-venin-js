@@ -5,19 +5,19 @@ import {
   Status,
   TransactionId,
   TransferTransaction,
-} from '@hashgraph/sdk';
-import { describe, expect, it } from '@jest/globals';
+} from "@hashgraph/sdk";
+import { describe, expect, it } from "@jest/globals";
 
-import { Account, KeyType } from '../../../lib/static/create/Account';
+import { Account, KeyType } from "../../../lib/static/create/Account";
 import {
   LiveAccount,
   LiveAccountWithPrivateKey,
-} from '../../../lib/live/LiveAccount';
-import { ApiSession } from '../../../lib/ApiSession';
-import { getKeyTypeFor } from '../../utils';
+} from "../../../lib/live/LiveAccount";
+import { ApiSession } from "../../../lib/ApiSession";
+import { getKeyTypeFor } from "../../utils";
 
-describe('LiveAccount', () => {
-  it('a session should allow for the creation of no-args Accounts which should default to an ED25519 private-key', async () => {
+describe("LiveAccount", () => {
+  it("a session should allow for the creation of no-args Accounts which should default to an ED25519 private-key", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account());
 
@@ -25,7 +25,7 @@ describe('LiveAccount', () => {
     expect(getKeyTypeFor(account.privateKey)).toEqual(KeyType.ED25519);
   });
 
-  it('a session should allow for the creation of accounts with ECSDA key types if explicitly requested', async () => {
+  it("a session should allow for the creation of accounts with ECSDA key types if explicitly requested", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(
       new Account({
@@ -37,7 +37,7 @@ describe('LiveAccount', () => {
     expect(getKeyTypeFor(account.privateKey)).toEqual(KeyType.ECDSA);
   });
 
-  it('getting info about an account, correct information is being fetched', async () => {
+  it("getting info about an account, correct information is being fetched", async () => {
     const { session } = await ApiSession.default();
     const privKey = PrivateKey.generateECDSA();
     const account = await session.create(
@@ -51,7 +51,7 @@ describe('LiveAccount', () => {
     expect(accountInfo.accountId).toBeInstanceOf(AccountId);
   });
 
-  it('given a random transaction, signing it will attach the signature to the transaction', async () => {
+  it("given a random transaction, signing it will attach the signature to the transaction", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account());
 
@@ -67,7 +67,7 @@ describe('LiveAccount', () => {
     );
   });
 
-  it('given a new account with initial balance, querying the balance returns the right amounts', async () => {
+  it("given a new account with initial balance, querying the balance returns the right amounts", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(
       new Account({ initialBalance: new Hbar(10) })
@@ -78,7 +78,7 @@ describe('LiveAccount', () => {
     expect(balance.hbars.toBigNumber().toNumber()).toEqual(10);
   });
 
-  it.skip('given a new account, updating it works as expected', async () => {
+  it.skip("given a new account, updating it works as expected", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account());
 
@@ -90,10 +90,10 @@ describe('LiveAccount', () => {
 
     const info = await account.getLiveEntityInfo();
 
-    expect(info.maxAutomaticTokenAssociations.toString()).toEqual('10');
+    expect(info.maxAutomaticTokenAssociations.toString()).toEqual("10");
   });
 
-  it('given a new account, deleting it works as expected', async () => {
+  it("given a new account, deleting it works as expected", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account());
     const deleteStatus = await account.deleteEntity();
@@ -101,7 +101,7 @@ describe('LiveAccount', () => {
     expect(deleteStatus).toEqual(Status.Success);
   });
 
-  it('instantiating an account with an id, getting balance works as expected', async () => {
+  it("instantiating an account with an id, getting balance works as expected", async () => {
     const { session } = await ApiSession.default();
     const createdAccount = await session.create(
       new Account({ initialBalance: new Hbar(10) })

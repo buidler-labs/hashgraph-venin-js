@@ -8,9 +8,9 @@ import {
   TransactionId,
   TransactionReceiptQuery,
   TransactionResponse,
-} from '@hashgraph/sdk';
-import Executable from '@hashgraph/sdk/lib/Executable';
-import { HederaNetwork } from '../../HederaNetwork';
+} from "@hashgraph/sdk";
+import Executable from "@hashgraph/sdk/lib/Executable";
+import { HederaNetwork } from "../../HederaNetwork";
 
 export default class LocalProvider extends Provider {
   public readonly client: Client;

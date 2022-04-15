@@ -4,27 +4,27 @@ import {
   Hbar,
   PrivateKey,
   TokenSupplyType,
-} from '@hashgraph/sdk';
-import { describe, expect, it } from '@jest/globals';
+} from "@hashgraph/sdk";
+import { describe, expect, it } from "@jest/globals";
 
 import {
   ResourceReadOptions,
   getTokenToTest,
   read as readResource,
-} from '../../utils';
-import { Account } from '../../../lib/static/create/Account';
-import { ApiSession } from '../../../lib/ApiSession';
-import { Contract } from '../../../lib/static/upload/Contract';
-import { GasFees } from '../../constants';
-import { LiveAccountWithPrivateKey } from '../../../lib/live/LiveAccount';
-import { TokenTypes } from '../../../lib/static/create/Token';
+} from "../../utils";
+import { Account } from "../../../lib/static/create/Account";
+import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
+import { GasFees } from "../../constants";
+import { LiveAccountWithPrivateKey } from "../../../lib/live/LiveAccount";
+import { TokenTypes } from "../../../lib/static/create/Token";
 
 function read(what: ResourceReadOptions) {
-  return readResource({ relativeTo: 'hscs', ...what });
+  return readResource({ relativeTo: "hscs", ...what });
 }
 
-describe('LiveContract.NFTShop', () => {
-  it('Given an NFT Shop, a user is able to mint', async () => {
+describe("LiveContract.NFTShop", () => {
+  it("Given an NFT Shop, a user is able to mint", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
 
@@ -34,7 +34,7 @@ describe('LiveContract.NFTShop', () => {
       maxAutomaticTokenAssociations: 1,
     });
     const contract = await Contract.newFrom({
-      code: read({ contract: 'NFTShop' }),
+      code: read({ contract: "NFTShop" }),
       ignoreWarnings: true,
     });
     const client = session.network
@@ -70,7 +70,7 @@ describe('LiveContract.NFTShop', () => {
       liveToken,
       client._operator.accountId.toSolidityAddress(),
       nftPrice,
-      '0xbeef'
+      "0xbeef"
     );
 
     liveToken.assignSupplyControlTo(liveContract);
@@ -78,7 +78,7 @@ describe('LiveContract.NFTShop', () => {
     const transaction = new ContractExecuteTransaction()
       .setContractId(liveContract.id)
       .setFunction(
-        'mint',
+        "mint",
         new ContractFunctionParameters()
           .addAddress(aliceLiveAccount.getSolidityAddress())
           .addUint256(amountToMint)
@@ -98,11 +98,11 @@ describe('LiveContract.NFTShop', () => {
     expect(contractInfo.balance.toBigNumber().toNumber()).toEqual(50);
   });
 
-  it('Given an NFT Shop, treasury is able to mint for user', async () => {
+  it("Given an NFT Shop, treasury is able to mint for user", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
     const metadata = Buffer.from(
-      'Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy'
+      "Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy"
     );
 
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
@@ -116,7 +116,7 @@ describe('LiveContract.NFTShop', () => {
       false
     );
     const contract = await Contract.newFrom({
-      code: read({ contract: 'NFTShop' }),
+      code: read({ contract: "NFTShop" }),
     });
 
     const { session } = await ApiSession.default();
@@ -134,19 +134,19 @@ describe('LiveContract.NFTShop', () => {
 
     liveToken.assignSupplyControlTo(liveContract);
 
-    liveContract.onEvent('NftMint', ({ tokenAddress, serialNumbers }) => {
+    liveContract.onEvent("NftMint", ({ tokenAddress, serialNumbers }) => {
       session.log.info(
-        'NFTs minted',
+        "NFTs minted",
         tokenAddress,
         serialNumbers.map((item) => item.toNumber())
       );
     });
 
     liveContract.onEvent(
-      'NftTransfer',
+      "NftTransfer",
       ({ tokenAddress, from, to, serialNumbers }) => {
         session.log.info(
-          'NFTs transferred',
+          "NFTs transferred",
           tokenAddress,
           serialNumbers.map((item) => item.toNumber()),
           from,
@@ -165,7 +165,7 @@ describe('LiveContract.NFTShop', () => {
     );
 
     session.log.info(
-      'Serial numbers minted by the smart contract',
+      "Serial numbers minted by the smart contract",
       serialNumbers.map((item) => item.toNumber())
     );
 

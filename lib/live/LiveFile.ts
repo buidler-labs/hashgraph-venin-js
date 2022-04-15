@@ -6,11 +6,11 @@ import {
   FileInfoQuery,
   FileUpdateTransaction,
   Transaction,
-} from '@hashgraph/sdk';
+} from "@hashgraph/sdk";
 
-import { ApiSession, TypeOfExecutionReturn } from '../ApiSession';
-import { FileFeatures } from '../static/upload/File';
-import { LiveEntity } from './LiveEntity';
+import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { FileFeatures } from "../static/upload/File";
+import { LiveEntity } from "./LiveEntity";
 
 export type LiveFileConstructorArgs = {
   session: ApiSession;
