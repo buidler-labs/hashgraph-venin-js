@@ -15,7 +15,7 @@ jobs:
     environment: hedera-testnet
     strategy:
       matrix:
-        npm_test_script: ["test:node", "test:jsdom", "test:browser"]
+        npm_test_script: ["test:node", "test:jsdom"]
     steps:
       - uses: actions/checkout@v2
 
