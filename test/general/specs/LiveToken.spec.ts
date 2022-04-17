@@ -1,15 +1,13 @@
-import { PublicKey, Status } from '@hashgraph/sdk';
-import {
-  beforeAll, beforeEach, describe, expect, it,
-} from '@jest/globals';
+import { PublicKey, Status } from "@hashgraph/sdk";
+import { beforeAll, beforeEach, describe, expect, it } from "@jest/globals";
 
 import { getTokenToTest, read } from "../../utils";
-import { Account } from '../../../lib/static/create/Account';
-import { ApiSession } from '../../../lib/ApiSession';
-import { Contract } from '../../../lib/static/upload/Contract';
-import { LiveToken } from '../../../lib/live/LiveToken';
+import { Account } from "../../../lib/static/create/Account";
+import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
+import { LiveToken } from "../../../lib/live/LiveToken";
 
-describe('LiveToken', () => {
+describe("LiveToken", () => {
   let session: ApiSession;
   let liveToken: LiveToken;
 
@@ -22,7 +20,9 @@ describe('LiveToken', () => {
   });
 
   it("given a token, solidity address is returned as expected", async () => {
-    expect(liveToken.getSolidityAddress()).toEqual(liveToken.id.toSolidityAddress());
+    expect(liveToken.getSolidityAddress()).toEqual(
+      liveToken.id.toSolidityAddress()
+    );
   });
 
   it("getting info of newly created token, info is correct", async () => {
@@ -35,7 +35,9 @@ describe('LiveToken', () => {
     expect(info.freezeKey.toString()).toEqual(accPubKey);
     expect(info.wipeKey.toString()).toEqual(accPubKey);
     expect(info.pauseKey.toString()).toEqual(accPubKey);
-    expect(info.treasuryAccountId.toString()).toEqual(session.wallet.account.id.toString());
+    expect(info.treasuryAccountId.toString()).toEqual(
+      session.wallet.account.id.toString()
+    );
     expect(info.name).toEqual(testedTokenInfo.name);
     expect(info.symbol).toEqual(testedTokenInfo.symbol);
     expect(testedTokenInfo.type.equals(info.tokenType)).toBeTruthy();
@@ -49,12 +51,16 @@ describe('LiveToken', () => {
     await liveToken.assignSupplyControlTo(account.privateKey.publicKey);
     const info = await liveToken.getLiveEntityInfo();
 
-    expect(account.privateKey.publicKey.toString()).toEqual(info.supplyKey.toString());
+    expect(account.privateKey.publicKey.toString()).toEqual(
+      info.supplyKey.toString()
+    );
   });
 
   it("given a token, assigning the supply control to a new contract should work as expected", async () => {
     const { session } = await ApiSession.default();
-    const bytesContract = await Contract.newFrom({ code: read({ contract: 'bytes' }) });
+    const bytesContract = await Contract.newFrom({
+      code: read({ contract: "bytes" }),
+    });
     const liveContract = await session.upload(bytesContract);
 
     await liveToken.assignSupplyControlTo(liveContract);
@@ -84,6 +90,8 @@ describe('LiveToken', () => {
     const info = await liveToken.getLiveEntityInfo();
 
     expect(info.name).toEqual(newName);
-    expect((info.freezeKey as PublicKey).toStringDer()).toEqual(liveAccount.privateKey.publicKey.toStringDer());
+    expect((info.freezeKey as PublicKey).toStringDer()).toEqual(
+      liveAccount.privateKey.publicKey.toStringDer()
+    );
   });
 });

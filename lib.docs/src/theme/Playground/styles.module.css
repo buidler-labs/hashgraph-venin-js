@@ -69,7 +69,7 @@
 }
 
 .playgroundLogItem {
-  color: var(--ifm-color-content)
+  color: var(--ifm-color-content);
 }
 
 .playgroundLogItem.internal {

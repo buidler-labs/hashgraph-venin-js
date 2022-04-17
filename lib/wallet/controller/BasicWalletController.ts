@@ -13,16 +13,17 @@ export abstract class BasicWalletController<T> implements WalletController<T> {
 
   private readonly pubSub: EventEmitter;
 
-  public constructor (
-    protected readonly ctx: StratoContext
-  ) {
+  public constructor(protected readonly ctx: StratoContext) {
     this.pubSub = new EventEmitter();
   }
 
   public changeAccount(account: string | AccountId, ...args: any[]): void {
     const accountPayload = this.getAccountPayload(account, ...args);
 
-    this.pubSub.emit(BasicWalletController.ACCOUNT_CHANGE_REQUESTED, accountPayload);
+    this.pubSub.emit(
+      BasicWalletController.ACCOUNT_CHANGE_REQUESTED,
+      accountPayload
+    );
   }
 
   public changeNetwork(network: HederaNetwork) {
@@ -30,12 +31,25 @@ export abstract class BasicWalletController<T> implements WalletController<T> {
   }
 
   public onAccountChanged(clb: (account: T) => void): Subscription<T> {
-    return new Subscription(this.pubSub, BasicWalletController.ACCOUNT_CHANGE_REQUESTED, clb);
+    return new Subscription(
+      this.pubSub,
+      BasicWalletController.ACCOUNT_CHANGE_REQUESTED,
+      clb
+    );
   }
 
-  public onNetworkChanged(clb: (network: HederaNetwork) => void): Subscription<HederaNetwork> {
-    return new Subscription(this.pubSub, BasicWalletController.NETWORK_CHANGE_REQUESTED, clb);
+  public onNetworkChanged(
+    clb: (network: HederaNetwork) => void
+  ): Subscription<HederaNetwork> {
+    return new Subscription(
+      this.pubSub,
+      BasicWalletController.NETWORK_CHANGE_REQUESTED,
+      clb
+    );
   }
 
-  protected abstract getAccountPayload(account: string | AccountId, ...args: any[]): T;
+  protected abstract getAccountPayload(
+    account: string | AccountId,
+    ...args: any[]
+  ): T;
 }

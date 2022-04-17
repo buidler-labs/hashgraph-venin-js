@@ -1,5 +1,4 @@
-
-import { 
+import {
   AccountBalance,
   AccountBalanceQuery,
   AccountId,
@@ -12,7 +11,7 @@ import {
   Transaction,
   TransactionId,
   TransactionRecord,
-  Wallet, 
+  Wallet,
 } from "@hashgraph/sdk";
 import Executable from "@hashgraph/sdk/lib/Executable";
 
@@ -25,9 +24,10 @@ export class LocalWallet extends Wallet {
   private readonly signer: (messasge: Uint8Array) => Promise<Uint8Array>;
 
   constructor(
-      network: HederaNetwork, 
-      private readonly accountId: AccountId, 
-      operatorKey: PrivateKey) {
+    network: HederaNetwork,
+    private readonly accountId: AccountId,
+    operatorKey: PrivateKey
+  ) {
     super();
     this.provider = new LocalProvider(network);
     this.publicKey = operatorKey.publicKey;
@@ -99,7 +99,7 @@ export class LocalWallet extends Wallet {
     const transactionId = transaction.transactionId;
     if (
       transactionId.accountId != null &&
-            transactionId.accountId.compare(this.accountId) != 0
+      transactionId.accountId.compare(this.accountId) != 0
     ) {
       throw new Error(
         "transaction's ID constructed with a different account ID"
@@ -136,19 +136,17 @@ export class LocalWallet extends Wallet {
     return Promise.resolve(transaction.freeze());
   }
 
-  sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
+  sendRequest<RequestT, ResponseT, OutputT>(
+    request: Executable<RequestT, ResponseT, OutputT>
+  ): Promise<OutputT> {
     // Note: don't know if this is generic enough. Are web-browsers ok with this?
     if (request instanceof Transaction) {
       request.freezeWithSigner(this);
-      request.signWithSigner(this); 
+      request.signWithSigner(this);
     }
 
     return this.provider.sendRequest(
-      request._setOperatorWith(
-        this.accountId,
-        this.publicKey,
-        this.signer
-      )
+      request._setOperatorWith(this.accountId, this.publicKey, this.signer)
     );
   }
 }

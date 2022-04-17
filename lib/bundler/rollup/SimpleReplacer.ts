@@ -1,27 +1,33 @@
 // Code heavily inspired and slimed down from the the @rollup/plugin-replace repo
 
-import MagicString from 'magic-string';
-import { SourceMap } from 'rollup';
+import MagicString from "magic-string";
+import { SourceMap } from "rollup";
 
 export class SimpleReplacer {
   private readonly functionValues: any;
   private readonly pattern: RegExp;
 
   constructor(
-    readonly values: { [k: string]: string }, 
-    private readonly sourceMap: boolean = false) {
+    readonly values: { [k: string]: string },
+    private readonly sourceMap: boolean = false
+  ) {
     this.functionValues = mapToFunctions(values);
     const keys = Object.keys(this.functionValues).sort(longest).map(escape);
-    this.pattern = new RegExp(`\\b(${keys.join('|')})\\b(?!\\.)(?!\\s*=[^=])`, 'g');  
+    this.pattern = new RegExp(
+      `\\b(${keys.join("|")})\\b(?!\\.)(?!\\s*=[^=])`,
+      "g"
+    );
   }
-  
+
   public tryReplacing(code, id) {
     const magicString = new MagicString(code);
     if (!this.codeHasReplacements(code, id, magicString)) {
       return null;
     }
 
-    const result: { code: string, map?: SourceMap } = { code: magicString.toString() };
+    const result: { code: string; map?: SourceMap } = {
+      code: magicString.toString(),
+    };
     if (this.sourceMap) {
       result.map = magicString.generateMap({ hires: true });
     }
@@ -46,11 +52,11 @@ export class SimpleReplacer {
 }
 
 function escape(str) {
-  return str.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
+  return str.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
 }
 
 function ensureFunction(functionOrValue) {
-  if (typeof functionOrValue === 'function') return functionOrValue;
+  if (typeof functionOrValue === "function") return functionOrValue;
   return () => functionOrValue;
 }
 

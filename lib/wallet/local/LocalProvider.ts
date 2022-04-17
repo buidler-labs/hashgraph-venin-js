@@ -1,4 +1,4 @@
-import { 
+import {
   AccountBalanceQuery,
   AccountId,
   AccountInfoQuery,
@@ -40,9 +40,7 @@ export default class LocalProvider extends Provider {
   }
 
   getAccountInfo(accountId: AccountId | string) {
-    return new AccountInfoQuery()
-      .setAccountId(accountId)
-      .execute(this.client);
+    return new AccountInfoQuery().setAccountId(accountId).execute(this.client);
   }
 
   getAccountRecords(accountId: AccountId | string) {
@@ -64,7 +62,9 @@ export default class LocalProvider extends Provider {
       .execute(this.client);
   }
 
-  sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
+  sendRequest<RequestT, ResponseT, OutputT>(
+    request: Executable<RequestT, ResponseT, OutputT>
+  ): Promise<OutputT> {
     return request.execute(this.client);
   }
 }

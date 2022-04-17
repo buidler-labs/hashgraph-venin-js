@@ -6,20 +6,25 @@ title: The Session
 Sessions are the life-blood of the library. Virutally, you can't do anything meaningful without one.
 
 ## Creating a session
+
 Head over to the [Configuration page](../configuration.md#introduction) to find out what are the session creating options available.
 
 ## What can it do?
+
 ... a couple of things spread into 2 categories:
 
 Creational operations
-* `create` a `Token` or an `Account` via the `create(what)` method with `what` being a `CreatableEntity`
-* `upload` a `Contract` or a `Json` object via the conveniently named method, `upload(what, ...args)`, with `what` being a `UploadableEntity` in this case. `...args` are any additional info required to tweak the process (such as meta-arguments to control the parameters of the hedera transactions with) and/or any constructor arguments that might be required.
+
+- `create` a `Token` or an `Account` via the `create(what)` method with `what` being a `CreatableEntity`
+- `upload` a `Contract` or a `Json` object via the conveniently named method, `upload(what, ...args)`, with `what` being a `UploadableEntity` in this case. `...args` are any additional info required to tweak the process (such as meta-arguments to control the parameters of the hedera transactions with) and/or any constructor arguments that might be required.
 
 Retrieval operations
-* `getLiveContract({ id, abi = [] })` - retrieves a `LiveContract` given its id and ABI info
-* `getLiveJson({ id })` - retrieves a `LiveJson` object that was previously stored on-graph
+
+- `getLiveContract({ id, abi = [] })` - retrieves a `LiveContract` given its id and ABI info
+- `getLiveJson({ id })` - retrieves a `LiveJson` object that was previously stored on-graph
 
 ## Subscribing to receipts
+
 The session also allows to get notified of transaction receipts via the `subscribeToReceiptsWith` method. You pass it a callback, do some contract transactions and wait to get called like so:
 
 ```js live=true containerKey=subscribe_to_receipts
@@ -34,9 +39,13 @@ contract Counter {
 }`;
 const { session } = await ApiSession.default();
 const contract = await Contract.newFrom({ code });
-const receiptsSubscription = session.subscribeToReceiptsWith(({ transaction, receipt }) => {
-    console.log(`Transaction ${transaction.transactionId} receipt reported finishing with status ${receipt.status}`);
-});
+const receiptsSubscription = session.subscribeToReceiptsWith(
+  ({ transaction, receipt }) => {
+    console.log(
+      `Transaction ${transaction.transactionId} receipt reported finishing with status ${receipt.status}`
+    );
+  }
+);
 const liveContract = await session.upload(contract);
 
 await liveContract.inc({ emitReceipt: true });
@@ -55,6 +64,7 @@ In the above snippet we saw how one could emit an on-demand receipt (via the liv
 To do that, you could either [set the `HEDERAS_DEFAULT_EMIT_LIVE_CONTRACT_RECEIPTS` environment option to `true`](../configuration.md#big-table-o-parameters) or have its runtime counter-part, `session.defaults.emitLiveContractReceipts`, to the same value.
 
 The runtime variant will look something like this:
+
 ```json
 const { session } = await ApiSession.default({
   session: { defaults: { emitLiveContractReceipts: true } }
@@ -67,7 +77,7 @@ Following this, you could get rid of the `{ emitReceipt: true }` meta-argument a
 
 :::caution
 
-Setting `emitReceipt` meta-argument to true on contract functions that do not modify state will not have any effect. 
+Setting `emitReceipt` meta-argument to true on contract functions that do not modify state will not have any effect.
 
 `pure`/`view` solidity functions resolve to a `ContractCallQuery` that is being executed in Strato, which returns a `ContractFunctionResult`. The result of the contract call does not contain receipts or records as the call runs on a single node.
 

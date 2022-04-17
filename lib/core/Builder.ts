@@ -1,3 +1,3 @@
 export interface Builder<O> {
-    build(): Promise<O>;
+  build(): Promise<O>;
 }

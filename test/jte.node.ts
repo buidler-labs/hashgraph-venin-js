@@ -1,6 +1,6 @@
 // Jest Test Environment (JTE) for the hedera-api library
-import { ApiSession } from '../lib/ApiSession';
-import NodeEnvironment from 'jest-environment-node';
+import { ApiSession } from "../lib/ApiSession";
+import NodeEnvironment from "jest-environment-node";
 
 export default class JestTestEnvironment extends NodeEnvironment {
   async setup() {
@@ -15,11 +15,11 @@ export default class JestTestEnvironment extends NodeEnvironment {
         },
       });
     } catch (e) {
-      throw new Error (
-        "Could not retrieve a default-api-session instance! Make sure you have either a .env file present in top-level repo folder. " + 
-        "Please have a look at the .env.sample file and generate one before running these tests. " +
-        "Otherwise, prepare the runtime environment so that an api-session can be constructed." +
-        "We use the default-api-session throughout the test-base."
+      throw new Error(
+        "Could not retrieve a default-api-session instance! Make sure you have either a .env file present in top-level repo folder. " +
+          "Please have a look at the .env.sample file and generate one before running these tests. " +
+          "Otherwise, prepare the runtime environment so that an api-session can be constructed." +
+          "We use the default-api-session throughout the test-base."
       );
     }
 

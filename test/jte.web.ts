@@ -1,7 +1,7 @@
 // Jest Test Environment (JTE) for the hedera-api library, the WebBrowser variant
-import { TextDecoder, TextEncoder } from 'util';
+import { TextDecoder, TextEncoder } from "util";
 
-import JSDOMEnvironment from 'jest-environment-jsdom';
+import JSDOMEnvironment from "jest-environment-jsdom";
 
 export default class JestTestEnvironment extends JSDOMEnvironment {
   async setup() {
