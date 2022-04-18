@@ -1,6 +1,5 @@
 {
   "jest.autoRun": "off",
-  "liveServer.settings.root": "/docs/",
   "jest.jestCommandLine": "node_modules/.bin/jest --config=./jest.node.config.cjs",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
