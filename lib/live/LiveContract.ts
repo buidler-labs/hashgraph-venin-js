@@ -309,13 +309,20 @@ export class LiveContract extends BaseLiveEntityWithBalance<ContractId, Contract
 
         fResponse = fResultKeys.map(namedfDataKey => ({ [namedfDataKey]: tryMappingToHederaBytes(namedfDataKey) }))
           .reduce((p, c) => ({...p, ...c}), {});
-      } else if (fDescription.outputs.length > 1) {
-        fResponse = [...fResult];
-
-        // Map all Ethers HexString representations of bytes-type responses to their UInt8Array forms (same used by Hedera)
-        fResponse = fDescription.outputs.map((dType, id) => dType.type.startsWith('bytes') ? arrayify(fResponse[id]) : fResponse[id]);
       } else {
-        fResponse = fResult[0];
+        fResponse = [...fResult];
+  
+        // Map all Ethers HexString representations of bytes-type responses to their UInt8Array forms (same used by Hedera)
+        fResponse = fDescription.outputs.map((dType, id) =>
+          dType.type.startsWith("bytes")
+            ? arrayify(fResponse[id])
+            : fResponse[id]
+        );
+  
+        // If there is only one result returned, we unpack it and return it as it is, ditching the hosting array
+        if (fResponse.length === 1) {
+          fResponse = fResponse[0];
+        }
       }
 
       // Do various type re-mappings such as:

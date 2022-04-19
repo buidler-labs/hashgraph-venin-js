@@ -34,9 +34,13 @@ describe('LiveAddress', () => {
   it("a bytes32 return value should not be interpreted as a LiveAddress", async () => {
     const liveContract = await load('keccak256');
     const hashResult = await liveContract.hash("asta banana");
+    const expectedHashResult = Buffer.from(
+      "26d381901a017b1d62fe70cbbe9ed6cf7f66db86f97a1c64f3571b777d7fe07e",
+      "hex"
+    );
 
     expect(hashResult).not.toBeInstanceOf(StratoAddress);
-    expect(hashResult).toEqual("0x26d381901a017b1d62fe70cbbe9ed6cf7f66db86f97a1c64f3571b777d7fe07e");
+    expect(expectedHashResult.compare(hashResult)).toEqual(0);
   });
 
   it("given bytes to LiveAddress constructor, it throws an error as it is not a solidity address", async () => {
