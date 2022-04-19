@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { AccountId } from "@hashgraph/sdk";
+import { AccountId, Signer } from "@hashgraph/sdk";
 import BigNumber from "bignumber.js";
 
 import {
@@ -252,11 +252,11 @@ describe("LiveContract.Solidity-by-Example", () => {
     await expect(liveContract.ternary(10)).resolves.toEqual(new BigNumber(2));
   });
 
+  // Requires: https://github.com/hashgraph/hedera-sdk-js/issues/1084
   it.skip("doing the signature verification flow should work", async () => {
-    // TODO: activate this once secp is working on Hedera (and available through SDK ?)
     const liveContract = await load("signature");
     const { session } = await ApiSession.default();
-    const signer = session.wallet.account.id.toSolidityAddress();
+    const signer = session.wallet.signer as Signer;
     const to = AccountId.fromString("0.0.3").toSolidityAddress();
     const amount = 123;
     const message = "coffee and donuts";
@@ -268,16 +268,21 @@ describe("LiveContract.Solidity-by-Example", () => {
       nonce
     );
 
-    /* TODO: uncoment this and adjust
-    const signedMessageHash = web3.personal.sign(messageHash, web3.eth.defaultAccount, console.log) ??? -- see solidity-by-example > signature.sol comments
-    const isSameSigner = await liveContract.verify(signer, to, amount, message, nonce, signedMessageHash);
+    const [{ signature: signedMessageHash }] = await signer.sign(messageHash); //??? -- see solidity-by-example > signature.sol comments
+    const isSameSigner = await liveContract.verify(
+      signer.getAccountId().toSolidityAddress(),
+      to,
+      amount,
+      message,
+      nonce,
+      signedMessageHash
+    );
 
     expect(isSameSigner).toBeTruthy();
-    */
   });
 
   // Requires: https://github.com/buidler-labs/hedera-strato-js/issues/38
-  it.skip("uploading a public library-dependent contract should succede", async () => {
+  it.skip("uploading a public library-dependent contract should succeed", async () => {
     const { session } = await ApiSession.default();
     const testArrayContract = await Contract.newFrom({
       code: read({ contract: "library" }),
