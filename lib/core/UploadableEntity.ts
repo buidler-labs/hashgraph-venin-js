@@ -1,5 +1,5 @@
 import { ApiSession } from "../ApiSession";
-import { LiveEntity } from "../live/LiveEntity";
+import { HederaEntityId, LiveEntity } from "../live/LiveEntity";
 
 export type ArgumentsForUpload = {
   session: ApiSession;
@@ -8,7 +8,7 @@ export type ArgumentsForUpload = {
 
 export interface UploadableEntity<
   T extends LiveEntity<R, I, P>,
-  R = any,
+  R extends HederaEntityId = any,
   I = any,
   P = any
 > {

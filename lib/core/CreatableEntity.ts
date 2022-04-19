@@ -1,5 +1,5 @@
+import { HederaEntityId, LiveEntity } from "../live/LiveEntity";
 import { ApiSession } from "../ApiSession";
-import { LiveEntity } from "../live/LiveEntity";
 
 export type ArgumentsForCreate = {
   session: ApiSession;
@@ -7,7 +7,7 @@ export type ArgumentsForCreate = {
 
 export interface CreatableEntity<
   T extends LiveEntity<R, I, P>,
-  R = any,
+  R extends HederaEntityId = any,
   I = any,
   P = any
 > {

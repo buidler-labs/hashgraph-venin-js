@@ -9,7 +9,7 @@ import {
   Status,
   TransactionReceipt,
 } from "@hashgraph/sdk";
-import { LiveEntity } from "../../live/LiveEntity";
+import { HederaEntityId, LiveEntity } from "../../live/LiveEntity";
 
 export type ArgumentsOnFileUploaded = {
   session: ApiSession;
@@ -25,7 +25,7 @@ type ArgumentsToGetFileTransaction = {
 
 export abstract class BasicUploadableEntity<
   T extends LiveEntity<R, I, P>,
-  R = any,
+  R extends HederaEntityId = any,
   I = any,
   P = any
 > implements UploadableEntity<T, R>

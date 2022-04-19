@@ -2,11 +2,11 @@ import {
   ArgumentsForCreate,
   CreatableEntity,
 } from "../../core/CreatableEntity";
-import { LiveEntity } from "../../live/LiveEntity";
+import { HederaEntityId, LiveEntity } from "../../live/LiveEntity";
 
 export abstract class BasicCreatableEntity<
   T extends LiveEntity<R, I, P>,
-  R = any,
+  R extends HederaEntityId = any,
   I = any,
   P = any
 > implements CreatableEntity<T, R>

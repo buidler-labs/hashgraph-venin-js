@@ -1,10 +1,17 @@
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Status, Transaction } from "@hashgraph/sdk";
 import { SolidityAddressable } from "../core/SolidityAddressable";
+
+export type HederaEntityId = {
+  toSolidityAddress(): string;
+};
+
 /**
  * Common functionality exhibited by session-bounded, id-entifiable LiveEntity instances.
  */
-export abstract class LiveEntity<T, I, P> implements SolidityAddressable {
+export abstract class LiveEntity<T extends HederaEntityId, I, P>
+  implements SolidityAddressable
+{
   constructor(public readonly session: ApiSession, public readonly id: T) {}
 
   protected get log() {
@@ -13,7 +20,7 @@ export abstract class LiveEntity<T, I, P> implements SolidityAddressable {
 
   public equals<R>(what: R | LiveEntity<T, I, P>): boolean {
     if (what instanceof LiveEntity) {
-      return what.id.toString() === this.id.toString();
+      return what.id.toSolidityAddress() === this.id.toSolidityAddress();
     }
     return this._equals(what);
   }
