@@ -10,7 +10,7 @@ import {
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Token, TokenFeatures } from "../static/create/Token";
-import { LiveEntity } from "./LiveEntity";
+import { HederaEntityId, LiveEntity } from "./LiveEntity";
 
 type LiveTokenConstructorArgs = {
   session: ApiSession;
@@ -29,7 +29,7 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> {
     return this.id.toSolidityAddress();
   }
 
-  public async assignSupplyControlTo<T extends Key, I, P>(
+  public async assignSupplyControlTo<T extends Key & HederaEntityId, I, P>(
     key: Key | LiveEntity<T, I, P>
   ): Promise<void> {
     const tokenUpdateTx = new TokenUpdateTransaction()

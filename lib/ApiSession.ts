@@ -20,6 +20,7 @@ import { EventEmitter } from "events";
 import { Interface } from "@ethersproject/abi";
 
 import { ContractFunctionCall, LiveContract } from "./live/LiveContract";
+import { HederaEntityId, LiveEntity } from "./live/LiveEntity";
 import { Promised, RecursivePartial } from "./core/UsefulTypes";
 import {
   StratoContext,
@@ -31,7 +32,6 @@ import { CreatableEntity } from "./core/CreatableEntity";
 import { File } from "./static/upload/File";
 import { HederaNetwork } from "./HederaNetwork";
 import { Json } from "./static/upload/Json";
-import { LiveEntity } from "./live/LiveEntity";
 import { LiveFile } from "./live/LiveFile";
 import { LiveJson } from "./live/LiveJson";
 import { SolidityAddressable } from "./core/SolidityAddressable";
@@ -184,9 +184,12 @@ export class ApiSession implements SolidityAddressable {
    * @param what {@link CreatableEntity} - the prototype of the entity of interest
    * @returns - an interactive {@link LiveEntity} instance which resides on the chain
    */
-  public async create<T extends LiveEntity<R, I, P>, R, I, P>(
-    what: CreatableEntity<T>
-  ): Promise<T> {
+  public async create<
+    T extends LiveEntity<R, I, P>,
+    R extends HederaEntityId,
+    I,
+    P
+  >(what: CreatableEntity<T>): Promise<T> {
     this.log.info(`Creating a new Hedera ${what.name}`);
 
     const createdLiveEntity = await what.createVia({ session: this });
@@ -383,10 +386,12 @@ export class ApiSession implements SolidityAddressable {
    *                         eg. "_file" ({@link UploadableEntity}) or "_contract" ({@link Contract})
    * @returns - An instance of the {@link UploadableEntity} concrete result-type which is a subtype of {@link LiveEntity}.
    */
-  public async upload<T extends LiveEntity<R, I, P>, R, I, P>(
-    what: BasicUploadableEntity<T, R, I>,
-    ...args: any[]
-  ): Promise<T>;
+  public async upload<
+    T extends LiveEntity<R, I, P>,
+    R extends HederaEntityId,
+    I,
+    P
+  >(what: BasicUploadableEntity<T, R, I>, ...args: any[]): Promise<T>;
 
   /**
    * Given a raw JSON {@link object}, it tries to upload it using the currently configured {@link StratoWallet} passing in-it any provided {@link args}.
@@ -426,7 +431,12 @@ export class ApiSession implements SolidityAddressable {
   ): Promise<LiveFile>;
 
   // Overload implementation
-  public async upload<T extends LiveEntity<R, I, P>, R, I, P>(
+  public async upload<
+    T extends LiveEntity<R, I, P>,
+    R extends HederaEntityId,
+    I,
+    P
+  >(
     what: UploadableEntity<T, R> | object | string | Uint8Array,
     ...args: any[]
   ): Promise<T> {

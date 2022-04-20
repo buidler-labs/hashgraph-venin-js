@@ -9,14 +9,14 @@ import {
   TransferTransaction,
 } from "@hashgraph/sdk";
 
-import { LiveEntity } from "./LiveEntity";
+import { HederaEntityId, LiveEntity } from "./LiveEntity";
 import { TypeOfExecutionReturn } from "../ApiSession";
 
-export abstract class BaseLiveEntityWithBalance<T, I, P> extends LiveEntity<
-  T,
+export abstract class BaseLiveEntityWithBalance<
+  T extends HederaEntityId,
   I,
   P
-> {
+> extends LiveEntity<T, I, P> {
   public getBalanceOfLiveEntity(): Promise<AccountBalance> {
     const queryPayload = this._getBalancePayload();
     const balanceQuery = new AccountBalanceQuery(queryPayload);

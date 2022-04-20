@@ -44,13 +44,7 @@ describe("LiveContract.Solidity-by-Example", () => {
   });
 
   it("trying to create2 twice using the same salt should fail", async () => {
-    const { session } = await ApiSession.default();
-    const carFactoryContract = await Contract.newFrom({
-      code: read({ contract: "new_contract" }),
-      ignoreWarnings: true,
-      name: "CarFactory",
-    });
-    const liveCarFactoryContract = await session.upload(carFactoryContract);
+    const { carContract, liveCarFactoryContract } = await newContractTest();
     const newCarOwner = AccountId.fromString("0.0.123").toSolidityAddress();
     const salt =
       "0xb7d7c82f47757be5f8f931c8ac65ab700ca1245ea02fff2c03fcd679e7f4bba9";
@@ -72,22 +66,20 @@ describe("LiveContract.Solidity-by-Example", () => {
         salt
       )
     ).rejects.toThrow();
+
+    const { carAddr } = await liveCarFactoryContract.getCar(0);
+
+    expect(carAddr).toBeInstanceOf(StratoAddress);
+
+    const liveCar = await carAddr.toLiveContract(carContract.interface);
+
+    await expect(liveCar.model()).resolves.toEqual("Honda Civic");
   });
 
   it("creating a contract should allow its live-address to be convertible to the underlying model", async () => {
+    const { carContract, liveCarFactoryContract } = await newContractTest();
     const { session } = await ApiSession.default();
     const hapiSessionOwnerAddress = session.getSolidityAddress();
-    const carContract = await Contract.newFrom({
-      code: read({ contract: "new_contract" }),
-      ignoreWarnings: true,
-      name: "Car",
-    });
-    const carFactoryContract = await Contract.newFrom({
-      code: read({ contract: "new_contract" }),
-      ignoreWarnings: true,
-      name: "CarFactory",
-    });
-    const liveCarFactoryContract = await session.upload(carFactoryContract);
 
     await expect(
       liveCarFactoryContract.create(
@@ -179,13 +171,13 @@ describe("LiveContract.Solidity-by-Example", () => {
       new BigNumber(2),
     ]);
     await expect(liveContract.named()).resolves.toEqual({
-      x: new BigNumber(1),
       b: true,
+      x: new BigNumber(1),
       y: new BigNumber(2),
     });
     await expect(liveContract.assigned()).resolves.toEqual({
-      x: new BigNumber(1),
       b: true,
+      x: new BigNumber(1),
       y: new BigNumber(2),
     });
     await expect(liveContract.destructingAssigments()).resolves.toEqual([
@@ -373,3 +365,20 @@ describe("LiveContract.Solidity-by-Example", () => {
     });
   });
 });
+
+async function newContractTest() {
+  const { session } = await ApiSession.default();
+  const carFactoryContract = await Contract.newFrom({
+    code: read({ contract: "new_contract" }),
+    ignoreWarnings: true,
+    name: "CarFactory",
+  });
+  const carContract = await Contract.newFrom({
+    code: read({ contract: "new_contract" }),
+    ignoreWarnings: true,
+    name: "Car",
+  });
+  const liveCarFactoryContract = await session.upload(carFactoryContract);
+
+  return { carContract, carFactoryContract, liveCarFactoryContract, session };
+}

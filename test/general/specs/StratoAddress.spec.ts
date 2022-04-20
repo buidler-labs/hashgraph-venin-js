@@ -6,6 +6,7 @@ import { Account } from "../../../lib/static/create/Account";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 import { LiveAccount } from "../../../lib/live/LiveAccount";
+import Long from "long";
 import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 describe("LiveAddress", () => {
@@ -81,5 +82,30 @@ describe("LiveAddress", () => {
 
     expect(liveAccountOfContractStoredAccountId).toBeInstanceOf(LiveAccount);
     expect(liveAccountOfContractStoredAccountId.equals(account)).toBeTruthy();
+  });
+
+  it("when creating a strato-address, given an EVM address and no realm or shard, realm and shard should default to 0", async () => {
+    const { session } = await ApiSession.default();
+    const allUpperCasedAddress = "0000000000000000000000000000000000000ABC";
+    const liveAddress = new StratoAddress(session, allUpperCasedAddress);
+
+    expect(liveAddress.realm).toEqual(Long.ZERO);
+    expect(liveAddress.shard).toEqual(Long.ZERO);
+  });
+
+  it("when creating a strato-address, given an EVM address and both realm or shard, realm and shard should reflect the provided values", async () => {
+    const { session } = await ApiSession.default();
+    const allUpperCasedAddress = "0000000000000000000000000000000000000ABC";
+    const oneLong = Long.fromNumber(1);
+    const twoLong = Long.fromNumber(2);
+    const liveAddress = new StratoAddress(
+      session,
+      allUpperCasedAddress,
+      oneLong,
+      twoLong
+    );
+
+    expect(liveAddress.realm).toEqual(twoLong);
+    expect(liveAddress.shard).toEqual(oneLong);
   });
 });

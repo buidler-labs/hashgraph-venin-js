@@ -1,4 +1,6 @@
 export * from "./ApiSession";
+export * from "./core/wallet/StratoWallet";
+export * from "./core/wallet/WalletController";
 export * from "./HederaNetwork";
 export * from "./live/LiveAccount";
 export * from "./live/LiveContract";

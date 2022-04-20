@@ -159,8 +159,8 @@ export class LiveContract extends BaseLiveEntityWithBalance<
           ...args: any[]
         ) {
           const { request, meta } = await this.createContractRequestFor({
-            fDescription,
             args,
+            fDescription,
           });
           const isNonQuery = !(request instanceof ContractCallQuery);
           const executionResultType =
@@ -424,7 +424,10 @@ export class LiveContract extends BaseLiveEntityWithBalance<
           extractSolidityAddressFrom(what) !== undefined
         ) {
           // most likely, this is a solidity-address
-          f(new StratoAddress(this.session, what), true);
+          f(
+            new StratoAddress(this.session, what, this.id.shard, this.id.realm),
+            true
+          );
           wasMapped = true;
         } else if (EthersBigNumber.isBigNumber(what)) {
           f(new BigNumber(what.toString()), false);
