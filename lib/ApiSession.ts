@@ -20,6 +20,7 @@ import { EventEmitter } from "events";
 import { Interface } from "@ethersproject/abi";
 
 import { ContractFunctionCall, LiveContract } from "./live/LiveContract";
+import { HederaEntityId, LiveEntity } from "./live/LiveEntity";
 import { Promised, RecursivePartial } from "./core/UsefulTypes";
 import {
   StratoContext,
@@ -31,7 +32,6 @@ import { CreatableEntity } from "./core/CreatableEntity";
 import { File } from "./static/upload/File";
 import { HederaNetwork } from "./HederaNetwork";
 import { Json } from "./static/upload/Json";
-import { HederaEntityId, LiveEntity } from "./live/LiveEntity";
 import { LiveFile } from "./live/LiveFile";
 import { LiveJson } from "./live/LiveJson";
 import { SolidityAddressable } from "./core/SolidityAddressable";
@@ -388,7 +388,7 @@ export class ApiSession implements SolidityAddressable {
    */
   public async upload<
     T extends LiveEntity<R, I, P>,
-    R extends { toSolidityAddress(): string },
+    R extends HederaEntityId,
     I,
     P
   >(what: BasicUploadableEntity<T, R, I>, ...args: any[]): Promise<T>;
@@ -433,7 +433,7 @@ export class ApiSession implements SolidityAddressable {
   // Overload implementation
   public async upload<
     T extends LiveEntity<R, I, P>,
-    R extends { toSolidityAddress(): string },
+    R extends HederaEntityId,
     I,
     P
   >(
