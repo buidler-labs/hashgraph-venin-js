@@ -28,7 +28,7 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
 
   public override getLiveEntityInfo(): Promise<FileInfo> {
     const fileInfoQuery = new FileInfoQuery({ fileId: this.id });
-    return this.session.execute(
+    return this.executeSanely(
       fileInfoQuery,
       TypeOfExecutionReturn.Result,
       false
@@ -55,7 +55,7 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
 
   public async getContents(): Promise<Uint8Array> {
     const fileContentsQuery = new FileContentsQuery({ fileId: this.id });
-    const queryResponse = await this.session.execute(
+    const queryResponse = await this.executeSanely(
       fileContentsQuery,
       TypeOfExecutionReturn.Result,
       false

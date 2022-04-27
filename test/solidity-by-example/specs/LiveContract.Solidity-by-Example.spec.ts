@@ -1,4 +1,4 @@
-import { AccountId, Signer } from "@hashgraph/sdk";
+import { AccountId, Signer, Status } from "@hashgraph/sdk";
 import { describe, expect, it } from "@jest/globals";
 import BigNumber from "bignumber.js";
 
@@ -121,6 +121,13 @@ describe("LiveContract.Solidity-by-Example", () => {
     const liveContract = await load("/hello_world");
 
     await expect(liveContract.greet()).resolves.toEqual("Hello World!");
+  });
+
+  it("uploading a contract then deleting it should not allow interacting with its live instance", async () => {
+    const liveContract = await load("/hello_world");
+
+    await expect(liveContract.deleteEntity()).resolves.toEqual(Status.Success);
+    await expect(liveContract.greet()).rejects.toThrow();
   });
 
   it("uploading a contract followed by a cold retrieval should be permitted through the deployed contract-Id and its original ABI", async () => {

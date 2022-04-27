@@ -1,13 +1,14 @@
-import { describe, expect, it, jest } from "@jest/globals";
+import Long from "long";
+
 import {
   ContractCallQuery,
   ContractExecuteTransaction,
   Hbar,
   TransactionId,
 } from "@hashgraph/sdk";
+import { describe, expect, it, jest } from "@jest/globals";
 
 import { load as loadResource } from "../../utils";
-import Long from "long";
 
 function load(contractPath: string) {
   return loadResource(contractPath, "solidity-by-example");

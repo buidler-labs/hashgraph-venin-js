@@ -35,7 +35,7 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> {
     const tokenUpdateTx = new TokenUpdateTransaction()
       .setTokenId(this.id)
       .setSupplyKey(key instanceof Key ? key : key.id);
-    await this.session.execute(
+    await this.executeSanely(
       tokenUpdateTx,
       TypeOfExecutionReturn.Receipt,
       true
@@ -44,7 +44,7 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> {
 
   public async getLiveEntityInfo(): Promise<TokenInfo> {
     const tokenInfoQuery = new TokenInfoQuery().setTokenId(this.id);
-    return this.session.execute(
+    return this.executeSanely(
       tokenInfoQuery,
       TypeOfExecutionReturn.Result,
       false

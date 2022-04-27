@@ -31,7 +31,7 @@ export class LiveTopic extends LiveEntity<TopicId, TopicInfo, TopicFeatures> {
 
   public override getLiveEntityInfo(): Promise<TopicInfo> {
     const topicInfoQuery = new TopicInfoQuery({ topicId: this.id });
-    return this.session.execute(
+    return this.executeSanely(
       topicInfoQuery,
       TypeOfExecutionReturn.Result,
       false
@@ -64,6 +64,6 @@ export class LiveTopic extends LiveEntity<TopicId, TopicInfo, TopicFeatures> {
       message,
       topicId: this.id,
     });
-    return this.executeAndReturnStatus(messageSubmitTransaction);
+    return this.sanelyExecuteAndGetStatus(messageSubmitTransaction);
   }
 }
