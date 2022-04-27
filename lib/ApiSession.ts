@@ -64,7 +64,14 @@ export const enum TypeOfExecutionReturn {
   Result = "Result",
 }
 
-type ExecutionReturnTypes<T> = {
+export type AllowedExecutionReturnTypes<R> =
+  | ContractFunctionResult
+  | TransactionResponse
+  | R;
+export type ExecutionReturnTypes<
+  T extends AllowedExecutionReturnTypes<R>,
+  R = any
+> = {
   [TypeOfExecutionReturn.Receipt]: TransactionReceipt;
   [TypeOfExecutionReturn.Record]: TransactionRecord;
   [TypeOfExecutionReturn.Result]: T;
@@ -232,13 +239,11 @@ export class ApiSession implements SolidityAddressable {
     transaction: SessionExecutable<R>,
     returnType: T,
     getReceipt = false
-  ): Promise<
-    ExecutionReturnTypes<ContractFunctionResult | TransactionResponse | R>[T]
-  > {
+  ): Promise<ExecutionReturnTypes<AllowedExecutionReturnTypes<R>>[T]> {
     const isContractTransaction =
       transaction instanceof ContractCallQuery ||
       transaction instanceof ContractExecuteTransaction;
-    let executionResult: ContractFunctionResult | TransactionResponse | R;
+    let executionResult: AllowedExecutionReturnTypes<R>;
     let txReceipt: TransactionReceipt;
     let txRecord: TransactionRecord;
     const txResponse = await this.client.execute(transaction);

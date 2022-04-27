@@ -33,7 +33,7 @@ export class LiveAccount extends BaseLiveEntityWithBalance<
 
   public getLiveEntityInfo(): Promise<AccountInfo> {
     const accountInfoQuery = new AccountInfoQuery().setAccountId(this.id);
-    return this.session.execute(
+    return this.executeSanely(
       accountInfoQuery,
       TypeOfExecutionReturn.Result,
       false

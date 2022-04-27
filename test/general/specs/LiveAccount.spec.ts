@@ -9,11 +9,8 @@ import {
 import { describe, expect, it } from "@jest/globals";
 
 import { Account, KeyType } from "../../../lib/static/create/Account";
-import {
-  LiveAccount,
-  LiveAccountWithPrivateKey,
-} from "../../../lib/live/LiveAccount";
 import { ApiSession } from "../../../lib/ApiSession";
+import { LiveAccountWithPrivateKey } from "../../../lib/live/LiveAccount";
 import { getKeyTypeFor } from "../../utils";
 
 describe("LiveAccount", () => {
@@ -67,7 +64,7 @@ describe("LiveAccount", () => {
     );
   });
 
-  it("given a new account with initial balance, querying the balance returns the right amounts", async () => {
+  it("given a new account with initial balance, querying the balance returns the right amounts yet deleting the account will make balance-query-ing insane", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(
       new Account({ initialBalance: new Hbar(10) })
@@ -76,12 +73,13 @@ describe("LiveAccount", () => {
     const balance = await account.getBalanceOfLiveEntity();
 
     expect(balance.hbars.toBigNumber().toNumber()).toEqual(10);
+    await expect(account.deleteEntity()).resolves.toBeInstanceOf(Status);
+    await expect(account.getBalanceOfLiveEntity()).rejects.toThrow();
   });
 
-  it.skip("given a new account, updating it works as expected", async () => {
+  it.skip("given a new account, updating it works as expected even after a deletion ocurred which should not allow for further live-entity info extraction", async () => {
     const { session } = await ApiSession.default();
     const account = await session.create(new Account());
-
     const updateStatus = await account.updateEntity({
       maxAutomaticTokenAssociations: 10,
     });
@@ -91,6 +89,8 @@ describe("LiveAccount", () => {
     const info = await account.getLiveEntityInfo();
 
     expect(info.maxAutomaticTokenAssociations.toString()).toEqual("10");
+    await expect(account.deleteEntity()).resolves.toEqual(Status.Success);
+    await expect(account.getLiveEntityInfo()).rejects.toThrow();
   });
 
   it("given a new account, deleting it works as expected", async () => {
@@ -99,18 +99,18 @@ describe("LiveAccount", () => {
     const deleteStatus = await account.deleteEntity();
 
     expect(deleteStatus).toEqual(Status.Success);
+    await expect(account.deleteEntity()).rejects.toThrow();
   });
 
-  it("instantiating an account with an id, getting balance works as expected", async () => {
+  it("instantiating an account with an id, getting balance works as expected even following a self-deletion", async () => {
     const { session } = await ApiSession.default();
-    const createdAccount = await session.create(
+    const account = await session.create(
       new Account({ initialBalance: new Hbar(10) })
     );
-
-    const account = new LiveAccount({ id: createdAccount.id, session });
-
     const balance = await account.getBalanceOfLiveEntity();
 
     expect(balance.hbars.toBigNumber().toNumber()).toEqual(10);
+    await expect(account.deleteEntity()).resolves.toBeInstanceOf(Status);
+    await expect(account.getBalanceOfLiveEntity()).rejects.toThrow();
   });
 });

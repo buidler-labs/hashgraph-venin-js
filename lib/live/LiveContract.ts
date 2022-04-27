@@ -167,7 +167,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
             isNonQuery && meta.onlyReceipt
               ? TypeOfExecutionReturn.Receipt
               : TypeOfExecutionReturn.Result;
-          const callResponse = await this.session.execute(
+          const callResponse = await this.executeSanely(
             request,
             executionResultType,
             meta.emitReceipt
@@ -490,7 +490,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
 
   public getLiveEntityInfo(): Promise<ContractInfo> {
     const contractInfoQuery = new ContractInfoQuery().setContractId(this.id);
-    return this.session.execute(
+    return this.executeSanely(
       contractInfoQuery,
       TypeOfExecutionReturn.Result,
       false

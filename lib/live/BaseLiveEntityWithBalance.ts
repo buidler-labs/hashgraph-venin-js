@@ -17,10 +17,10 @@ export abstract class BaseLiveEntityWithBalance<
   I,
   P
 > extends LiveEntity<T, I, P> {
-  public getBalanceOfLiveEntity(): Promise<AccountBalance> {
+  public async getBalanceOfLiveEntity(): Promise<AccountBalance> {
     const queryPayload = this._getBalancePayload();
     const balanceQuery = new AccountBalanceQuery(queryPayload);
-    return this.session.execute(
+    return this.executeSanely(
       balanceQuery,
       TypeOfExecutionReturn.Result,
       false
@@ -37,7 +37,7 @@ export abstract class BaseLiveEntityWithBalance<
         amountToTransfer.negated()
       )
       .addHbarTransfer(this.id.toString(), amountToTransfer);
-    return this.executeAndReturnStatus(transferTransaction);
+    return this.sanelyExecuteAndGetStatus(transferTransaction);
   }
 
   public associateTokensWithLiveEntity(
@@ -46,7 +46,7 @@ export abstract class BaseLiveEntityWithBalance<
     const tokenAssociateTransaction = new TokenAssociateTransaction()
       .setAccountId(this.id.toString())
       .setTokenIds(tokens);
-    return this.executeAndReturnStatus(tokenAssociateTransaction);
+    return this.sanelyExecuteAndGetStatus(tokenAssociateTransaction);
   }
 
   protected override _getDeleteTransaction(args?: any): Transaction {
