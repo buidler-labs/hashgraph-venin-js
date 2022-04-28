@@ -1,4 +1,4 @@
-name: test-nodejs-jsdom-browser
+name: test-nodejs-jsdom
 
 on:
   pull_request:
