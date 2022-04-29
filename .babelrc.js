@@ -1,19 +1,3 @@
-const sharedPresets = ["@babel/preset-typescript"];
-const sharedPlugins = [
-  "@babel/plugin-transform-runtime",
-  {
-    absoluteRuntime: false,
-    corejs: false,
-    helpers: true,
-    regenerator: true,
-  },
-];
-const shared = {
-  ignore: ["test/**/*.spec.ts"],
-  presets: sharedPresets,
-  plugins: sharedPlugins,
-};
-
 module.exports = {
   env: {
     esm: {
