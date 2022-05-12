@@ -32,6 +32,7 @@ module.exports = {
             regenerator: true,
           },
         ],
+        ["babel-plugin-add-import-extension", { extension: "cjs" }],
       ],
     },
   },

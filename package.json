@@ -20,7 +20,7 @@
   "name": "@buidlerlabs/hedera-strato-js",
   "scripts": {
     "build:4-publish": "run-s build:cjs build:esm build:declarations",
-    "build:cjs": "babel --env-name cjs lib --extensions .ts --out-dir lib.cjs --source-maps --out-file-extension .cjs",
+    "build:cjs": "babel --env-name cjs lib --extensions .ts --out-dir lib.cjs --out-file-extension .cjs",
     "build:esm": "babel --env-name esm lib --extensions .ts --out-dir lib.esm --source-maps --out-file-extension .mjs",
     "build:declarations": "tsc",
     "clean": "run-s clean:cjs clean:esm clean:declarations",
