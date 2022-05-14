@@ -28,6 +28,7 @@ jobs:
 
       - name: Testing
         env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
           HEDERAS_NETWORK: ${{ secrets.HEDERAS_NETWORK }}
           HEDERAS_OPERATOR_ID: ${{ secrets.HEDERAS_OPERATOR_ID }}
           HEDERAS_OPERATOR_KEY: ${{ secrets.HEDERAS_OPERATOR_KEY }}
