@@ -1,9 +1,18 @@
+// Wrapper around the Solidity solc-js compiler meant for Node runtime consumption
+// Browser variants do not use this and instead polyfill it
+//  Please see the rollup-strato plugin implementation for more info.
+
 import * as fs from "fs";
 import * as sdkPath from "path";
 
 import * as solc from "solc";
 
 export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = "__contract__.sol";
+
+// Fix for https://github.com/buidler-labs/hedera-strato-js/issues/81
+//   as initially reported by https://github.com/ethereum/solidity/issues/12228
+const listeners = process.listeners("unhandledRejection");
+process.removeListener("unhandledRejection", listeners[listeners.length - 1]);
 
 export class SolidityCompiler {
   public static async compile({
@@ -27,7 +36,6 @@ export class SolidityCompiler {
     //       here https://docs.soliditylang.org/en/v0.8.10/using-the-compiler.html#compiler-input-and-output-json-description
     const solInput = {
       language: "Solidity",
-      sources: { [VIRTUAL_SOURCE_CONTRACT_FILE_NAME]: { content } },
       settings: {
         metadata: {
           // disabling metadata hash embedding to make the bytecode generation predictable at test-time
@@ -40,6 +48,7 @@ export class SolidityCompiler {
           },
         },
       },
+      sources: { [VIRTUAL_SOURCE_CONTRACT_FILE_NAME]: { content } },
     };
     const stringifiedSolInput = JSON.stringify(solInput);
     const importPrefixes = [

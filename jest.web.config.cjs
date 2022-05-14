@@ -7,4 +7,5 @@ module.exports = Object.assign({}, jestCommonConfig, {
   setupFilesAfterEnv: ["core-js", "./test/setup.web.ts"],
   testEnvironment: "./test/jte.web.ts",
   testMatch: ["**/?(*.)+(spec|test).ts"],
+  testPathIgnorePatterns: ["node.(spec|test).ts"],
 });
