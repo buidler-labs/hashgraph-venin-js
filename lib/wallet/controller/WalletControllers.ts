@@ -14,7 +14,10 @@ export class WalletControllers {
 
     this.knownControllers = [
       { name: "Hedera", value: new HederaWalletController(ctx) },
-      { name: "DefaultPrivateKey", value: new DefaultPrivateKeyWalletController(ctx) },
+      {
+        name: "DefaultPrivateKey",
+        value: new DefaultPrivateKeyWalletController(ctx),
+      },
     ];
   }
 
@@ -23,8 +26,12 @@ export class WalletControllers {
   }
 
   public getBy({ name }: { name: string }): WalletController {
-    const candidateWalletControllers = this.knownControllers.filter(controller => controller.name === name);
+    const candidateWalletControllers = this.knownControllers.filter(
+      (controller) => controller.name === name
+    );
 
-    return candidateWalletControllers.length === 0 ? this.Unknown : candidateWalletControllers[0].value;
+    return candidateWalletControllers.length === 0
+      ? this.Unknown
+      : candidateWalletControllers[0].value;
   }
 }

@@ -1,14 +1,14 @@
-import { 
-  AccountBalance, 
-  AccountInfo, 
-  LedgerId, 
+import {
+  AccountBalance,
+  AccountInfo,
+  LedgerId,
   TransactionRecord,
 } from "@hashgraph/sdk";
 
 import { HederaNodesAddressBook } from "../../HederaNetwork";
 
 /**
- * A set of sub-definitions for HIP-338's Signer interface 
+ * A set of sub-definitions for HIP-338's Signer interface
  * that only deal with information presentation
  */
 export interface SignerInfo {
@@ -20,5 +20,5 @@ export interface SignerInfo {
   // Query-dependent signer info
   getAccountBalance(): Promise<AccountBalance>;
   getAccountInfo(): Promise<AccountInfo>;
-  getAccountRecords(): Promise<TransactionRecord[]>
+  getAccountRecords(): Promise<TransactionRecord[]>;
 }

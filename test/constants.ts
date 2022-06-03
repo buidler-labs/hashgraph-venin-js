@@ -1,4 +1,3 @@
-
 import { Hbar } from "@hashgraph/sdk";
 
 export const GasFees = {

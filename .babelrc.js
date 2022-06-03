@@ -1,34 +1,39 @@
-const sharedPresets = ['@babel/preset-typescript'];
-const shared = {
-  ignore: ['test/**/*.spec.ts'],
-  presets: sharedPresets,
-  plugins: [
-    [
-      "@babel/plugin-transform-runtime", {
-        "absoluteRuntime": false,
-        "corejs": false,
-        "helpers": true,
-        "regenerator": true
-      }
-    ]
-  ]
-};
-
 module.exports = {
   env: {
-    esm: shared,
-    cjs: {
-      ...shared,
-      presets: [
-        ['@babel/env', { modules: 'commonjs' }], 
-        ...sharedPresets
+    esm: {
+      ignore: ["test/**/*.spec.ts"],
+      presets: ["@babel/preset-typescript"],
+      plugins: [
+        [
+          "@babel/plugin-transform-runtime",
+          {
+            absoluteRuntime: false,
+            corejs: false,
+            helpers: true,
+            regenerator: true,
+          },
+        ],
+        ["babel-plugin-add-import-extension", { extension: "mjs" }],
       ],
     },
-    test: {
+    cjs: {
+      ignore: ["test/**/*.spec.ts"],
       presets: [
-        ['@babel/env'], 
-        ...sharedPresets
+        ["@babel/env", { modules: "commonjs" }],
+        "@babel/preset-typescript",
       ],
-    }
-  }
+      plugins: [
+        [
+          "@babel/plugin-transform-runtime",
+          {
+            absoluteRuntime: false,
+            corejs: false,
+            helpers: true,
+            regenerator: true,
+          },
+        ],
+        ["babel-plugin-add-import-extension", { extension: "cjs" }],
+      ],
+    },
+  },
 };

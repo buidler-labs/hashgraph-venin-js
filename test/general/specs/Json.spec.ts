@@ -1,12 +1,8 @@
-import {
-  describe, 
-  expect, 
-  it,
-} from '@jest/globals';
+import { describe, expect, it } from "@jest/globals";
 
-import { Json } from '../../../lib/static/upload/Json';
+import { Json } from "../../../lib/static/upload/Json";
 
-describe('Json', () => {
+describe("Json", () => {
   it("given a JSON object that has keys starting with the underscore (_) character, creating an instance should error out", async () => {
     expect(() => new Json({ _a: 0 })).toThrow();
   });

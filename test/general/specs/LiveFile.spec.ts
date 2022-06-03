@@ -1,11 +1,10 @@
-import { FileInfo, Status } from '@hashgraph/sdk';
-import { describe, expect, it } from '@jest/globals';
+import { FileInfo, Status } from "@hashgraph/sdk";
+import { describe, expect, it } from "@jest/globals";
 
-import { ApiSession } from '../../../lib/ApiSession';
-import { LiveFile } from '../../../lib/live/LiveFile';
-  
-describe('LiveFile', () => {
+import { ApiSession } from "../../../lib/ApiSession";
+import { LiveFile } from "../../../lib/live/LiveFile";
 
+describe("LiveFile", () => {
   it("given a string, a file is created from that string", async () => {
     const fileContent = "this is a string";
     const fileContentBuffer = Buffer.from(fileContent);
@@ -24,7 +23,7 @@ describe('LiveFile', () => {
     const { session } = await ApiSession.default();
     const liveFile = await session.upload(fileContent);
 
-    const liveFileFromId = new LiveFile({id: liveFile.id, session});
+    const liveFileFromId = new LiveFile({ id: liveFile.id, session });
 
     const contents = await liveFileFromId.getContents();
 
@@ -37,7 +36,10 @@ describe('LiveFile', () => {
     const { session } = await ApiSession.default();
     const liveFile = await session.upload(fileContent);
 
-    const liveFileFromId = new LiveFile({id: liveFile.id.toString(), session});
+    const liveFileFromId = new LiveFile({
+      id: liveFile.id.toString(),
+      session,
+    });
 
     const info = await liveFileFromId.getLiveEntityInfo();
 
@@ -50,7 +52,9 @@ describe('LiveFile', () => {
     const { session } = await ApiSession.default();
     const liveFile = await session.upload(fileContent);
 
-    expect(liveFile.getSolidityAddress()).toEqual(liveFile.id.toSolidityAddress());
+    expect(liveFile.getSolidityAddress()).toEqual(
+      liveFile.id.toSolidityAddress()
+    );
   });
 
   it("updating the contents of an existing file, the file returns the right contents.", async () => {
@@ -62,7 +66,7 @@ describe('LiveFile', () => {
     const updatedContent = "this is another string";
     const updatedContentBuffer = Buffer.from(updatedContent);
 
-    const status = await liveFile.updateEntity({contents: updatedContent});
+    const status = await liveFile.updateEntity({ contents: updatedContent });
 
     expect(status).toEqual(Status.Success);
 

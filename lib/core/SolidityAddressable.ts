@@ -1,9 +1,13 @@
 export interface SolidityAddressable {
-    getSolidityAddress(): string;
+  getSolidityAddress(): string;
 }
 
 export function isSolidityAddressable(arg: any): arg is SolidityAddressable {
-  return arg && arg.getSolidityAddress && typeof(arg.getSolidityAddress) === 'function';
+  return (
+    arg &&
+    arg.getSolidityAddress &&
+    typeof arg.getSolidityAddress === "function"
+  );
 }
 
 export function extractSolidityAddressFrom(addr: string) {

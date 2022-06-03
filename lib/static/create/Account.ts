@@ -1,9 +1,9 @@
-import { 
+import {
   AccountCreateTransaction,
-  AccountId, 
-  Hbar, 
+  AccountId,
+  Hbar,
   Key,
-  PrivateKey, 
+  PrivateKey,
 } from "@hashgraph/sdk";
 import { BigNumber } from "@hashgraph/sdk/lib/Transfer";
 import Duration from "@hashgraph/sdk/lib/Duration";
@@ -17,7 +17,7 @@ import { StratoLogger } from "../../StratoLogger";
 export enum KeyType {
   ECDSA,
   ED25519,
-  Unknown
+  Unknown,
 }
 
 export type AccountFeatures = {
@@ -28,17 +28,22 @@ export type AccountFeatures = {
   autoRenewPeriod?: number | Long.Long | Duration;
   accountMemo?: string;
   maxAutomaticTokenAssociations?: number | Long.Long;
-}
+};
 
 export type CreateAccountFeatures = AccountFeatures & {
   initialBalance?: string | number | Long.Long | BigNumber | Hbar;
 };
 
 export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
-  public static async mapAccountFeaturesToAccountArguments<T extends AccountFeatures>(session: ApiSession, features: T): Promise<T> {
+  public static async mapAccountFeaturesToAccountArguments<
+    T extends AccountFeatures
+  >(session: ApiSession, features: T): Promise<T> {
     // we are looking to generate a key if a keyType exists on the AccountFeatures
     if (features.keyType !== null) {
-      const key = await Account.considerGenerateKeyFromAccountFeatures(session.log, features);
+      const key = await Account.considerGenerateKeyFromAccountFeatures(
+        session.log,
+        features
+      );
       return Object.assign({}, features, { key });
     }
     return features;
@@ -49,16 +54,25 @@ export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
    * @param features - AccountFeatures being used to find out what type of key needs to be generated
    * @returns - the key for the new account
    */
-  public static async considerGenerateKeyFromAccountFeatures<T extends AccountFeatures>(logger: StratoLogger, features: T): Promise<PrivateKey> {
+  public static async considerGenerateKeyFromAccountFeatures<
+    T extends AccountFeatures
+  >(logger: StratoLogger, features: T): Promise<PrivateKey> {
     let keyToReturn = features.key as PrivateKey;
-    
+
     if (!features.key) {
       const { keyType } = features;
-      const keyTypeString = keyType === KeyType.ED25519 ? KeyType[KeyType.ED25519] : KeyType[KeyType.ECDSA];
+      const keyTypeString =
+        keyType === KeyType.ED25519
+          ? KeyType[KeyType.ED25519]
+          : KeyType[KeyType.ECDSA];
 
-      keyToReturn = keyType === KeyType.ED25519 ? 
-        await PrivateKey.generateED25519Async() : await PrivateKey.generateECDSAAsync();
-      logger.debug(`A new '${keyTypeString}' key has been created: ${keyToReturn.toStringDer()} . Copy it since this is only time you'll see it.`);
+      keyToReturn =
+        keyType === KeyType.ED25519
+          ? await PrivateKey.generateED25519Async()
+          : await PrivateKey.generateECDSAAsync();
+      logger.debug(
+        `A new '${keyTypeString}' key has been created: ${keyToReturn.toStringDer()} . Copy it since this is only time you'll see it.`
+      );
     }
     return keyToReturn;
   }
@@ -71,20 +85,33 @@ export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
     this.accountFeatures = {
       keyType: KeyType.ED25519,
       ...info,
-    }
+    };
   }
 
-  public async createVia({ session }: ArgumentsForCreate): Promise<LiveAccountWithPrivateKey> {
+  public async createVia({
+    session,
+  }: ArgumentsForCreate): Promise<LiveAccountWithPrivateKey> {
     let resolutedInfo: AccountFeatures;
     if (this.key) {
-      resolutedInfo = Object.assign({}, this.accountFeatures, { key: this.key });
+      resolutedInfo = Object.assign({}, this.accountFeatures, {
+        key: this.key,
+      });
     }
-    resolutedInfo = await Account.mapAccountFeaturesToAccountArguments(session, this.accountFeatures);
-    const createAccountTransaction = new AccountCreateTransaction(resolutedInfo);
-    const { accountId } = await session.execute(createAccountTransaction, TypeOfExecutionReturn.Receipt, true);
+    resolutedInfo = await Account.mapAccountFeaturesToAccountArguments(
+      session,
+      this.accountFeatures
+    );
+    const createAccountTransaction = new AccountCreateTransaction(
+      resolutedInfo
+    );
+    const { accountId } = await session.execute(
+      createAccountTransaction,
+      TypeOfExecutionReturn.Receipt,
+      true
+    );
 
-    return new LiveAccountWithPrivateKey({ 
-      id: accountId,  
+    return new LiveAccountWithPrivateKey({
+      id: accountId,
       privateKey: resolutedInfo.key as PrivateKey,
       session,
     });

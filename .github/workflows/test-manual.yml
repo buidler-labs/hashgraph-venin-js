@@ -1,14 +1,14 @@
 name: test-manual
 
-on: 
+on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'The branch to run the tests against'
+        description: "The branch to run the tests against"
         required: true
         default: main
       environment:
-        description: 'Hedera network to run the tests on'
+        description: "Hedera network to run the tests on"
         required: true
         type: environment
         default: hedera-testnet
@@ -23,7 +23,7 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     strategy:
       matrix:
-        npm_test_script: [ 'test:node', 'test:jsdom', 'test:browser' ]    
+        npm_test_script: ["test:node", "test:jsdom"]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -37,7 +37,7 @@ jobs:
       - run: npm install
 
       - name: Testing
-        env: 
+        env:
           HEDERAS_NETWORK: ${{ secrets.HEDERAS_NETWORK }}
           HEDERAS_OPERATOR_ID: ${{ secrets.HEDERAS_OPERATOR_ID }}
           HEDERAS_OPERATOR_KEY: ${{ secrets.HEDERAS_OPERATOR_KEY }}
