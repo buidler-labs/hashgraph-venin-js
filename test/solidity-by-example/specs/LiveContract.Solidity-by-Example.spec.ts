@@ -2,16 +2,14 @@ import { AccountId, Signer, Status } from "@hashgraph/sdk";
 import { describe, expect, it } from "@jest/globals";
 import BigNumber from "bignumber.js";
 
+import { ApiSession, Contract, StratoAddress } from "../../..";
 import {
   ResourceReadOptions,
   loadContractRegistry as loadContractRegistryResource,
   load as loadResource,
   read as readResource,
 } from "../../utils";
-import { ApiSession } from "../../../lib/ApiSession";
-import { Contract } from "../../../lib/static/upload/Contract";
 import { ContractRegistry } from "../../../lib/ContractRegistry";
-import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 function load(contractPath: string) {
   return loadResource(contractPath, "solidity-by-example");

@@ -2,8 +2,7 @@ import * as path from "path";
 
 import { describe, expect, it } from "@jest/globals";
 
-import { CompileIssues } from "../../../lib/errors/CompileIssues";
-import { Contract } from "../../../lib/static/upload/Contract";
+import { CompileIssues, Contract } from "../../..";
 import { read } from "../../utils";
 
 const HELLO_IMPORTS_BYTECODE = read({ solo: "hello_imports" }).evm.bytecode
