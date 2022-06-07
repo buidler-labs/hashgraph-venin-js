@@ -3,10 +3,8 @@ import BigNumber from "bignumber.js";
 import { Hbar } from "@hashgraph/sdk";
 import { arrayify } from "@ethersproject/bytes";
 
+import { ApiSession, Contract, StratoAddress } from "../../..";
 import { ResourceReadOptions, read as readResource } from "../../utils";
-import { ApiSession } from "../../../lib/ApiSession";
-import { Contract } from "../../../lib/static/upload/Contract";
-import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: "taskbar", ...what });

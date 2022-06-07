@@ -5,14 +5,16 @@
 import * as fs from "fs";
 import * as sdkPath from "path";
 
-import * as solc from "solc";
+import solc from "solc";
 
 export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = "__contract__.sol";
 
 // Fix for https://github.com/buidler-labs/hedera-strato-js/issues/81
 //   as initially reported by https://github.com/ethereum/solidity/issues/12228
 const listeners = process.listeners("unhandledRejection");
-process.removeListener("unhandledRejection", listeners[listeners.length - 1]);
+if (undefined !== listeners[listeners.length - 1]) {
+  process.removeListener("unhandledRejection", listeners[listeners.length - 1]);
+}
 
 export class SolidityCompiler {
   public static async compile({
