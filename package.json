@@ -82,6 +82,6 @@
   "types": "./types/index.d.ts",
   "version": "0.7.5",
   "peerDependencies": {
-    "@hashgraph/sdk": "2.11.3"
+    "@hashgraph/sdk": "2.12.1"
   }
 }
