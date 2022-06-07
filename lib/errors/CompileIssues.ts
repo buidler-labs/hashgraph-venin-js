@@ -1,3 +1,4 @@
+// An error-wrapper class around Solidity compiler issues
 export class CompileIssues extends Error {
   static tryThrowingIfErrorsIn({
     compileResult = null,
