@@ -3,8 +3,10 @@ import BigNumber from "bignumber.js";
 import { Hbar } from "@hashgraph/sdk";
 import { arrayify } from "@ethersproject/bytes";
 
-import { ApiSession, Contract, StratoAddress } from "../../..";
 import { ResourceReadOptions, read as readResource } from "../../utils";
+import { ApiSession } from "../../../lib/ApiSession";
+import { Contract } from "../../../lib/static/upload/Contract";
+import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: "taskbar", ...what });
@@ -41,7 +43,7 @@ describe("LiveContract.TaskBar", () => {
         { gas: 200_000 },
         taskId,
         100,
-        new TextEncoder().encode("67347465687435726877747265676572"),
+        "67347465687435726877747265676572",
         600,
         1,
         2
@@ -126,7 +128,7 @@ describe("LiveContract.TaskBar", () => {
       }
     );
 
-    // Play around with the live-contracts testing ocasionally
+    // Play around with the live-contracts testing occasionally
     await expect(cappedRegistryLiveContract.getRegistrySize()).resolves.toEqual(
       maxNrOfTasksPerRegistry
     );

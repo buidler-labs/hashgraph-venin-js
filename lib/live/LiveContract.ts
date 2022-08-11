@@ -22,12 +22,16 @@ import traverse from "traverse";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Contract, ContractFeatures } from "../static/upload/Contract";
+import {
+  extractSolidityAddressFrom,
+  isSolidityAddressable,
+} from "../core/SolidityAddressable";
+
 import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
-import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber";
 import { StratoAddress } from "../core/StratoAddress";
 import { encodeToHex } from "../core/Hex";
-import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
+import { transform } from "../core/UsefulOps";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
@@ -351,11 +355,71 @@ export class LiveContract extends BaseLiveEntityWithBalance<
       args = args.slice(1);
     }
 
-    // Prepare the targeted function
-    request.setFunction(
-      fDescription.name,
-      await ContractFunctionParameters.newFor(fDescription, args)
-    );
+    traverse(args).forEach(function (potentialArg) {
+      const solArgDescription = this.path.reduce((state, propName) => {
+        if (!isNaN(parseInt(propName))) {
+          // property name is numeric
+          if (state.baseType === "array") {
+            // Bypass instance references
+            return state;
+          }
+        } else {
+          // property name is NOT numeric. It might be referencing a solidity struct prop
+          if (state.type.startsWith("tuple")) {
+            return state.components.find(
+              (component) => component.name === propName
+            );
+          }
+        }
+        return state[propName];
+      }, fDescription.inputs);
+      const requireBytesYetStringProvided =
+        this.isLeaf &&
+        solArgDescription !== undefined &&
+        solArgDescription.type !== undefined &&
+        solArgDescription.type.startsWith("bytes") &&
+        typeof potentialArg === "string";
+
+      // Do primitive leaf processing
+      if (requireBytesYetStringProvided) {
+        const considerMappingStringToUint8Array = (arg: string): Uint8Array =>
+          arg.startsWith("0x") ? arrayify(arg) : new TextEncoder().encode(arg);
+        this.update(
+          transform(potentialArg, considerMappingStringToUint8Array),
+          true
+        );
+      }
+
+      if (
+        this.isLeaf ||
+        (!(potentialArg instanceof Uint8Array) &&
+          !isSolidityAddressable(potentialArg) &&
+          !BigNumber.isBigNumber(potentialArg))
+      ) {
+        // We're only processing mostly leafs or higher objects of interest
+        return;
+      }
+
+      if (solArgDescription.type.startsWith("address")) {
+        const considerMappingSolidityAddressableToAddress = (
+          arg: any
+        ): string =>
+          isSolidityAddressable(arg) ? arg.getSolidityAddress() : arg;
+        this.update(
+          transform(potentialArg, considerMappingSolidityAddressableToAddress),
+          true
+        );
+      } else if (BigNumber.isBigNumber(potentialArg)) {
+        this.update(EthersBigNumber.from(potentialArg.toString()), true);
+      }
+    });
+
+    const encodedFuncParams = this.interface
+      .encodeFunctionData(fDescription.name, args)
+      .slice(2);
+    const funcParamsBuffer = Buffer.from(encodedFuncParams, "hex");
+
+    request.setFunctionParameters(funcParamsBuffer);
 
     return {
       meta,
