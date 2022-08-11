@@ -39,6 +39,11 @@ export class SolidityCompiler {
     const solInput = {
       language: "Solidity",
       settings: {
+        // FIXME: Issue #91: Make SolidityCompiler execution configurable
+        optimizer: {
+          enabled: true,
+          runs: 200,
+        },
         metadata: {
           // disabling metadata hash embedding to make the bytecode generation predictable at test-time
           // see https://docs.soliditylang.org/en/latest/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode

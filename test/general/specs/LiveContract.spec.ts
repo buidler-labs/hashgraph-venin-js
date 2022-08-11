@@ -146,4 +146,59 @@ describe("LiveContract", () => {
 
     expect(status).toEqual(Status.Success);
   });
+
+  // FIXME: Enable this once issue #96 gets implemented
+  it.skip("calling a live-contract function with complex nested object parameters should be permitted", async () => {
+    const { liveContract } = await load("complex_struct_args");
+    const groups = [
+      {
+        groupId: 1,
+        groupName: "lighters",
+        members: [
+          {
+            memberId: 2,
+            memberName: "Luke",
+          },
+          {
+            memberId: 3,
+            memberName: "Obi One",
+          },
+        ],
+      },
+      {
+        groupId: 2,
+        groupName: "darkers",
+        members: [
+          {
+            memberId: 5,
+            memberName: "Vader",
+          },
+        ],
+      },
+    ];
+    const reflectedGroups = await liveContract.reflectGroups(groups);
+
+    expect(reflectedGroups).toEqual(groups);
+  });
+
+  it("calling a live-contract function with complex objects that have string addresses as leafs should be permitted", async () => {
+    const { liveContract } = await load("complex_struct_args");
+    const nftBurns = [
+      {
+        collectionAddress: "0x0000000000000000000000000000000000000062",
+        serialNumbers: [1, 3, 5, 10],
+      },
+    ];
+    const reflectedNftBurns = await liveContract.reflectNftBurns(nftBurns);
+
+    expect(reflectedNftBurns).toHaveLength(1);
+    expect(reflectedNftBurns[0].collectionAddress).toEqual(
+      nftBurns[0].collectionAddress
+    );
+    expect(
+      reflectedNftBurns[0].serialNumbers.map((serialNumber) =>
+        serialNumber.toNumber()
+      )
+    ).toEqual(nftBurns[0].serialNumbers);
+  });
 });

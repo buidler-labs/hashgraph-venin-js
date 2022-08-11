@@ -1,7 +1,6 @@
 import {
   ContractCreateTransaction,
   ContractExecuteTransaction,
-  FileAppendTransaction,
   FileCreateTransaction,
   TransactionReceipt,
 } from "@hashgraph/sdk";
@@ -42,7 +41,6 @@ describe("ApiSession.Solidity-by-Example.Receipts", () => {
   it("uploading a contract should generate appropriate receipts regardless if constructor-event logs are of interest or not", async () => {
     const expectedTransactionSources = [
       FileCreateTransaction,
-      FileAppendTransaction,
       ContractCreateTransaction,
     ];
 
