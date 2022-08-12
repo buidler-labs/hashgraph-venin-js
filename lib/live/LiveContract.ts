@@ -393,6 +393,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
       if (
         this.isLeaf ||
         (!(potentialArg instanceof Uint8Array) &&
+          !(potentialArg instanceof Hbar) &&
           !isSolidityAddressable(potentialArg) &&
           !BigNumber.isBigNumber(potentialArg))
       ) {
@@ -409,6 +410,8 @@ export class LiveContract extends BaseLiveEntityWithBalance<
           transform(potentialArg, considerMappingSolidityAddressableToAddress),
           true
         );
+      } else if(potentialArg instanceof Hbar) {
+        this.update(EthersBigNumber.from(potentialArg.toTinybars().toString()), true);
       } else if (BigNumber.isBigNumber(potentialArg)) {
         this.update(EthersBigNumber.from(potentialArg.toString()), true);
       }

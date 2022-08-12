@@ -1,4 +1,4 @@
-import { ContractExecuteTransaction, ContractId, Status } from "@hashgraph/sdk";
+import { ContractExecuteTransaction, ContractId, Hbar, Status } from "@hashgraph/sdk";
 import { describe, expect, it, jest } from "@jest/globals";
 import BigNumber from "bignumber.js";
 
@@ -200,5 +200,10 @@ describe("LiveContract", () => {
         serialNumber.toNumber()
       )
     ).toEqual(nftBurns[0].serialNumbers);
+  });
+
+  it("calling a live-contract function with uint argument, giving Hbar as a value, should be successful", async () => {
+    const { liveContract } = await load("change_state_with_return");
+    await expect(liveContract.setAndRetrieve(new Hbar(1))).resolves.toEqual(new BigNumber(new Hbar(1).toTinybars().toString()));
   });
 });
