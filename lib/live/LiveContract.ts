@@ -411,7 +411,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
           true
         );
       } else if(potentialArg instanceof Hbar) {
-        this.update(EthersBigNumber.from(potentialArg._valueInTinybar.toString()), true);
+        this.update(EthersBigNumber.from(potentialArg.toTinybars().toString()), true);
       } else if (BigNumber.isBigNumber(potentialArg)) {
         this.update(EthersBigNumber.from(potentialArg.toString()), true);
       }
