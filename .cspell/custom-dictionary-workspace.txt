@@ -6,6 +6,10 @@ cmfcmf
 considerArrayifying
 easy-peasy
 estree
+Hbar
+hbars
+Hederas
+localised
 polies
 resolutedAbi
 resolutedInfo

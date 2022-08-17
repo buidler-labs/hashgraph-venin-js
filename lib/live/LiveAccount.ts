@@ -74,27 +74,25 @@ export class LiveAccountWithPrivateKey extends LiveAccount {
     this.privateKey = privateKey;
   }
 
-  public tryToSign(transaction: Transaction): void {
-    const signature = this.privateKey.signTransaction(transaction);
-
-    transaction.addSignature(this.privateKey.publicKey, signature);
+  public async sign(transaction: Transaction): Promise<Transaction> {
+    return transaction.sign(this.privateKey);
   }
 
   protected async _getUpdateTransaction(
     args?: AccountFeatures
   ): Promise<Transaction> {
     const updateTransaction = await super._getUpdateTransaction(args);
-    // TODO: freeze with signer similar to the delete op?
-    this.tryToSign(updateTransaction);
 
-    return updateTransaction;
+    // TODO: freeze with signer before similar to the delete op?
+    return this.sign(updateTransaction);
   }
 
-  protected _getDeleteTransaction(args?: any): Transaction {
-    const deleteTransaction = super._getDeleteTransaction(args);
+  protected async _getDeleteTransaction(args?: any): Promise<Transaction> {
+    let selfDeleteTransaction = await super._getDeleteTransaction(args);
 
-    deleteTransaction.freezeWithSigner(this.session.wallet.signer as Wallet);
-    this.tryToSign(deleteTransaction);
-    return deleteTransaction;
+    selfDeleteTransaction = await selfDeleteTransaction.freezeWithSigner(
+      this.session.wallet.signer as Wallet
+    );
+    return this.sign(selfDeleteTransaction);
   }
 }

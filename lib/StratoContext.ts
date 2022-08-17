@@ -59,7 +59,8 @@ export type StratoContextSource = {
 };
 
 // Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
-const DEFAULT_FILE_CHUNK_SIZE = 2048;
+//       v2.17.1 increased the size to 4096
+const DEFAULT_FILE_CHUNK_SIZE = 4096;
 
 export const DefinedNetworkDefaults: { [k: string]: NetworkDefaults } = {
   [AVAILABLE_NETWORK_NAMES.CustomNet]: {

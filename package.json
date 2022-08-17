@@ -80,8 +80,8 @@
     "url": "https://github.com/buidler-labs/hedera-strato-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.7.6-beta.3",
+  "version": "0.7.6-beta.4",
   "peerDependencies": {
-    "@hashgraph/sdk": "2.12.1"
+    "@hashgraph/sdk": "^2.17.1"
   }
 }

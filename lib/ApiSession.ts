@@ -7,7 +7,7 @@ import {
   FileContentsQuery,
   FileId,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  LocalWallet,
+  Wallet,
   PublicKey,
   Query,
   Transaction,
@@ -118,7 +118,7 @@ export class ApiSession implements SolidityAddressable {
    *                     the following format `<node_ip>:<node_port>#<account_number>`. Eg. `127.0.0.1:502111#3` would be parsed in an address book having a node with IP `127.0.0.1`
    *                     and port 502111 associated with {@link AccountId} `3`
    * - `HEDERAS_WALLET_TYPE` : the network {@link StratoWallet} to use. Possible Values are statically defined in the {@link WalletTypes} props. If not provided, it defaults to `Sdk` which
-   *                           targets the native {@link LocalWallet} provided by the Hedera SDK.
+   *                           targets the native {@link Wallet} provided by the Hedera SDK.
    *
    * For other possible config values, please either see the `.env.sample` info file provided with the main repo code or, better yet, the {@link https://hsj-docs.buidlerlabs.com/markdown/configuration online configuration} docs.
    */

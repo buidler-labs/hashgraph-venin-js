@@ -43,7 +43,9 @@ export class LiveTopic extends LiveEntity<TopicId, TopicInfo, TopicFeatures> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected override _getDeleteTransaction<R>(args?: R): Transaction {
+  protected override async _getDeleteTransaction<R>(
+    args?: R
+  ): Promise<Transaction> {
     return new TopicDeleteTransaction({ topicId: this.id });
   }
 
