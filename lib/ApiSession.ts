@@ -6,8 +6,6 @@ import {
   ContractId,
   FileContentsQuery,
   FileId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Wallet,
   PublicKey,
   Query,
   Transaction,
@@ -15,6 +13,8 @@ import {
   TransactionRecord,
   TransactionRecordQuery,
   TransactionResponse,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  Wallet,
 } from "@hashgraph/sdk";
 import { EventEmitter } from "events";
 import { Interface } from "@ethersproject/abi";
