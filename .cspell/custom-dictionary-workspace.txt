@@ -18,5 +18,6 @@ previewnet
 resolutedAbi
 resolutedInfo
 Tinybar
+Tinybars
 TransactionedReceipt
 tweetnacl
