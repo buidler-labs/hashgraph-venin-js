@@ -11,7 +11,7 @@ import {
   VIRTUAL_SOURCE_CONTRACT_FILE_NAME,
 } from "../../SolidityCompiler";
 import { CompileIssues } from "../../errors/CompileIssues";
-import { ContractFunctionParameters } from "../../hedera/ContractFunctionParameters";
+import { StratoContractArgumentsEncoder } from "../../core/StratoContractArgumentsEncoder";
 
 export type ContractFeatures = {
   // TODO: add feature props here
@@ -296,7 +296,6 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     args = [],
   }: ArgumentsOnFileUploaded) {
     const contractFileId = receipt.fileId;
-    const constructorDefinition = this.interface.deploy;
     let contractCreationOverrides: any = {};
     let emitConstructorLogs = session.defaults.emitConstructorLogs;
 
@@ -307,7 +306,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     ) {
       const contractCreationArgs = args[0]._contract;
 
-      // try locking onto library-controlling behaviour flags
+      // try locking onto library-controlling behavior flags
       emitConstructorLogs =
         contractCreationArgs.emitConstructorLogs !== undefined
           ? contractCreationArgs.emitConstructorLogs
@@ -325,10 +324,9 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
         {
           adminKey: session.wallet.account.publicKey,
           bytecodeFileId: contractFileId,
-          constructorParameters: await ContractFunctionParameters.newFor(
-            constructorDefinition,
-            args
-          ),
+          constructorParameters: new StratoContractArgumentsEncoder(
+            this.interface
+          ).encode(args),
           gas: session.defaults.contractCreationGas,
           ...contractCreationOverrides,
         }
