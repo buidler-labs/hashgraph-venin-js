@@ -4,7 +4,7 @@ import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber";
 import { arrayify } from "@ethersproject/bytes";
 import traverse from "traverse";
 
-import { Hbar } from "@hashgraph/sdk";
+import { AccountId, ContractId, Hbar, TokenId, TopicId } from "@hashgraph/sdk";
 import { decodeFromHex } from "./Hex";
 import { isSolidityAddressable } from "./SolidityAddressable";
 import { transform } from "./UsefulOps";
@@ -84,7 +84,11 @@ export class StratoContractArgumentsEncoder {
         (!(potentialArg instanceof Uint8Array) &&
           !(potentialArg instanceof Hbar) &&
           !isSolidityAddressable(potentialArg) &&
-          !BigNumber.isBigNumber(potentialArg))
+          !BigNumber.isBigNumber(potentialArg) &&
+          !(potentialArg instanceof AccountId) &&
+          !(potentialArg instanceof ContractId) &&
+          !(potentialArg instanceof TokenId) &&
+          !(potentialArg instanceof TopicId))
       ) {
         // We're only processing mostly leafs or higher objects of interest
         return;
@@ -94,7 +98,17 @@ export class StratoContractArgumentsEncoder {
         const considerMappingSolidityAddressableToAddress = (
           arg: any
         ): string =>
-          isSolidityAddressable(arg) ? arg.getSolidityAddress() : arg;
+          isSolidityAddressable(arg)
+            ? arg.getSolidityAddress()
+            : arg instanceof AccountId
+            ? arg.toSolidityAddress()
+            : arg instanceof ContractId
+            ? arg.toSolidityAddress()
+            : arg instanceof TokenId
+            ? arg.toSolidityAddress()
+            : arg instanceof TopicId
+            ? arg.toSolidityAddress()
+            : arg;
         this.update(
           transform(potentialArg, considerMappingSolidityAddressableToAddress),
           true
