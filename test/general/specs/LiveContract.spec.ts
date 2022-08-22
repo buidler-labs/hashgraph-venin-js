@@ -3,6 +3,8 @@ import {
   ContractId,
   Hbar,
   Status,
+  TokenId,
+  TopicId,
 } from "@hashgraph/sdk";
 import { describe, expect, it, jest } from "@jest/globals";
 import BigNumber from "bignumber.js";
@@ -36,11 +38,7 @@ describe("LiveContract", () => {
   });
 
   it("given a contract which has methods that make use of the Hedera supported bytes type, calling them should work as expected", async () => {
-    const { session } = await ApiSession.default();
-    const bytesContract = await Contract.newFrom({
-      code: read({ contract: "bytes" }),
-    });
-    const liveContract = await session.upload(bytesContract);
+    const { liveContract } = await load("bytes");
     const sentBytes = Buffer.from("Hello World!", "utf8");
     const sentBytes32 = Buffer.from("0123456789ABCDEFFEDCBA9876543210", "utf8");
 
@@ -75,11 +73,7 @@ describe("LiveContract", () => {
   });
 
   it("getting info for a contract, the information is correctly fetched", async () => {
-    const { session } = await ApiSession.default();
-    const naiveOwnerCheckContract = await Contract.newFrom({
-      code: read({ contract: "naive_owner_check" }),
-    });
-    const liveContract = await session.upload(naiveOwnerCheckContract);
+    const { liveContract } = await load("naive_owner_check");
     const contractInfo = await liveContract.getLiveEntityInfo();
 
     await expect(contractInfo.contractId).toBeInstanceOf(ContractId);
@@ -107,12 +101,7 @@ describe("LiveContract", () => {
   });
 
   it("calling a live contract method with a bytes32 parameter encoded into hex format is permitted", async () => {
-    const { session } = await ApiSession.default();
-    const bytesContract = await Contract.newFrom({
-      code: read({ contract: "bytes" }),
-    });
-    const liveContract = await session.upload(bytesContract);
-
+    const { liveContract } = await load("bytes");
     const testedHexString =
       "0x252ea5c5f95e9085d1cd6b85f35a83a2df722cd5e0c7609b5205a36076a61b14";
 
@@ -122,12 +111,7 @@ describe("LiveContract", () => {
   });
 
   it("by having an instance of a liveContract, transferring hbar to the liveContract, the balance is as expected", async () => {
-    const { session } = await ApiSession.default();
-    const bytesContract = await Contract.newFrom({
-      code: read({ contract: "bytes" }),
-    });
-    const liveContract = await session.upload(bytesContract);
-
+    const { liveContract } = await load("bytes");
     const status = await liveContract.transferHbarToLiveEntity(1);
 
     expect(status).toEqual(Status.Success);
@@ -247,5 +231,22 @@ describe("LiveContract", () => {
     await expect(
       session.upload(bytesContract, students)
     ).resolves.not.toThrow();
+  });
+
+  it("given a method that requires an address, passing it a contract-id/token-id/account-id or topic-id should not error out", async () => {
+    const { liveContract } = await load("naive_owner_check");
+
+    await expect(
+      liveContract.isOwnedBy(liveContract.session.wallet.account.id)
+    ).resolves.toBeTruthy();
+    await expect(
+      liveContract.isOwnedBy(ContractId.fromString("0.0.69"))
+    ).resolves.toBeFalsy();
+    await expect(
+      liveContract.isOwnedBy(TokenId.fromString("0.0.69"))
+    ).resolves.toBeFalsy();
+    await expect(
+      liveContract.isOwnedBy(TopicId.fromString("0.0.69"))
+    ).resolves.toBeFalsy();
   });
 });
