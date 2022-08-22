@@ -1,4 +1,9 @@
-import { ContractExecuteTransaction, ContractId, Hbar, Status } from "@hashgraph/sdk";
+import {
+  ContractExecuteTransaction,
+  ContractId,
+  Hbar,
+  Status,
+} from "@hashgraph/sdk";
 import { describe, expect, it, jest } from "@jest/globals";
 import BigNumber from "bignumber.js";
 
@@ -204,6 +209,43 @@ describe("LiveContract", () => {
 
   it("calling a live-contract function with uint argument, giving Hbar as a value, should be successful", async () => {
     const { liveContract } = await load("change_state_with_return");
-    await expect(liveContract.setAndRetrieve(new Hbar(1))).resolves.toEqual(new BigNumber(new Hbar(1).toTinybars().toString()));
+    await expect(liveContract.setAndRetrieve(new Hbar(1))).resolves.toEqual(
+      new BigNumber(new Hbar(1).toTinybars().toString())
+    );
+  });
+
+  it("calling a live-contract constructor with a deep-nested object should be permitted", async () => {
+    const { session } = await ApiSession.default();
+    const bytesContract = await Contract.newFrom({
+      code: read({ contract: "complex_constructor_args" }),
+    });
+    const students = [
+      {
+        firstName: "Vladut",
+        id: 1,
+        lastName: "OPRISOR",
+        livingAddress: {
+          city: "Timisoara",
+          country: "Romania",
+          street: "Martir Constatntin Radu",
+        },
+        walletAddress: "0x0000000000000000000000000000000000000069",
+      },
+      {
+        firstName: "Victor",
+        id: 2,
+        lastName: "DeDeTaTorul",
+        livingAddress: {
+          city: "Giroc",
+          country: "Romania",
+          street: "Crinului",
+        },
+        walletAddress: "0x0000000000000000000000000000000000000169",
+      },
+    ];
+
+    await expect(
+      session.upload(bytesContract, students)
+    ).resolves.not.toThrow();
   });
 });

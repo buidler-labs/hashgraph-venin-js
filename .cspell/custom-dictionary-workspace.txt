@@ -1,8 +1,10 @@
 _valueInTinybar
 # Custom Dictionary Words
 arrayify
+bignumber
 Buidler
 buidlerlabs
+bytecode
 cmfcmf
 considerArrayifying
 easy-peasy

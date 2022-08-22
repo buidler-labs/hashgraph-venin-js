@@ -22,16 +22,13 @@ import traverse from "traverse";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Contract, ContractFeatures } from "../static/upload/Contract";
-import {
-  extractSolidityAddressFrom,
-  isSolidityAddressable,
-} from "../core/SolidityAddressable";
+import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
 
-import { decodeFromHex, encodeToHex } from "../core/Hex";
 import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber";
 import { StratoAddress } from "../core/StratoAddress";
-import { transform } from "../core/UsefulOps";
+import { StratoContractArgumentsEncoder } from "../core/StratoContractArgumentsEncoder";
+import { encodeToHex } from "../core/Hex";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
@@ -144,6 +141,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
 
   private readonly events: EventEmitter;
   private readonly interface: Interface;
+  private readonly encoder: StratoContractArgumentsEncoder;
 
   // TODO: REFACTOR THIS AWAY! yet, there's no other way of making this quickly work right now!
   readonly [k: string]: ContractMethod | any;
@@ -152,6 +150,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
     super(session, id);
     this.events = new EventEmitter();
     this.interface = cInterface;
+    this.encoder = new StratoContractArgumentsEncoder(cInterface);
 
     // Dynamically inject ABI function handling
     Object.values(this.interface.functions).forEach((fDescription) =>
@@ -355,77 +354,8 @@ export class LiveContract extends BaseLiveEntityWithBalance<
       args = args.slice(1);
     }
 
-    traverse(args).forEach(function (potentialArg) {
-      const solArgDescription = this.path.reduce((state, propName) => {
-        if (!isNaN(parseInt(propName))) {
-          // property name is numeric
-          if (state.baseType === "array") {
-            // Bypass instance references
-            return state;
-          }
-        } else {
-          // property name is NOT numeric. It might be referencing a solidity struct prop
-          if (state.type.startsWith("tuple")) {
-            return state.components.find(
-              (component) => component.name === propName
-            );
-          }
-        }
-        return state[propName];
-      }, fDescription.inputs);
-      const requireBytesYetStringProvided =
-        this.isLeaf &&
-        solArgDescription !== undefined &&
-        solArgDescription.type !== undefined &&
-        solArgDescription.type.startsWith("bytes") &&
-        typeof potentialArg === "string";
-
-      // Do primitive leaf processing
-      if (requireBytesYetStringProvided) {
-        const considerMappingStringToUint8Array = (arg: string): Uint8Array =>
-          arg.startsWith("0x") ? arrayify(arg) : new TextEncoder().encode(arg);
-        this.update(
-          transform(potentialArg, considerMappingStringToUint8Array),
-          true
-        );
-      }
-
-      if (
-        this.isLeaf ||
-        (!(potentialArg instanceof Uint8Array) &&
-          !(potentialArg instanceof Hbar) &&
-          !isSolidityAddressable(potentialArg) &&
-          !BigNumber.isBigNumber(potentialArg))
-      ) {
-        // We're only processing mostly leafs or higher objects of interest
-        return;
-      }
-
-      if (solArgDescription.type.startsWith("address")) {
-        const considerMappingSolidityAddressableToAddress = (
-          arg: any
-        ): string =>
-          isSolidityAddressable(arg) ? arg.getSolidityAddress() : arg;
-        this.update(
-          transform(potentialArg, considerMappingSolidityAddressableToAddress),
-          true
-        );
-      } else if (potentialArg instanceof Hbar) {
-        this.update(
-          EthersBigNumber.from(potentialArg.toTinybars().toString()),
-          true
-        );
-      } else if (BigNumber.isBigNumber(potentialArg)) {
-        this.update(EthersBigNumber.from(potentialArg.toString()), true);
-      }
-    });
-
-    const encodedFuncParams = this.interface
-      .encodeFunctionData(fDescription.name, args)
-      .slice(2);
-    const funcParamsBuffer = decodeFromHex(encodedFuncParams);
-
-    request.setFunctionParameters(funcParamsBuffer);
+    // Encode and bind function arguments
+    request.setFunctionParameters(this.encoder.encode(args, fDescription));
 
     return {
       meta,
