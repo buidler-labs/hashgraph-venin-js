@@ -45,7 +45,7 @@ export abstract class LiveEntity<T extends HederaEntityId, I, P>
   }
 
   public async deleteEntity(args?: any): Promise<Status> {
-    const transaction = this._getDeleteTransaction(args);
+    const transaction = await this._getDeleteTransaction(args);
     const deleteTransactionResponse = await this.sanelyExecuteAndGetStatus(
       transaction
     );
@@ -121,7 +121,7 @@ export abstract class LiveEntity<T extends HederaEntityId, I, P>
 
   public abstract getLiveEntityInfo(): Promise<I>;
 
-  protected abstract _getDeleteTransaction(args?: any): Transaction;
+  protected abstract _getDeleteTransaction(args?: any): Promise<Transaction>;
 
   protected abstract _getUpdateTransaction(args?: P): Promise<Transaction>;
 }

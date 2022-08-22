@@ -3,3 +3,8 @@ export function encodeToHex(what: Uint8Array, addPrefix = true) {
 
   return addPrefix ? `0x${unPrefixedHexEncoding}` : unPrefixedHexEncoding;
 }
+
+export function decodeFromHex(text: string) {
+  const str = text.startsWith("0x") ? text.substring(2) : text;
+  return Buffer.from(str, "hex");
+}

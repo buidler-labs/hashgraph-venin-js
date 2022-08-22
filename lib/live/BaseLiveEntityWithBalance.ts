@@ -49,7 +49,9 @@ export abstract class BaseLiveEntityWithBalance<
     return this.sanelyExecuteAndGetStatus(tokenAssociateTransaction);
   }
 
-  protected override _getDeleteTransaction(args?: any): Transaction {
+  protected override async _getDeleteTransaction(
+    args?: any
+  ): Promise<Transaction> {
     return this.newDeleteTransaction(this._getDeleteArguments(args));
   }
 

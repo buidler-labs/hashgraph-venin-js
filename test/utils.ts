@@ -71,6 +71,7 @@ export function getTokenToTest(
   const tokenFeatures = Object.assign(
     {
       decimals: 0,
+      freezeDefault: false,
       initialSupply: tokenType.equals(TokenTypes.FungibleCommon) ? 1000 : 0,
       name: "hbarRocks",
       symbol: "HROK",

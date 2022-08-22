@@ -86,9 +86,9 @@ describe("LiveContract.NFTShop", () => {
       .setPayableAmount(new Hbar(50))
       .setGas(GasFees.mintToken.toTinybars())
       .freezeWith(aliceClient);
-    tokenOwnerAccount.tryToSign(transaction);
+    const signedTransaction = await tokenOwnerAccount.sign(transaction);
 
-    const execute = await transaction.execute(aliceClient);
+    const execute = await signedTransaction.execute(aliceClient);
     await execute.getRecord(aliceClient);
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();

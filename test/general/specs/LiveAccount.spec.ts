@@ -57,7 +57,7 @@ describe("LiveAccount", () => {
       .setNodeAccountIds([new AccountId(2)])
       .freeze();
 
-    account.tryToSign(transaction);
+    account.sign(transaction);
 
     expect(transaction._signerPublicKeys).toContain(
       account.privateKey.publicKey.toStringRaw()

@@ -27,10 +27,10 @@ import {
   isSolidityAddressable,
 } from "../core/SolidityAddressable";
 
+import { decodeFromHex, encodeToHex } from "../core/Hex";
 import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber";
 import { StratoAddress } from "../core/StratoAddress";
-import { encodeToHex } from "../core/Hex";
 import { transform } from "../core/UsefulOps";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
@@ -410,8 +410,11 @@ export class LiveContract extends BaseLiveEntityWithBalance<
           transform(potentialArg, considerMappingSolidityAddressableToAddress),
           true
         );
-      } else if(potentialArg instanceof Hbar) {
-        this.update(EthersBigNumber.from(potentialArg.toTinybars().toString()), true);
+      } else if (potentialArg instanceof Hbar) {
+        this.update(
+          EthersBigNumber.from(potentialArg.toTinybars().toString()),
+          true
+        );
       } else if (BigNumber.isBigNumber(potentialArg)) {
         this.update(EthersBigNumber.from(potentialArg.toString()), true);
       }
@@ -420,7 +423,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
     const encodedFuncParams = this.interface
       .encodeFunctionData(fDescription.name, args)
       .slice(2);
-    const funcParamsBuffer = Buffer.from(encodedFuncParams, "hex");
+    const funcParamsBuffer = decodeFromHex(encodedFuncParams);
 
     request.setFunctionParameters(funcParamsBuffer);
 

@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 
-import { AccountId, LocalWallet, PrivateKey, Wallet } from "@hashgraph/sdk";
+import { AccountId, LocalProvider, PrivateKey, Wallet } from "@hashgraph/sdk";
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
 
 import { Token, TokenTypes } from "../../../lib/static/create/Token";
@@ -13,23 +13,6 @@ import { LiveToken } from "../../../lib/live/LiveToken";
 import { StratoContext } from "../../../lib/StratoContext";
 import { WalletType } from "../../../lib/wallet/WalletType";
 
-async function havingSaneLocalWallet(clb: { (wallet: Wallet): Promise<void> }) {
-  const priorNetworkName = process.env.HEDERA_NETWORK;
-  const priorOperatorId = process.env.OPERATOR_ID;
-  const priorOperatorKey = process.env.OPERATOR_KEY;
-
-  // Mock local-wallet aware environment variables
-  process.env.HEDERA_NETWORK = "testnet";
-  process.env.OPERATOR_ID = "0.0.69";
-  process.env.OPERATOR_KEY = PrivateKey.generateECDSA().toStringDer();
-  await clb(new LocalWallet());
-
-  // Restore environment
-  process.env.HEDERA_NETWORK = priorNetworkName;
-  process.env.OPERATOR_ID = priorOperatorId;
-  process.env.OPERATOR_KEY = priorOperatorKey;
-}
-
 describe("ApiSession", () => {
   const ORIGINAL_ENV = process.env;
 
@@ -40,11 +23,14 @@ describe("ApiSession", () => {
   it("sessions cannot be instantiated directly", async () => {
     const ctx = new StratoContext({});
 
-    await havingSaneLocalWallet(async (wallet) => {
-      const client = new BasicStratoWallet(wallet);
+    const wallet = new Wallet(
+      "0.0.69",
+      PrivateKey.generateECDSA(),
+      new LocalProvider()
+    );
+    const client = new BasicStratoWallet(wallet);
 
-      expect(() => new ApiSession({}, { client, ctx })).toThrow();
-    });
+    expect(() => new ApiSession({}, { client, ctx })).toThrow();
   });
 
   it("if environment is sane, it should properly instantiate the default api-instance", async () => {

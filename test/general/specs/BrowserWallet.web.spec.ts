@@ -1,4 +1,4 @@
-import { AccountId, PrivateKey } from "@hashgraph/sdk";
+import { AccountId, PrivateKey, Transaction } from "@hashgraph/sdk";
 import {
   afterAll,
   afterEach,
@@ -13,10 +13,15 @@ import { ApiSession } from "../../../lib/ApiSession";
 
 function bindBrowserWalletToTest(propName = "hedera") {
   window[propName] = {
+    call: jest.fn(),
     execute: jest.fn(),
     getAccountId: jest.fn(() => AccountId.fromString("0.0.69")),
     getAccountKey: jest.fn(() => PrivateKey.generate().publicKey),
-    sendRequest: jest.fn(),
+    populateTransaction: jest.fn((transaction: Transaction) => {
+      transaction._freezeWithAccountId(AccountId.fromString("0.0.420"));
+      transaction.setNodeAccountIds([AccountId.fromString("0.0.69")]);
+    }),
+    signTransaction: jest.fn(),
   };
 }
 
@@ -45,14 +50,18 @@ describe("BrowserWallet", () => {
     expect(window["hedera"].getAccountKey).not.toBeCalled();
 
     // do a execute action on the session and check results
-    expect(window["hedera"].sendRequest).not.toBeCalled();
+    expect(window["hedera"].call).not.toBeCalled();
+    expect(window["hedera"].populateTransaction).not.toBeCalled();
+    expect(window["hedera"].signTransaction).not.toBeCalled();
     try {
       await session.upload({ foo: "bazinga" });
     } catch (e) {
       // We discard this but keep in mind that the session.upload execution is bound to fail since we're not mocking the entire chain
       // just up until the transaction enters the sdk realm and becomes part of its responsibility.
     }
-    expect(window["hedera"].sendRequest).toBeCalled();
+    expect(window["hedera"].call).toBeCalled();
+    expect(window["hedera"].populateTransaction).toBeCalled();
+    expect(window["hedera"].signTransaction).toBeCalled();
 
     // reset mock call counts to test another aspect
     jest.resetAllMocks();

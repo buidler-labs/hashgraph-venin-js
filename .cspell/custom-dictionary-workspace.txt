@@ -2,13 +2,22 @@ _valueInTinybar
 # Custom Dictionary Words
 arrayify
 Buidler
+buidlerlabs
 cmfcmf
 considerArrayifying
 easy-peasy
 estree
+ethersproject
+hashgraph
+Hbar
+hbars
+Hederas
+localised
 polies
+previewnet
 resolutedAbi
 resolutedInfo
 Tinybar
+Tinybars
 TransactionedReceipt
 tweetnacl
