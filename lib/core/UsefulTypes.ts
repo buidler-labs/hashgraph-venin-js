@@ -15,3 +15,10 @@ export type RecursivePartial<T> = {
  * A value which could either be it or a promise to it.
  */
 export type Promised<T> = T | Promise<T>;
+
+/**
+ * A safe-type holder for `Object.entries` unpacks in Typescript.
+ */
+export type ObjectEntries<T> = {
+  [K in keyof T]: [K, T[K]];
+}[keyof T][];

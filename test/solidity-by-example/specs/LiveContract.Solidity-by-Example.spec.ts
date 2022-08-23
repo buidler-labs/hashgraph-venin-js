@@ -278,17 +278,6 @@ describe("LiveContract.Solidity-by-Example", () => {
     expect(isSameSigner).toBeTruthy();
   });
 
-  // Requires: https://github.com/buidler-labs/hedera-strato-js/issues/38
-  it.skip("uploading a public library-dependent contract should succeed", async () => {
-    const { session } = await ApiSession.default();
-    const testArrayContract = await Contract.newFrom({
-      code: read({ contract: "library" }),
-      name: "TestArray",
-    });
-
-    await expect(session.upload(testArrayContract)).resolves.not.toThrow();
-  });
-
   it("trying to register a non-existing event should error out", async () => {
     const liveContract = await load("events");
 
