@@ -83,4 +83,26 @@ describe("Issue #38 > Solidity Library Linking support", () => {
       })
     ).resolves.not.toThrow();
   });
+
+  it("uploading a library then linking it against a contract and calling it should not error out", async () => {
+    const { session } = await ApiSession.default();
+    const code = read({ contract: "library" });
+    const arrayContract = await Contract.newFrom({
+      code,
+      name: "Array",
+    });
+    const liveArrayContract = await session.upload(arrayContract);
+    const testArrayContract = await Contract.newFrom({
+      code: read({ contract: "library" }),
+      libraries: {
+        Array: liveArrayContract.id,
+      },
+      name: "TestArray",
+    });
+    const liveTestArrayContract = await session.upload(testArrayContract);
+
+    await expect(
+      liveTestArrayContract.testArrayRemove()
+    ).resolves.not.toThrow();
+  });
 });
