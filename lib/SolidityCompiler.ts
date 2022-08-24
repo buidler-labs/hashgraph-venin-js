@@ -1,11 +1,42 @@
 // Wrapper around the Solidity solc-js compiler meant for Node runtime consumption
 // Browser variants do not use this and instead polyfill it
-//  Please see the rollup-strato plugin implementation for more info.
-
+// Please see the rollup-strato plugin implementation for more info.
+//
+// NOTE: We have to keep this module as light as possible (least dependencies as possible) so that
+//       we can polyfill this easily (eg. strato-rollup-plugin).
+//       This means no @hashgraph/sdk here.
 import * as fs from "fs";
 import * as sdkPath from "path";
 
+import linker from "solc/linker";
 import solc from "solc";
+
+export interface LibraryAddresses {
+  [qualifiedNameOrSourceUnit: string]: string;
+}
+
+export interface CompilerOptions {
+  code?: string;
+  path?: string;
+}
+
+export interface CompilationResult {
+  // TODO: make this more specific according to what solc outputs
+  errors?: any;
+  contracts: ContractCompileResult[];
+}
+
+interface ByteCode {
+  object: string;
+  linkReferences: {
+    [solFile: string]: LinkReferences;
+  };
+}
+
+// Source: https://github.com/ethereum/solc-js/blob/99eafc2ad13d5bfba7886de659a6638814d95078/common/types.ts#L24
+interface LinkReferences {
+  [libraryLabel: string]: Array<{ start: number; length: number }>;
+}
 
 export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = "__contract__.sol";
 
@@ -15,15 +46,11 @@ const listeners = process.listeners("unhandledRejection");
 if (undefined !== listeners[listeners.length - 1]) {
   process.removeListener("unhandledRejection", listeners[listeners.length - 1]);
 }
-
 export class SolidityCompiler {
   public static async compile({
     code,
     path,
-  }: {
-    code?: string;
-    path?: string;
-  }) {
+  }: CompilerOptions): Promise<CompilationResult> {
     const basePath = sdkPath.resolve(
       process.env.HEDERAS_CONTRACTS_RELATIVE_PATH || "contracts"
     );
@@ -96,7 +123,104 @@ export class SolidityCompiler {
           "File not found inside the base path or any of the include paths.",
       };
     };
+    const jCompileResult = JSON.parse(
+      solc.compile(stringifiedSolInput, {
+        import: importsResolver,
+      })
+    );
+    const contracts =
+      jCompileResult.contracts !== undefined
+        ? Object.entries(
+            jCompileResult.contracts[VIRTUAL_SOURCE_CONTRACT_FILE_NAME]
+          ).map(
+            ([contractName, description]) =>
+              new ContractCompileResult(
+                contractName,
+                (description as any).abi,
+                (description as any).evm.bytecode
+              )
+          )
+        : [];
 
-    return solc.compile(stringifiedSolInput, { import: importsResolver });
+    return {
+      contracts,
+      errors: jCompileResult.errors,
+    };
+  }
+
+  public static tryLinkingLibraries({
+    bytecode,
+    libraries,
+  }: {
+    bytecode: {
+      object: string;
+      linkReferences: {
+        [solFile: string]: LinkReferences;
+      };
+    };
+    libraries: LibraryAddresses;
+  }): string {
+    if (!libraries && Object.keys(bytecode.linkReferences).length > 0) {
+      throw Error(
+        "Expected library addresses to be provided yet none was given."
+      );
+    } else if (!libraries) {
+      return bytecode.object;
+    }
+
+    const linkedBytecode = linker.linkBytecode(bytecode.object, libraries);
+
+    if (/.*__\$.*\$__.*/.test(linkedBytecode)) {
+      throw new Error(
+        `Please provide all required library addresses for linking: ${Object.keys(
+          libraries
+        ).join(", ")}`
+      );
+    }
+    return linkedBytecode;
+  }
+}
+
+class ContractCompileResult {
+  public readonly bytecode: string;
+
+  constructor(
+    public readonly contractName: string,
+    public readonly abi: any,
+    private readonly unlinkedByteCode: ByteCode
+  ) {
+    this.bytecode = this.unlinkedByteCode.object;
+  }
+
+  public getLinkedByteCode(libraries: LibraryAddresses): string {
+    if (Object.keys(this.unlinkedByteCode.linkReferences).length === 0) {
+      // No linking expected on the contract's behalf
+      // Final bytecode is the one provided at construction time (default)
+      return this.bytecode;
+    }
+
+    if (!libraries || Object.keys(libraries).length === 0) {
+      throw Error(
+        "Expected library addresses to be provided yet none was given."
+      );
+    }
+
+    const linkedBytecode = linker.linkBytecode(
+      this.unlinkedByteCode.object,
+      libraries
+    );
+
+    if (/.*__\$.*\$__.*/.test(linkedBytecode)) {
+      const expectedLibraryNames = Object.entries(
+        this.unlinkedByteCode.linkReferences
+      ).map(([_, libraryRef]) => Object.keys(libraryRef));
+
+      throw new Error(
+        `Please provide all required library addresses (${expectedLibraryNames.join(
+          ", "
+        )}) for linking through contract '${this.contractName}'`
+      );
+    }
+    return linkedBytecode;
   }
 }

@@ -17,6 +17,7 @@ Hederas
 localised
 polies
 previewnet
+resoluted
 resolutedAbi
 resolutedInfo
 Tinybar
