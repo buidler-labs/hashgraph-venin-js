@@ -8,12 +8,9 @@
 import * as fs from "fs";
 import * as sdkPath from "path";
 
-import linker from "solc/linker";
 import solc from "solc";
 
-export interface LibraryAddresses {
-  [qualifiedNameOrSourceUnit: string]: string;
-}
+import { ContractCompileResult } from "./ContractCompileResult";
 
 export interface CompilerOptions {
   code?: string;
@@ -24,18 +21,6 @@ export interface CompilationResult {
   // TODO: make this more specific according to what solc outputs
   errors?: any;
   contracts: ContractCompileResult[];
-}
-
-interface ByteCode {
-  object: string;
-  linkReferences: {
-    [solFile: string]: LinkReferences;
-  };
-}
-
-// Source: https://github.com/ethereum/solc-js/blob/99eafc2ad13d5bfba7886de659a6638814d95078/common/types.ts#L24
-interface LinkReferences {
-  [libraryLabel: string]: Array<{ start: number; length: number }>;
 }
 
 export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = "__contract__.sol";
@@ -128,99 +113,10 @@ export class SolidityCompiler {
         import: importsResolver,
       })
     );
-    const contracts =
-      jCompileResult.contracts !== undefined
-        ? Object.entries(
-            jCompileResult.contracts[VIRTUAL_SOURCE_CONTRACT_FILE_NAME]
-          ).map(
-            ([contractName, description]) =>
-              new ContractCompileResult(
-                contractName,
-                (description as any).abi,
-                (description as any).evm.bytecode
-              )
-          )
-        : [];
 
-    return {
-      contracts,
-      errors: jCompileResult.errors,
-    };
-  }
-
-  public static tryLinkingLibraries({
-    bytecode,
-    libraries,
-  }: {
-    bytecode: {
-      object: string;
-      linkReferences: {
-        [solFile: string]: LinkReferences;
-      };
-    };
-    libraries: LibraryAddresses;
-  }): string {
-    if (!libraries && Object.keys(bytecode.linkReferences).length > 0) {
-      throw Error(
-        "Expected library addresses to be provided yet none was given."
-      );
-    } else if (!libraries) {
-      return bytecode.object;
-    }
-
-    const linkedBytecode = linker.linkBytecode(bytecode.object, libraries);
-
-    if (/.*__\$.*\$__.*/.test(linkedBytecode)) {
-      throw new Error(
-        `Please provide all required library addresses for linking: ${Object.keys(
-          libraries
-        ).join(", ")}`
-      );
-    }
-    return linkedBytecode;
-  }
-}
-
-class ContractCompileResult {
-  public readonly bytecode: string;
-
-  constructor(
-    public readonly contractName: string,
-    public readonly abi: any,
-    private readonly unlinkedByteCode: ByteCode
-  ) {
-    this.bytecode = this.unlinkedByteCode.object;
-  }
-
-  public getLinkedByteCode(libraries: LibraryAddresses): string {
-    if (Object.keys(this.unlinkedByteCode.linkReferences).length === 0) {
-      // No linking expected on the contract's behalf
-      // Final bytecode is the one provided at construction time (default)
-      return this.bytecode;
-    }
-
-    if (!libraries || Object.keys(libraries).length === 0) {
-      throw Error(
-        "Expected library addresses to be provided yet none was given."
-      );
-    }
-
-    const linkedBytecode = linker.linkBytecode(
-      this.unlinkedByteCode.object,
-      libraries
+    return ContractCompileResult.getResultsFor(
+      VIRTUAL_SOURCE_CONTRACT_FILE_NAME,
+      jCompileResult
     );
-
-    if (/.*__\$.*\$__.*/.test(linkedBytecode)) {
-      const expectedLibraryNames = Object.entries(
-        this.unlinkedByteCode.linkReferences
-      ).map(([_, libraryRef]) => Object.keys(libraryRef));
-
-      throw new Error(
-        `Please provide all required library addresses (${expectedLibraryNames.join(
-          ", "
-        )}) for linking through contract '${this.contractName}'`
-      );
-    }
-    return linkedBytecode;
   }
 }
