@@ -8,10 +8,10 @@ import {
 import { LiveContract, LiveContractWithLogs } from "../../live/LiveContract";
 import {
   SolidityCompiler,
-  LibraryAddresses as SolidityLibraryAddresses,
   VIRTUAL_SOURCE_CONTRACT_FILE_NAME,
-} from "../../SolidityCompiler";
+} from "../../compiler/SolidityCompiler";
 import { CompileIssues } from "../../errors/CompileIssues";
+import { LibraryAddresses as SolidityLibraryAddresses } from "../../compiler/ContractCompileResult";
 import { StratoContractArgumentsEncoder } from "../../core/StratoContractArgumentsEncoder";
 import { typedObjectEntries } from "../../core/UsefulOps";
 
