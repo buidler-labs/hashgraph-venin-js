@@ -22,12 +22,13 @@ import traverse from "traverse";
 
 import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Contract, ContractFeatures } from "../static/upload/Contract";
+import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
+
 import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
-import { ContractFunctionParameters } from "../hedera/ContractFunctionParameters";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber";
 import { StratoAddress } from "../core/StratoAddress";
+import { StratoContractArgumentsEncoder } from "../core/StratoContractArgumentsEncoder";
 import { encodeToHex } from "../core/Hex";
-import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
 
 const UNHANDLED_EVENT_NAME = "UnhandledEventName";
 
@@ -140,6 +141,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
 
   private readonly events: EventEmitter;
   private readonly interface: Interface;
+  private readonly encoder: StratoContractArgumentsEncoder;
 
   // TODO: REFACTOR THIS AWAY! yet, there's no other way of making this quickly work right now!
   readonly [k: string]: ContractMethod | any;
@@ -148,6 +150,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
     super(session, id);
     this.events = new EventEmitter();
     this.interface = cInterface;
+    this.encoder = new StratoContractArgumentsEncoder(cInterface);
 
     // Dynamically inject ABI function handling
     Object.values(this.interface.functions).forEach((fDescription) =>
@@ -351,11 +354,8 @@ export class LiveContract extends BaseLiveEntityWithBalance<
       args = args.slice(1);
     }
 
-    // Prepare the targeted function
-    request.setFunction(
-      fDescription.name,
-      await ContractFunctionParameters.newFor(fDescription, args)
-    );
+    // Encode and bind function arguments
+    request.setFunctionParameters(this.encoder.encode(args, fDescription));
 
     return {
       meta,

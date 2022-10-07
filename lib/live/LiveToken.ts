@@ -52,7 +52,7 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected _getDeleteTransaction<R>(args?: R): Transaction {
+  protected async _getDeleteTransaction<R>(args?: R): Promise<Transaction> {
     return new TokenDeleteTransaction({ tokenId: this.id });
   }
 

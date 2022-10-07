@@ -44,7 +44,8 @@ describe("LiveContract.Solidity-by-Example.meta-arguments", () => {
     expect(queryTransaction._paymentTransactionId).toEqual(
       metaArgs.paymentTransactionId
     );
-    expect(queryTransaction._queryPayment).toEqual(metaArgs.queryPayment);
+    // Expect actual query-payment to be capped by the max-query-payment since query-payment > max-query-payment
+    expect(queryTransaction._queryPayment).toEqual(metaArgs.maxQueryPayment);
   });
 
   it("when calling a state-changing contract method, passing in meta-arguments should get propagated to the actual transaction", async () => {

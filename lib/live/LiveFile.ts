@@ -40,7 +40,9 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected override _getDeleteTransaction<R>(args?: R): Transaction {
+  protected override async _getDeleteTransaction<R>(
+    args?: R
+  ): Promise<Transaction> {
     return new FileDeleteTransaction({ fileId: this.id });
   }
 

@@ -12,12 +12,10 @@ import {
 import Executable from "@hashgraph/sdk/lib/Executable";
 import { HederaNetwork } from "../../HederaNetwork";
 
-export default class LocalProvider extends Provider {
+export default class LocalProvider implements Provider {
   public readonly client: Client;
 
   constructor(network: HederaNetwork) {
-    super();
-
     this.client = network.getClient();
   }
 
@@ -62,7 +60,7 @@ export default class LocalProvider extends Provider {
       .execute(this.client);
   }
 
-  sendRequest<RequestT, ResponseT, OutputT>(
+  call<RequestT, ResponseT, OutputT>(
     request: Executable<RequestT, ResponseT, OutputT>
   ): Promise<OutputT> {
     return request.execute(this.client);

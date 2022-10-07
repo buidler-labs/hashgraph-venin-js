@@ -2,3 +2,4 @@ lib.cjs
 lib.esm
 types
 coverage
+node_modules

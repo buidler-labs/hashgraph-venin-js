@@ -14,6 +14,7 @@ on:
         default: hedera-testnet
 
 env:
+  HEDERA_NETWORK: ${{ secrets.HEDERAS_NETWORK }}
   HEDERAS_CONTRACTS_RELATIVE_PATH: test
   HEDERAS_CONTRACTS_INCLUDED_PREFIXES: general/contracts,general/contracts/import_resolution/node_modules,solidity-by-example/contracts,taskbar/contracts,hedera/contracts
 
@@ -35,6 +36,8 @@ jobs:
           node-version: 16
 
       - run: npm install
+
+      - run: npm run build:4-publish
 
       - name: Testing
         env:

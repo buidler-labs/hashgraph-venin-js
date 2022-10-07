@@ -43,7 +43,7 @@ describe("LiveContract.TaskBar", () => {
         { gas: 200_000 },
         taskId,
         100,
-        new TextEncoder().encode("67347465687435726877747265676572"),
+        "67347465687435726877747265676572",
         600,
         1,
         2
@@ -128,7 +128,7 @@ describe("LiveContract.TaskBar", () => {
       }
     );
 
-    // Play around with the live-contracts testing ocasionally
+    // Play around with the live-contracts testing occasionally
     await expect(cappedRegistryLiveContract.getRegistrySize()).resolves.toEqual(
       maxNrOfTasksPerRegistry
     );

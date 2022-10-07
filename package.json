@@ -8,6 +8,10 @@
     ".": {
       "require": "./lib.cjs/index.cjs",
       "import": "./lib.esm/index.mjs"
+    },
+    "./bundler-utils": {
+      "require": "./lib.cjs/compiler/ContractCompileResult.cjs",
+      "import": "./lib.esm/compiler/ContractCompileResult.mjs"
     }
   },
   "files": [
@@ -19,7 +23,7 @@
   "module": "./lib.esm/index.mjs",
   "name": "@buidlerlabs/hedera-strato-js",
   "scripts": {
-    "build:4-publish": "run-s build:cjs build:esm build:declarations",
+    "build:4-publish": "run-p build:cjs build:esm build:declarations",
     "build:cjs": "babel --env-name cjs lib --extensions .ts --out-dir lib.cjs --out-file-extension .cjs",
     "build:esm": "babel --env-name esm lib --extensions .ts --out-dir lib.esm --source-maps --out-file-extension .mjs",
     "build:declarations": "tsc",
@@ -80,8 +84,8 @@
     "url": "https://github.com/buidler-labs/hedera-strato-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.7.5",
+  "version": "0.8.0",
   "peerDependencies": {
-    "@hashgraph/sdk": "2.11.3"
+    "@hashgraph/sdk": "~2.17.1"
   }
 }

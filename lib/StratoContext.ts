@@ -59,7 +59,8 @@ export type StratoContextSource = {
 };
 
 // Note: This follows the @hashgraph/sdk/lib/transaction/Transaction > CHUNK_SIZE value
-const DEFAULT_FILE_CHUNK_SIZE = 1024;
+//       v2.17.1 increased the size to 4096
+const DEFAULT_FILE_CHUNK_SIZE = 4096;
 
 export const DefinedNetworkDefaults: { [k: string]: NetworkDefaults } = {
   [AVAILABLE_NETWORK_NAMES.CustomNet]: {
@@ -228,7 +229,7 @@ export class StratoContext {
           resolveSessionDefaultValueFor("contract_creation_gas") ?? "150000"
         ),
       contractTransactionGas:
-        rParams.session?.defaults?.contractCreationGas ??
+        rParams.session?.defaults?.contractTransactionGas ??
         parseInt(
           resolveSessionDefaultValueFor("contract_transaction_gas") ?? "169000"
         ),
@@ -249,7 +250,7 @@ export class StratoContext {
         rParams.session?.defaults?.paymentForContractQuery ??
         parseInt(
           resolveSessionDefaultValueFor("payment_for_contract_query") ??
-            "1000000"
+            "20000000"
         ),
     };
   }

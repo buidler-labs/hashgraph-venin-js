@@ -1,10 +1,11 @@
 import fs from "fs/promises";
 
+import { AccountId, LocalProvider, PrivateKey, Wallet } from "@hashgraph/sdk";
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
 
-import { AccountId, PrivateKey } from "@hashgraph/sdk";
 import { Token, TokenTypes } from "../../../lib/static/create/Token";
 import { ApiSession } from "../../../lib/ApiSession";
+import { BasicStratoWallet } from "../../../lib/wallet/BasicStratoWallet";
 import { CredentialsInvalidError } from "../../../lib/errors/CredentialsInvalidError";
 import { EnvironmentInvalidError } from "../../../lib/errors/EnvironmentInvalidError";
 import { HEDERA_CUSTOM_NET_NAME } from "../../../lib/HederaNetwork";
@@ -17,6 +18,19 @@ describe("ApiSession", () => {
 
   afterEach(() => {
     process.env = ORIGINAL_ENV;
+  });
+
+  it("sessions cannot be instantiated directly", async () => {
+    const ctx = new StratoContext({});
+
+    const wallet = new Wallet(
+      "0.0.69",
+      PrivateKey.generateECDSA(),
+      new LocalProvider()
+    );
+    const client = new BasicStratoWallet(wallet);
+
+    expect(() => new ApiSession({}, { client, ctx })).toThrow();
   });
 
   it("if environment is sane, it should properly instantiate the default api-instance", async () => {
@@ -180,7 +194,7 @@ describe("ApiSession", () => {
     }
   }
 
-  it("given sufficient, yet minimal, information, creating a fungible token should succede", async () => {
+  it("given sufficient, yet minimal, information, creating a fungible token should succeed", async () => {
     const { session } = await ApiSession.default();
     const token = new Token({
       name: "PLM",

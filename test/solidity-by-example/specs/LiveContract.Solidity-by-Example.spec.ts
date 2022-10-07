@@ -2,16 +2,14 @@ import { AccountId, Signer, Status } from "@hashgraph/sdk";
 import { describe, expect, it } from "@jest/globals";
 import BigNumber from "bignumber.js";
 
+import { ApiSession, Contract, StratoAddress } from "../../..";
 import {
   ResourceReadOptions,
   loadContractRegistry as loadContractRegistryResource,
   load as loadResource,
   read as readResource,
 } from "../../utils";
-import { ApiSession } from "../../../lib/ApiSession";
-import { Contract } from "../../../lib/static/upload/Contract";
 import { ContractRegistry } from "../../../lib/ContractRegistry";
-import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 function load(contractPath: string) {
   return loadResource(contractPath, "solidity-by-example");
@@ -278,17 +276,6 @@ describe("LiveContract.Solidity-by-Example", () => {
     );
 
     expect(isSameSigner).toBeTruthy();
-  });
-
-  // Requires: https://github.com/buidler-labs/hedera-strato-js/issues/38
-  it.skip("uploading a public library-dependent contract should succeed", async () => {
-    const { session } = await ApiSession.default();
-    const testArrayContract = await Contract.newFrom({
-      code: read({ contract: "library" }),
-      name: "TestArray",
-    });
-
-    await expect(session.upload(testArrayContract)).resolves.not.toThrow();
   });
 
   it("trying to register a non-existing event should error out", async () => {

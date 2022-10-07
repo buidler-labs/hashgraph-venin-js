@@ -1,4 +1,4 @@
-import { ContractCreateTransaction } from "@hashgraph/sdk";
+import { ContractCreateTransaction, ContractId } from "@hashgraph/sdk";
 import { Interface } from "@ethersproject/abi";
 
 import {
@@ -9,15 +9,26 @@ import { LiveContract, LiveContractWithLogs } from "../../live/LiveContract";
 import {
   SolidityCompiler,
   VIRTUAL_SOURCE_CONTRACT_FILE_NAME,
-} from "../../SolidityCompiler";
+} from "../../compiler/SolidityCompiler";
 import { CompileIssues } from "../../errors/CompileIssues";
-import { ContractFunctionParameters } from "../../hedera/ContractFunctionParameters";
+import { LibraryAddresses as SolidityLibraryAddresses } from "../../compiler/ContractCompileResult";
+import { StratoContractArgumentsEncoder } from "../../core/StratoContractArgumentsEncoder";
+import { typedObjectEntries } from "../../core/UsefulOps";
 
 export type ContractFeatures = {
   // TODO: add feature props here
 };
 
+type ContractsObject = {
+  [contractName: string]: () => Promise<Contract>;
+};
+
 type AllContractOptions = {
+  /**
+   * The strategy used to retrieve the contracts. If set to true and a linking error occurs, the entire operation fails and no contract is returned.
+   * If it's set to false and an error occurs, the operation won't error out and that respectful contract will be skipped.
+   */
+  allOrNothing?: boolean;
   /**
    * The Solidity full, human-readable, contract code
    */
@@ -30,6 +41,10 @@ type AllContractOptions = {
    * The top-level Solidity code file path if not using the 'code' alternative.
    */
   path?: string;
+  /**
+   * Any, optional, Solidity libraries to link against
+   */
+  libraries?: LibraryAddresses;
 };
 type NewContractOptions = {
   /**
@@ -41,6 +56,43 @@ type NewContractOptions = {
    */
   name?: string;
 } & AllContractOptions;
+
+interface LibraryAddresses {
+  [qualifiedNameOrSourceUnit: string]: string | ContractId;
+}
+
+/**
+ * Converts a higher-order library-address (eg. ContractId) into a lower-referenced solidity address ready for solc consumption
+ *
+ * @param libraries The object of libraries to go through and try to convert down
+ * @returns A library-object of primitive addresses (solidity string addresses) associated to library names
+ */
+function mapToSolidityLibraries(
+  libraries: LibraryAddresses
+): SolidityLibraryAddresses {
+  const solidityLibraries = {};
+
+  for (const [libraryName, libraryAddress] of typedObjectEntries(libraries)) {
+    const contractIdAddress =
+      libraryAddress instanceof ContractId
+        ? libraryAddress
+        : /\d+\.\d+\.\d+/.test(libraryAddress)
+        ? ContractId.fromString(libraryAddress)
+        : null;
+
+    const resolutedLibraryAddress =
+      contractIdAddress !== null
+        ? `0x${contractIdAddress.toSolidityAddress()}`
+        : (libraryAddress as string).toLowerCase();
+    const newLibraryKey =
+      libraryName.indexOf(":") !== -1
+        ? libraryName
+        : `${VIRTUAL_SOURCE_CONTRACT_FILE_NAME}:${libraryName}`;
+
+    solidityLibraries[newLibraryKey] = resolutedLibraryAddress;
+  }
+  return solidityLibraries;
+}
 
 /**
  * The Solidity-backed, non-deployed, data-holder for a Smart Contract logic.
@@ -60,6 +112,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     code,
     index = 0,
     ignoreWarnings = false,
+    libraries,
     name,
     path,
   }: NewContractOptions): Promise<Contract> {
@@ -74,12 +127,17 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
       );
     }
 
-    const contracts = await Contract.allFrom({ code, ignoreWarnings, path });
+    const contracts = await Contract.getContractsObjectFor({
+      code,
+      ignoreWarnings,
+      libraries,
+      path,
+    });
+    const contractNames = Object.keys(contracts);
+    const numberOfContracts = contractNames.length;
 
     if (name) {
-      const contractOfInterest = contracts.find(
-        (contract) => contract.name === name
-      );
+      const contractOfInterest = await contracts[name]();
 
       if (!contractOfInterest) {
         throw new Error(
@@ -87,50 +145,46 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
         );
       }
       return contractOfInterest;
-    } else if (index >= contracts.length) {
+    } else if (index >= numberOfContracts) {
       throw new Error(
-        `Index out of range. Your requested contract-id ${index} is not in range of the ${contracts.length} contracts present in the given code.`
+        `Index out of range. Your requested contract-id ${index} is not in range of the ${numberOfContracts} contracts present in the given code.`
       );
     }
-    return contracts[index];
+
+    const contractOfInterestName = contractNames[index];
+
+    return await contracts[contractOfInterestName]();
   }
 
   /**
-   * Returns all the contracts present in the given 'options' (either from 'path' or from 'code').
+   * Returns all the contracts present in the given `options` (either from `path` or from `code`) and, potentially, linked against the `libraries`.
    *
-   * @param {Object} options - Provides a source and controls various {@see Contract} construction settings.
+   * @param {AllContractOptions} opts - Provides a source and controls various {@see Contract} construction settings.
    * @returns {Promise<Array<Contract>>} - A list of {@link Contract}s parsed via Hedera's officially supported solidity version compiler (`solc`) from the code
    */
-  static async allFrom({
-    code,
-    ignoreWarnings = false,
-    path,
-  }: AllContractOptions): Promise<Array<Contract>> {
-    if (!code && !path) {
-      throw new Error(
-        "Can only retrieve contracts if either the direct solidity code is provided or a file path where that top-level code resides."
-      );
-    }
-
-    const rawCompileResult = await SolidityCompiler.compile({ code, path });
-    const compileResult = Contract._tryParsingCompileResultFrom({
-      ignoreWarnings,
-      rawCompileResult,
-    });
-    const compiledContractsInfo =
-      compileResult.contracts[VIRTUAL_SOURCE_CONTRACT_FILE_NAME];
+  public static async allFrom(
+    opts: AllContractOptions
+  ): Promise<Array<Contract>> {
+    const optsWithDefaults = Object.assign(
+      {
+        allOrNothing: true,
+        ignoreWarnings: false,
+      },
+      opts
+    );
+    const allPromisedContracts = await Contract.getContractsObjectFor(
+      optsWithDefaults
+    );
     const contracts = [];
 
-    for (const contractName of Object.keys(compiledContractsInfo)) {
-      const solo = compiledContractsInfo[contractName];
-
-      contracts.push(
-        new Contract({
-          abi: solo.abi,
-          byteCode: solo.evm.bytecode.object,
-          name: contractName,
-        })
-      );
+    for (const promisedContract of Object.values(allPromisedContracts)) {
+      try {
+        contracts.push(await promisedContract());
+      } catch (e) {
+        if (optsWithDefaults.allOrNothing) {
+          throw e;
+        }
+      }
     }
     return contracts;
   }
@@ -149,14 +203,55 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     return new Contract(jWhat);
   }
 
-  private static _tryParsingCompileResultFrom({
-    rawCompileResult,
-    ignoreWarnings,
-  }) {
-    const compileResult = JSON.parse(rawCompileResult);
+  /**
+   * Returns an object of promised contracts which are present as resolved by the given `options` (eg. either from `path` or from `code`) and,
+   * which potentially, are linked against the provided `libraries`.
+   *
+   * Note: Resolving the actual entries might fail due to linking issues and should be accounted for.
+   */
+  private static async getContractsObjectFor({
+    code,
+    ignoreWarnings = false,
+    libraries,
+    path,
+  }: AllContractOptions): Promise<ContractsObject> {
+    if (!code && !path) {
+      throw new Error(
+        "Can only retrieve contracts if either the direct solidity code is provided or a file path where that top-level code resides."
+      );
+    }
+
+    const compileResult = await SolidityCompiler.compile({
+      code,
+      path,
+    });
 
     CompileIssues.tryThrowingIfErrorsIn({ compileResult, ignoreWarnings });
-    return compileResult;
+
+    const solidityLibraries = mapToSolidityLibraries(libraries);
+    const contracts: ContractsObject = {};
+
+    for (const compiledContract of compileResult.contracts) {
+      let promisedContract: () => Promise<Contract>;
+
+      try {
+        promisedContract = () =>
+          Promise.resolve(
+            new Contract({
+              abi: compiledContract.abi,
+              byteCode: compiledContract.getLinkedByteCode(solidityLibraries),
+              name: compiledContract.contractName,
+            })
+          );
+      } catch (e) {
+        promisedContract = () =>
+          Promise.reject(
+            `There was an issue while linking contract '${compiledContract.contractName}': ${e.message}`
+          );
+      }
+      contracts[compiledContract.contractName] = promisedContract;
+    }
+    return contracts;
   }
 
   /**
@@ -296,7 +391,6 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     args = [],
   }: ArgumentsOnFileUploaded) {
     const contractFileId = receipt.fileId;
-    const constructorDefinition = this.interface.deploy;
     let contractCreationOverrides: any = {};
     let emitConstructorLogs = session.defaults.emitConstructorLogs;
 
@@ -307,7 +401,7 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     ) {
       const contractCreationArgs = args[0]._contract;
 
-      // try locking onto library-controlling behaviour flags
+      // try locking onto library-controlling behavior flags
       emitConstructorLogs =
         contractCreationArgs.emitConstructorLogs !== undefined
           ? contractCreationArgs.emitConstructorLogs
@@ -325,10 +419,9 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
         {
           adminKey: session.wallet.account.publicKey,
           bytecodeFileId: contractFileId,
-          constructorParameters: await ContractFunctionParameters.newFor(
-            constructorDefinition,
-            args
-          ),
+          constructorParameters: new StratoContractArgumentsEncoder(
+            this.interface
+          ).encode(args),
           gas: session.defaults.contractCreationGas,
           ...contractCreationOverrides,
         }

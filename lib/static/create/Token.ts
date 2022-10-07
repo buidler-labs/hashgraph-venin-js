@@ -22,6 +22,7 @@ export type TokenFeatures = {
   expirationTime?: Date | Timestamp;
   autoRenewPeriod?: number | Long.Long | Duration;
   tokenMemo?: string;
+  freezeDefault?: boolean;
 };
 
 export type CreateTokenFeatures = TokenFeatures & {

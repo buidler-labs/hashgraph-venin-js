@@ -37,7 +37,24 @@ export class BasicStratoWallet implements StratoWallet {
       ? OUT
       : never
   > {
-    const transactionResponse = await transaction.executeWithSigner(
+    let transactionToExecute: Transaction | Query<Q>;
+
+    // Note: don't know if this is generic enough. Are web-browsers ok with this?
+    if (transaction instanceof Transaction) {
+      // We freeze only if it's not already frozen otherwise we lose all existing signatures
+      if (!transaction.isFrozen()) {
+        transactionToExecute = await transaction.freezeWithSigner(this.wallet);
+      } else {
+        transactionToExecute = transaction;
+      }
+      transactionToExecute = await transactionToExecute.signWithSigner(
+        this.wallet
+      );
+    } else {
+      transactionToExecute = transaction;
+    }
+
+    const transactionResponse = await transactionToExecute.executeWithSigner(
       this.wallet
     );
 

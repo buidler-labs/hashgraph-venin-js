@@ -1,6 +1,5 @@
 import {
   ContractExecuteTransaction,
-  ContractFunctionParameters,
   Hbar,
   PrivateKey,
   TokenSupplyType,
@@ -17,6 +16,7 @@ import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 import { GasFees } from "../../constants";
 import { LiveAccountWithPrivateKey } from "../../../lib/live/LiveAccount";
+import { StratoContractArgumentsEncoder } from "../../../lib/core/StratoContractArgumentsEncoder";
 import { TokenTypes } from "../../../lib/static/create/Token";
 
 function read(what: ResourceReadOptions) {
@@ -77,18 +77,18 @@ describe("LiveContract.NFTShop", () => {
 
     const transaction = new ContractExecuteTransaction()
       .setContractId(liveContract.id)
-      .setFunction(
-        "mint",
-        new ContractFunctionParameters()
-          .addAddress(aliceLiveAccount.getSolidityAddress())
-          .addUint256(amountToMint)
+      .setFunctionParameters(
+        new StratoContractArgumentsEncoder(contract.interface).encode(
+          [aliceLiveAccount, amountToMint],
+          "mint"
+        )
       )
       .setPayableAmount(new Hbar(50))
       .setGas(GasFees.mintToken.toTinybars())
       .freezeWith(aliceClient);
-    tokenOwnerAccount.tryToSign(transaction);
+    const signedTransaction = await tokenOwnerAccount.sign(transaction);
 
-    const execute = await transaction.execute(aliceClient);
+    const execute = await signedTransaction.execute(aliceClient);
     await execute.getRecord(aliceClient);
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
