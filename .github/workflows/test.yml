@@ -26,6 +26,8 @@ jobs:
 
       - run: npm install
 
+      - run: npm run build:4-publish
+
       - name: Testing
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"

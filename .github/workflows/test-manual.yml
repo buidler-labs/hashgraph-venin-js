@@ -36,6 +36,8 @@ jobs:
 
       - run: npm install
 
+      - run: npm run build:4-publish
+
       - name: Testing
         env:
           HEDERAS_NETWORK: ${{ secrets.HEDERAS_NETWORK }}
