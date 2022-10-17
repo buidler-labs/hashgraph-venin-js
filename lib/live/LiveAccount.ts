@@ -10,7 +10,7 @@ import {
 } from "@hashgraph/sdk";
 
 import { Account, AccountFeatures } from "../static/create/Account";
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { ApiSession } from "../ApiSession";
 import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
 
 type LiveAccountConstructorArgs = {
@@ -33,11 +33,7 @@ export class LiveAccount extends BaseLiveEntityWithBalance<
 
   public getLiveEntityInfo(): Promise<AccountInfo> {
     const accountInfoQuery = new AccountInfoQuery().setAccountId(this.id);
-    return this.executeSanely(
-      accountInfoQuery,
-      TypeOfExecutionReturn.Result,
-      false
-    );
+    return this.executeSanely(accountInfoQuery);
   }
 
   protected override newDeleteTransaction(args?: any): Transaction {

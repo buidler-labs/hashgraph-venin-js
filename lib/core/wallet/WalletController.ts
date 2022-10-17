@@ -1,5 +1,5 @@
 import { AccountId } from "@hashgraph/sdk";
-import { HederaNetwork } from "../../HederaNetwork";
+import { HederaNetwork } from "../../hedera/HederaNetwork";
 import { Subscription } from "../Subscription";
 
 export interface WalletController<A = any> extends WalletControllerEvents<A> {

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import {
-  AVAILABLE_NETWORK_NAMES,
-  HederaNetwork,
-} from "../../../lib/HederaNetwork";
-import { DefinedNetworkDefaults } from "../../../lib/StratoContext";
+import { HederaNetwork } from "../../../lib/hedera/HederaNetwork";
 import { ImpotentWalletController } from "../../../lib/wallet/controller/ImpotentWalletController";
 
 describe("ImpotentWalletController", () => {
@@ -13,10 +9,13 @@ describe("ImpotentWalletController", () => {
 
     expect(() =>
       walletController.changeNetwork(
-        HederaNetwork.newFrom({
-          defaults: DefinedNetworkDefaults[AVAILABLE_NETWORK_NAMES.TestNet],
-          name: AVAILABLE_NETWORK_NAMES.TestNet,
-          nodes: "",
+        new HederaNetwork({
+          defaults: {
+            fileChunkSize: 123,
+            restMirrorAddress: "don't-care-url",
+          },
+          name: "testnet",
+          nodes: "don't-care-list",
         })
       )
     ).toThrow();

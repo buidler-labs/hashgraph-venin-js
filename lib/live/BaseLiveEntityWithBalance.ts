@@ -10,7 +10,6 @@ import {
 } from "@hashgraph/sdk";
 
 import { HederaEntityId, LiveEntity } from "./LiveEntity";
-import { TypeOfExecutionReturn } from "../ApiSession";
 
 export abstract class BaseLiveEntityWithBalance<
   T extends HederaEntityId,
@@ -20,11 +19,7 @@ export abstract class BaseLiveEntityWithBalance<
   public async getBalanceOfLiveEntity(): Promise<AccountBalance> {
     const queryPayload = this._getBalancePayload();
     const balanceQuery = new AccountBalanceQuery(queryPayload);
-    return this.executeSanely(
-      balanceQuery,
-      TypeOfExecutionReturn.Result,
-      false
-    );
+    return this.executeSanely(balanceQuery);
   }
 
   public transferHbarToLiveEntity(hbarAmount: Hbar | number): Promise<Status> {

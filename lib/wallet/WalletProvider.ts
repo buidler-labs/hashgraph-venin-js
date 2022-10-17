@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { HederaNetwork } from "../HederaNetwork";
+import { HederaNetwork } from "../hedera/HederaNetwork";
 import { StratoContext } from "../StratoContext";
 import { StratoWallet } from "../core/wallet/StratoWallet";
 import { WalletControllerEvents } from "../core/wallet/WalletController";

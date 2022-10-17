@@ -4,7 +4,6 @@ import Duration from "@hashgraph/sdk/lib/Duration";
 import { ArgumentsForCreate } from "../../core/CreatableEntity";
 import { BasicCreatableEntity } from "./BasicCreatableEntity";
 import { LiveTopic } from "../../live/LiveTopic";
-import { TypeOfExecutionReturn } from "../../ApiSession";
 
 export type TopicFeatures = {
   autoRenewAccountId?: string | AccountId;
@@ -40,11 +39,9 @@ export class Topic extends BasicCreatableEntity<LiveTopic> {
       this.topicFeatures
     );
     const createTopicTransaction = new TopicCreateTransaction(constructorArgs);
-    const creationReceipt = await session.execute(
-      createTopicTransaction,
-      TypeOfExecutionReturn.Receipt,
-      true
-    );
-    return new LiveTopic({ session, topicId: creationReceipt.topicId });
+    const {
+      receipt: { topicId },
+    } = await session.execute(createTopicTransaction);
+    return new LiveTopic({ session, topicId: topicId });
   }
 }

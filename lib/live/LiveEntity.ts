@@ -1,17 +1,17 @@
 import {
   AllowedExecutionReturnTypes,
   ApiSession,
-  ExecutionReturnTypes,
-  TypeOfExecutionReturn,
+  SessionExecutable,
+  StratoContractCallResponse,
+  StratoTransactionResponse,
 } from "../ApiSession";
 import {
-  ContractFunctionResult,
+  ContractCreateTransaction,
+  ContractExecuteTransaction,
   Query,
   Status,
   Transaction,
-  TransactionResponse,
 } from "@hashgraph/sdk";
-import { ContractFunctionCall } from "./LiveContract";
 import { SolidityAddressable } from "../core/SolidityAddressable";
 
 export type HederaEntityId = {
@@ -66,43 +66,29 @@ export abstract class LiveEntity<T extends HederaEntityId, I, P>
   /**
    * Region of `executeSanely` overridable declarations. This should closely mimic the {@link ApiSession#execute} implementations.
    */
-  protected async executeSanely<T extends TypeOfExecutionReturn>(
-    transaction: ContractFunctionCall,
-    returnType?: T,
-    getReceipt?: boolean
-  ): Promise<ExecutionReturnTypes<ContractFunctionResult>[T]>;
-  protected async executeSanely<T extends TypeOfExecutionReturn>(
-    transaction: Transaction,
-    returnType?: T,
-    getReceipt?: boolean
-  ): Promise<ExecutionReturnTypes<TransactionResponse>[T]>;
-  protected async executeSanely<T extends TypeOfExecutionReturn, R>(
-    transaction: Query<R>,
-    returnType?: T,
-    getReceipt?: boolean
-  ): Promise<ExecutionReturnTypes<R>[T]>;
+  protected async executeSanely(
+    what: ContractExecuteTransaction | ContractCreateTransaction
+  ): Promise<StratoContractCallResponse>;
+  protected async executeSanely(
+    what: Transaction
+  ): Promise<StratoTransactionResponse>;
+  protected async executeSanely<R>(what: Query<R>): Promise<R>;
 
   /**
    * Actual `sanity-execution`-able implementation. There should be only one `this.session.execute` call per {@link LiveEntity}.
    */
-  protected async executeSanely<T extends TypeOfExecutionReturn, R>(
-    what: Query<R> | Transaction,
-    returnType: T,
-    getReceipt = false
-  ): Promise<ExecutionReturnTypes<AllowedExecutionReturnTypes<R>>[T]> {
+  protected async executeSanely<R>(
+    what: SessionExecutable<R>
+  ): Promise<AllowedExecutionReturnTypes<R>> {
     this.sanityCheck((what as any).constructor.name);
 
-    return this.session.execute(what as any, returnType, getReceipt);
+    return this.session.execute(what as any);
   }
 
   protected async sanelyExecuteAndGetStatus(
     transaction: Transaction
   ): Promise<Status> {
-    const receipt = await this.executeSanely(
-      transaction,
-      TypeOfExecutionReturn.Receipt,
-      true
-    );
+    const { receipt } = await this.executeSanely(transaction);
 
     return receipt.status;
   }

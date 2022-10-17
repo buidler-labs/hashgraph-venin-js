@@ -8,7 +8,7 @@ import {
   Transaction,
 } from "@hashgraph/sdk";
 
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
+import { ApiSession } from "../ApiSession";
 import { FileFeatures } from "../static/upload/File";
 import { LiveEntity } from "./LiveEntity";
 
@@ -28,11 +28,7 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
 
   public override getLiveEntityInfo(): Promise<FileInfo> {
     const fileInfoQuery = new FileInfoQuery({ fileId: this.id });
-    return this.executeSanely(
-      fileInfoQuery,
-      TypeOfExecutionReturn.Result,
-      false
-    );
+    return this.executeSanely(fileInfoQuery);
   }
 
   override getSolidityAddress(): string {
@@ -57,11 +53,7 @@ export class LiveFile extends LiveEntity<FileId, FileInfo, FileFeatures> {
 
   public async getContents(): Promise<Uint8Array> {
     const fileContentsQuery = new FileContentsQuery({ fileId: this.id });
-    const queryResponse = await this.executeSanely(
-      fileContentsQuery,
-      TypeOfExecutionReturn.Result,
-      false
-    );
+    const queryResponse = await this.executeSanely(fileContentsQuery);
     return queryResponse;
   }
 }

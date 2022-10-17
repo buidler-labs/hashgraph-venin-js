@@ -8,7 +8,7 @@ import {
 } from "@hashgraph/sdk";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
-import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
+import { ApiSession } from "../../ApiSession";
 import { ArgumentsForCreate } from "../../core/CreatableEntity";
 import { BasicCreatableEntity } from "./BasicCreatableEntity";
 import { LiveToken } from "../../live/LiveToken";
@@ -162,12 +162,10 @@ export class Token extends BasicCreatableEntity<LiveToken> {
     const createTokenTransaction = new TokenCreateTransaction(
       constructorArgs as unknown
     );
-    const creationReceipt = await session.execute(
-      createTokenTransaction,
-      TypeOfExecutionReturn.Receipt,
-      true
-    );
+    const {
+      receipt: { tokenId },
+    } = await session.execute(createTokenTransaction);
 
-    return new LiveToken({ id: creationReceipt.tokenId, session });
+    return new LiveToken({ id: tokenId, session });
   }
 }

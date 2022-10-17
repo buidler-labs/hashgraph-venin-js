@@ -3,7 +3,7 @@
 import { AccountId } from "@hashgraph/sdk";
 
 import { NeverFiringSubscription, Subscription } from "../../core/Subscription";
-import { HederaNetwork } from "../../HederaNetwork";
+import { HederaNetwork } from "../../hedera/HederaNetwork";
 import { WalletController } from "../../core/wallet/WalletController";
 
 export class ImpotentWalletController implements WalletController {

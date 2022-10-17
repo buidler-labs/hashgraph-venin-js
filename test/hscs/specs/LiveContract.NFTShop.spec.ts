@@ -37,12 +37,10 @@ describe("LiveContract.NFTShop", () => {
       code: read({ contract: "NFTShop" }),
       ignoreWarnings: true,
     });
-    const client = session.network
-      .getClient()
-      .setOperator(
-        process.env.HEDERAS_OPERATOR_ID,
-        process.env.HEDERAS_OPERATOR_KEY
-      );
+    const client = session.network.client.setOperator(
+      process.env.HEDERAS_OPERATOR_ID,
+      process.env.HEDERAS_OPERATOR_KEY
+    );
     const privKey = PrivateKey.fromString(process.env.HEDERAS_OPERATOR_KEY);
     const token = getTokenToTest(
       {
@@ -55,9 +53,10 @@ describe("LiveContract.NFTShop", () => {
     );
 
     const aliceLiveAccount = await session.create(account);
-    const aliceClient = session.network
-      .getClient()
-      .setOperator(aliceLiveAccount.id, aliceLiveAccount.privateKey);
+    const aliceClient = session.network.client.setOperator(
+      aliceLiveAccount.id,
+      aliceLiveAccount.privateKey
+    );
     const tokenOwnerAccount = new LiveAccountWithPrivateKey({
       id: client._operator.accountId,
       privateKey: privKey,
@@ -68,7 +67,7 @@ describe("LiveContract.NFTShop", () => {
       contract,
       { _contract: { gas: 200_000 } },
       liveToken,
-      client._operator.accountId.toSolidityAddress(),
+      client._operator.accountId,
       nftPrice,
       "0xbeef"
     );

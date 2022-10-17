@@ -20,8 +20,8 @@ import BigNumber from "bignumber.js";
 import { arrayify } from "@ethersproject/bytes";
 import traverse from "traverse";
 
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Contract, ContractFeatures } from "../static/upload/Contract";
+import { ApiSession } from "../ApiSession";
 import { extractSolidityAddressFrom } from "../core/SolidityAddressable";
 
 import { BaseLiveEntityWithBalance } from "./BaseLiveEntityWithBalance";
@@ -36,10 +36,6 @@ export type ContractFunctionCall =
   | ContractCallQuery
   | ContractExecuteTransaction;
 export type ContractMethod<T = any> = (...args: Array<any>) => Promise<T>;
-type CreateContractRequestMeta = {
-  emitReceipt: boolean;
-  onlyReceipt: boolean;
-};
 export type LiveContractConstructorArgs = {
   session: ApiSession;
   id: ContractId;
@@ -98,39 +94,16 @@ export class LiveContract extends BaseLiveEntityWithBalance<
   public static async newFollowingUpload({
     session,
     contract,
-    emitConstructorLogs,
     transaction,
   }: {
     session: ApiSession;
     contract: Contract;
-    emitConstructorLogs: boolean;
     transaction: ContractCreateTransaction;
   }): Promise<LiveContractWithLogs> {
-    let id: ContractId;
-    let logs: ParsedEvent[];
+    const { receipt, result } = await session.execute(transaction);
+    const id = receipt.contractId;
+    const logs = parseLogs(contract.interface, result.logs);
 
-    if (emitConstructorLogs) {
-      const createdContractRecord = await session.execute(
-        transaction,
-        TypeOfExecutionReturn.Record,
-        true
-      );
-
-      id = createdContractRecord.receipt.contractId;
-      logs = parseLogs(
-        contract.interface,
-        createdContractRecord.contractFunctionResult.logs
-      );
-    } else {
-      const transactionReceipt = await session.execute(
-        transaction,
-        TypeOfExecutionReturn.Receipt,
-        true
-      );
-
-      id = transactionReceipt.contractId;
-      logs = [];
-    }
     return new LiveContractWithLogs({
       cInterface: contract.interface,
       id,
@@ -161,31 +134,22 @@ export class LiveContract extends BaseLiveEntityWithBalance<
           fDescription: FunctionFragment,
           ...args: any[]
         ) {
-          const { request, meta } = await this.createContractRequestFor({
+          const request = await this.createContractRequestFor({
             args,
             fDescription,
           });
-          const isNonQuery = !(request instanceof ContractCallQuery);
-          const executionResultType =
-            isNonQuery && meta.onlyReceipt
-              ? TypeOfExecutionReturn.Receipt
-              : TypeOfExecutionReturn.Result;
-          const callResponse = await this.executeSanely(
-            request,
-            executionResultType,
-            meta.emitReceipt
-          );
+          let contractResult: ContractFunctionResult;
 
-          if (executionResultType == TypeOfExecutionReturn.Result) {
-            this.tryToProcessForEvents(callResponse as ContractFunctionResult);
-            return await this.tryExtractingResponse(
-              callResponse as ContractFunctionResult,
-              fDescription
-            );
+          if (request instanceof ContractCallQuery) {
+            contractResult = await this.executeSanely(request);
+          } else {
+            const { result } = await this.executeSanely(request);
+
+            contractResult = result;
           }
+          this.tryToProcessForEvents(contractResult);
 
-          // Reaching this point means that only the receipt was requested. We have it so we pass it through
-          return callResponse;
+          return await this.tryExtractingResponse(contractResult, fDescription);
         }.bind(this, fDescription),
         writable: false,
       })
@@ -247,18 +211,11 @@ export class LiveContract extends BaseLiveEntityWithBalance<
   }: {
     fDescription: FunctionFragment;
     args: any[];
-  }): Promise<{
-    meta: CreateContractRequestMeta;
-    request: ContractFunctionCall;
-  }> {
+  }): Promise<ContractFunctionCall> {
     let requestOptionsPresentInArgs = false;
     const constructorArgs: any = {
       contractId: this.id,
       gas: this.session.defaults.contractTransactionGas,
-    };
-    const meta: CreateContractRequestMeta = {
-      emitReceipt: this.session.defaults.emitLiveContractReceipts,
-      onlyReceipt: this.session.defaults.onlyReceiptsFromContractRequests,
     };
 
     // Try to unpack common meta-args that can be passed in at query/transaction construction time
@@ -337,18 +294,6 @@ export class LiveContract extends BaseLiveEntityWithBalance<
       }
     }
 
-    // Try extracting meta-arguments (if any)
-    if (args && args.length > 0) {
-      if (args[0].emitReceipt === false || args[0].emitReceipt === true) {
-        meta.emitReceipt = args[0].emitReceipt;
-        requestOptionsPresentInArgs = true;
-      }
-      if (args[0].onlyReceipt === false || args[0].onlyReceipt === true) {
-        meta.onlyReceipt = args[0].onlyReceipt;
-        requestOptionsPresentInArgs = true;
-      }
-    }
-
     // Try cleaning up arguments list if config object was provide
     if (requestOptionsPresentInArgs) {
       args = args.slice(1);
@@ -357,10 +302,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
     // Encode and bind function arguments
     request.setFunctionParameters(this.encoder.encode(args, fDescription));
 
-    return {
-      meta,
-      request,
-    };
+    return request;
   }
 
   /**
@@ -490,11 +432,7 @@ export class LiveContract extends BaseLiveEntityWithBalance<
 
   public getLiveEntityInfo(): Promise<ContractInfo> {
     const contractInfoQuery = new ContractInfoQuery().setContractId(this.id);
-    return this.executeSanely(
-      contractInfoQuery,
-      TypeOfExecutionReturn.Result,
-      false
-    );
+    return this.executeSanely(contractInfoQuery);
   }
 
   protected override newDeleteTransaction<R>(args?: R): Transaction {

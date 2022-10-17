@@ -9,8 +9,8 @@ import {
   Transaction,
 } from "@hashgraph/sdk";
 
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
 import { Topic, TopicFeatures } from "../static/create/Topic";
+import { ApiSession } from "../ApiSession";
 import { LiveEntity } from "./LiveEntity";
 
 type LiveTopicConstructorArgs = {
@@ -31,11 +31,7 @@ export class LiveTopic extends LiveEntity<TopicId, TopicInfo, TopicFeatures> {
 
   public override getLiveEntityInfo(): Promise<TopicInfo> {
     const topicInfoQuery = new TopicInfoQuery({ topicId: this.id });
-    return this.executeSanely(
-      topicInfoQuery,
-      TypeOfExecutionReturn.Result,
-      false
-    );
+    return this.executeSanely(topicInfoQuery);
   }
 
   public override getSolidityAddress(): string {
