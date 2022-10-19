@@ -39,27 +39,28 @@ export class SolidityCompiler {
     const basePath = sdkPath.resolve(
       process.env.HEDERAS_CONTRACTS_RELATIVE_PATH || "contracts"
     );
+    const absoluteSourcePath =
+      path && sdkPath.isAbsolute(path)
+        ? path
+        : sdkPath.join(basePath, path || "");
     const content = code
-      ? code
-      : fs.readFileSync(
-          sdkPath.isAbsolute(path) ? path : sdkPath.join(basePath, path),
-          "utf8"
-        );
+      ? SolidityCompiler.sanitize(code)
+      : SolidityCompiler.getSource(absoluteSourcePath);
     // Note: Further options and info is available
     //       here https://docs.soliditylang.org/en/v0.8.10/using-the-compiler.html#input-description and
     //       here https://docs.soliditylang.org/en/v0.8.10/using-the-compiler.html#compiler-input-and-output-json-description
     const solInput = {
       language: "Solidity",
       settings: {
-        // FIXME: Issue #91: Make SolidityCompiler execution configurable
-        optimizer: {
-          enabled: true,
-          runs: 200,
-        },
         metadata: {
           // disabling metadata hash embedding to make the bytecode generation predictable at test-time
           // see https://docs.soliditylang.org/en/latest/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode
           bytecodeHash: process.env.NODE_ENV === "test" ? "none" : "ipfs",
+        },
+        // FIXME: Issue #91: Make SolidityCompiler execution configurable
+        optimizer: {
+          enabled: true,
+          runs: 200,
         },
         outputSelection: {
           "*": {
@@ -80,7 +81,7 @@ export class SolidityCompiler {
         ? process.env.HEDERAS_CONTRACTS_INCLUDED_PREFIXES.split(/\s*,\s*/)
         : []),
     ];
-    const importsResolver = (sourcePath) => {
+    const importsResolver = (sourcePath: string) => {
       for (const prefix of importPrefixes) {
         let resolvedSourcePath;
 
@@ -96,10 +97,10 @@ export class SolidityCompiler {
         if (fs.existsSync(resolvedSourcePath)) {
           try {
             return {
-              contents: fs.readFileSync(resolvedSourcePath).toString("utf8"),
+              contents: SolidityCompiler.getSource(resolvedSourcePath),
             };
           } catch (e) {
-            return { error: "Error reading " + resolvedSourcePath + ": " + e };
+            return { error: `Error reading '${resolvedSourcePath}: ${e}` };
           }
         }
       }
@@ -118,5 +119,46 @@ export class SolidityCompiler {
       VIRTUAL_SOURCE_CONTRACT_FILE_NAME,
       jCompileResult
     );
+  }
+
+  /**
+   * Given the path of a solidity file, reads and returns its source code following any necessary preprocessing.
+   *
+   * Note: This provides fix for #114 (https://github.com/buidler-labs/hedera-strato-js/issues/114)
+   *       We need to replace all relative imports (. and .. alike) otherwise the VFS could load the same identifier into multiple references which would end up
+   *       erroring out with "Identifier already declared." error messages.
+   *
+   * @param fullSolPath - The absolute .sol path to be resolved
+   * @returns the loaded source content following any preprocessing
+   */
+  private static getSource(fullSolPath: string): string {
+    const solFolderPath = sdkPath.dirname(fullSolPath);
+    let fSource = fs.readFileSync(fullSolPath, "utf-8");
+    const importRegex = /[ ]*import\s*[\\]?['"]([\\.]?\.\/[^\\'"]+)[\\]?['"];/g;
+    const importMatches = fSource.match(importRegex) || [];
+
+    for (const match of importMatches) {
+      const importedEntity = importRegex.exec(fSource);
+      const resolvedImportFilePath = sdkPath.join(
+        solFolderPath,
+        importedEntity[1]
+      );
+
+      // TODO: log `[${fullSolPath}] Replacing '${importedEntity[1]}' with '${resolvedImportFilePath}'`
+      fSource = fSource.replace(match, `import '${resolvedImportFilePath}';`);
+    }
+    return fSource;
+  }
+
+  private static sanitize(rootCode: string): string {
+    const dotDotRelativeImportRegex =
+      /[ ]*import\s*[\\]?['"](\.\.\/[^\\'"]+)[\\]?['"];/g;
+
+    if (dotDotRelativeImportRegex.test(rootCode)) {
+      throw new Error(
+        "Compiling root-code with double relative import component (..) is not yet supported and will be implemented in #117."
+      );
+    }
+    return rootCode;
   }
 }

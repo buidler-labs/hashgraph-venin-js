@@ -18,7 +18,7 @@ export class CompileIssues extends Error {
   static _listOfSimpleIssueMessagesFor(rawIssues) {
     return rawIssues.map(
       (rIssue) =>
-        `[ ${rIssue.sourceLocation.start}:${rIssue.sourceLocation.end} ] ${rIssue.message}`
+        `[ ${rIssue.sourceLocation.start}:${rIssue.sourceLocation.end} ] ${rIssue.formattedMessage}`
     );
   }
 
