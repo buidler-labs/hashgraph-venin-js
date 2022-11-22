@@ -1,9 +1,9 @@
 // Wrapper around the Solidity solc-js compiler meant for Node runtime consumption
 // Browser variants do not use this and instead polyfill it
-// Please see the rollup-strato plugin implementation for more info.
+// Please see the rollup-venin plugin implementation for more info.
 //
 // NOTE: We have to keep this module as light as possible (least dependencies as possible) so that
-//       we can polyfill this easily (eg. strato-rollup-plugin).
+//       we can polyfill this easily (eg. venin-rollup-plugin).
 //       This means no @hashgraph/sdk here.
 import * as fs from "fs";
 import * as sdkPath from "path";
@@ -25,7 +25,7 @@ export interface CompilationResult {
 
 export const VIRTUAL_SOURCE_CONTRACT_FILE_NAME = "__contract__.sol";
 
-// Fix for https://github.com/buidler-labs/hedera-strato-js/issues/81
+// Fix for https://github.com/buidler-labs/hedera-venin-js/issues/81
 //   as initially reported by https://github.com/ethereum/solidity/issues/12228
 const listeners = process.listeners("unhandledRejection");
 if (undefined !== listeners[listeners.length - 1]) {
@@ -124,7 +124,7 @@ export class SolidityCompiler {
   /**
    * Given the path of a solidity file, reads and returns its source code following any necessary preprocessing.
    *
-   * Note: This provides fix for #114 (https://github.com/buidler-labs/hedera-strato-js/issues/114)
+   * Note: This provides fix for #114 (https://github.com/buidler-labs/hedera-venin-js/issues/114)
    *       We need to replace all relative imports (. and .. alike) otherwise the VFS could load the same identifier into multiple references which would end up
    *       erroring out with "Identifier already declared." error messages.
    *
