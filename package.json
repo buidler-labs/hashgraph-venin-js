@@ -84,7 +84,7 @@
     "url": "https://github.com/buidler-labs/hedera-venin-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "peerDependencies": {
     "@hashgraph/sdk": "~2.17.1"
   }
