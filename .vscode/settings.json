@@ -6,7 +6,7 @@
   "cSpell.customDictionaries": {
     "custom-dictionary-workspace": {
       "name": "custom-dictionary-workspace",
-      "path": "${workspaceFolder:hedera-strato-js}/.cspell/custom-dictionary-workspace.txt",
+      "path": "${workspaceFolder:hedera-venin-js}/.cspell/custom-dictionary-workspace.txt",
       "addWords": true,
       "scope": "workspace"
     }

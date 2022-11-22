@@ -3,7 +3,7 @@
 module.exports = {
   collectCoverage: true,
   coveragePathIgnorePatterns: ["test/*", "lib.cjs/*", "lib.esm/*"],
-  displayName: "hedera-strato",
+  displayName: "hedera-venin",
   moduleFileExtensions: ["js", "ts"],
   preset: "ts-jest",
   setupFiles: ["dotenv/config"],

@@ -1,16 +1,16 @@
-# Hedera Strato JS
+# Hedera Venin JS
 
-![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hedera-strato-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
-[![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hedera-strato-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hedera-strato-js)
+![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hedera-venin-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
+[![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hedera-venin-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hedera-venin-js)
 
 [![Discord support channel](https://img.shields.io/discord/949250301792239686?style=flat-square)](https://discord.com/invite/4mYCre869F)
 ![contributions](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
-![license](https://img.shields.io/github/license/buidler-labs/hedera-strato-js.svg?colorB=ff0000&style=flat-square)
+![license](https://img.shields.io/github/license/buidler-labs/hedera-venin-js.svg?colorB=ff0000&style=flat-square)
 
 ![node version](https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square)
-![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-strato-js.svg?style=flat-square)
+![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-venin-js.svg?style=flat-square)
 
-[![NPM](https://nodei.co/npm/@buidlerlabs/hedera-strato-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-strato-js/)
+[![NPM](https://nodei.co/npm/@buidlerlabs/hedera-venin-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-venin-js/)
 
 Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
 
@@ -22,14 +22,14 @@ Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and w
 
 ## Features
 
-Strato already is packed with a lot of stuff:  
+Venin already is packed with a lot of stuff:  
 ✔️ Compile a Solidity contract to obtain its Hedera accepted ABI directly from within the library (no external compiler required)  
 ✔️ Deploy a contract to the network  
 ✔️ Use a fluent API to interact with deployed, _live entities_ such as contracts  
 ✔️ Pubsub for contract emitted events  
 ✔️ Pubsub for transaction receipts  
 ✔️ Fine grained cost-control  
-✔️ Browser bundle-able via a custom made Rollup plugin ([webpack pending](https://github.com/buidler-labs/hedera-strato-js/issues/26))  
+✔️ Browser bundle-able via a custom made Rollup plugin ([webpack pending](https://github.com/buidler-labs/hedera-venin-js/issues/26))  
 ✔️ Using Hedera File Storage as a place to store generic files and JSONs  
 ✔️ Create token via the Hedera Token Service (HTS)  
 ✔️ Create a Hedera account  
@@ -48,7 +48,7 @@ Strato already is packed with a lot of stuff:
 
 ## The drive
 
-As any good-striving, long-lasting, endeavour, we are using Strato to hopefully fuel everything that we, here at BuiDler Labs, build on Hedera. Our Hedera portfolio currently consists of:
+As any good-striving, long-lasting, endeavour, we are using Venin to hopefully fuel everything that we, here at BuiDler Labs, build on Hedera. Our Hedera portfolio currently consists of:
 
 - [FileCoin-Hedera Grant](https://github.com/taskbar-team/hedera-filecoin-devgrant) - a development grant used to put the foundations of [MyTaskbar](https://mytaskbar.io/) v2, the more decentralized version
 - [HeadStarter](headstarter.org) - the first Hedera IDO platform
@@ -82,7 +82,7 @@ HEDERAS_OPERATOR_KEY=...
 pragma solidity ^0.8.3;
 
 contract HelloWorld {
-    string public greet = "Hello Hedera Strato!";
+    string public greet = "Hello Hedera Venin!";
 }
 ```
 
@@ -98,7 +98,7 @@ const liveContract = await session.upload(helloWorldContract);
 console.log(await liveContract.greet());
 ```
 
-If all goes well, you should see the expected `Hello Hedera Strato!` logged inside your console signifying that the contract was successfully compiled, uploaded and executed.
+If all goes well, you should see the expected `Hello Hedera Venin!` logged inside your console signifying that the contract was successfully compiled, uploaded and executed.
 
 Also, if you want a quick play-through a similar example, please have a look at [our minimum-working code](https://github.com/buidler-labs/hsj-example) repo.
 
@@ -114,7 +114,7 @@ $ npm test
 
 ## Contributions
 
-Do you think we missed anything? Want some feature badly? Do you have an idea of something that we might improve? Head over to [our issues page](https://github.com/buidler-labs/hedera-strato-js/issues) and let us know! We want Strato to be a community-lead initiative. This means that any opinion or critic is encouraged (and even welcomed)!
+Do you think we missed anything? Want some feature badly? Do you have an idea of something that we might improve? Head over to [our issues page](https://github.com/buidler-labs/hedera-venin-js/issues) and let us know! We want Venin to be a community-lead initiative. This means that any opinion or critic is encouraged (and even welcomed)!
 
 Of course, if you're eager to write it yourself, that's also fine and dandy! Just fork us, add your changes and open a pull request. We'll take it from there ...
 
