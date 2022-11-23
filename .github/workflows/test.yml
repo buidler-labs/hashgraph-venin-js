@@ -13,7 +13,7 @@ env:
 jobs:
   main_test:
     runs-on: ubuntu-latest
-    environment: hedera-testnet
+    environment: hedera-devnet
     strategy:
       matrix:
         npm_test_script: ["test:node", "test:jsdom"]
