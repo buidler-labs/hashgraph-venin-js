@@ -33,6 +33,7 @@ jobs:
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
           HEDERAS_NETWORK: ${{ secrets.HEDERAS_NETWORK }}
+          HEDERAS_NODES: ${{ secrets.HEDERAS_NODES }}
           HEDERAS_OPERATOR_ID: ${{ secrets.HEDERAS_OPERATOR_ID }}
           HEDERAS_OPERATOR_KEY: ${{ secrets.HEDERAS_OPERATOR_KEY }}
           HEDERAS_DEFAULT_CONTRACT_REQUESTS_RETURN_ONLY_RECEIPTS: ${{ secrets.HEDERAS_DEFAULT_CONTRACT_REQUESTS_RETURN_ONLY_RECEIPTS }}
