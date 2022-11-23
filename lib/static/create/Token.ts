@@ -1,5 +1,6 @@
 import {
   AccountId,
+  Hbar,
   TokenType as HederaTokenType,
   Key,
   Timestamp,
@@ -35,6 +36,7 @@ export type CreateTokenFeatures = TokenFeatures & {
   decimals?: number | Long.Long;
   customFees?: { feeCollectorAccountId?: string | AccountId | undefined }[];
   freezeDefault?: boolean;
+  maxTransactionFee?: number | Long.Long | Hbar;
 };
 
 type TokenKeys = {
@@ -162,6 +164,20 @@ export class Token extends BasicCreatableEntity<LiveToken> {
     const createTokenTransaction = new TokenCreateTransaction(
       constructorArgs as unknown
     );
+    
+    let transactionFee: Hbar;
+    if(this.info.maxTransactionFee) {
+      transactionFee = this.info.maxTransactionFee instanceof Hbar 
+        ? this.info.maxTransactionFee 
+        : new Hbar(this.info.maxTransactionFee)
+    } else if (session.defaults.tokenCreateTransactionFee > 0) {
+      transactionFee = Hbar.fromTinybars(
+        session.defaults.tokenCreateTransactionFee
+      );
+    }
+    if(transactionFee) {
+      createTokenTransaction.setMaxTransactionFee(transactionFee);
+    }
     const creationReceipt = await session.execute(
       createTokenTransaction,
       TypeOfExecutionReturn.Receipt,
