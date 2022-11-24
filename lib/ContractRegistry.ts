@@ -28,7 +28,7 @@ export class ContractRegistry {
               ) {
                 // No-op
                 console.error(
-                  "ContractRegistry could not load a Contract due to library linking not currently being supported. This will be supported once https://github.com/buidler-labs/hedera-strato-js/issues/38 is resolved."
+                  "ContractRegistry could not load a Contract due to library linking not currently being supported. This will be supported once https://github.com/buidler-labs/hashgraph-venin-js/issues/38 is resolved."
                 );
               } else {
                 // no mercy

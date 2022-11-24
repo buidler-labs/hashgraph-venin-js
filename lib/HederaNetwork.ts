@@ -41,7 +41,7 @@ export type NetworkDefaults = {
 };
 
 /**
- * The main entry-class for the Hedera Strato library.
+ * The main entry-class for the Hedera Venin library.
  *
  * It starts out by referencing a Hedera Network (being it [official](https://docs.hedera.com/guides/mirrornet/hedera-mirror-node#mainnet) or {@link HEDERA_CUSTOM_NET_NAME | custom})
  * client before allowing to generate an {@link ApiSession} through the {@link HederaNetwork.login} method call.

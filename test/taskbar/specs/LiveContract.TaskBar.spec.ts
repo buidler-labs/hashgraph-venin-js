@@ -12,6 +12,10 @@ function read(what: ResourceReadOptions) {
   return readResource({ relativeTo: "taskbar", ...what });
 }
 
+function getContractPath(fileName: string) {
+  return `taskbar/contracts/${fileName}.sol`;
+}
+
 describe("LiveContract.TaskBar", () => {
   it("given the taskbar use-case contracts, initializing a task should allow for getting it back later on", async () => {
     const maxNrOfTasksPerRegistry = new BigNumber(2);
@@ -19,11 +23,11 @@ describe("LiveContract.TaskBar", () => {
 
     const { session } = await ApiSession.default();
     const taskRegistryContract = await Contract.newFrom({
-      code: read({ contract: "TaskRegistry" }),
       ignoreWarnings: true,
+      path: getContractPath("TaskRegistry"),
     });
     const cappedRegistryHelperContract = await Contract.newFrom({
-      code: read({ contract: "CappedRegistryHelper" }),
+      path: getContractPath("CappedRegistryHelper"),
     });
     const cappedRegistryLiveContract = await session.upload(
       cappedRegistryHelperContract,

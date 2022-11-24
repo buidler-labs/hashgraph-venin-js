@@ -21,7 +21,7 @@
   ],
   "main": "./lib.cjs/index.cjs",
   "module": "./lib.esm/index.mjs",
-  "name": "@buidlerlabs/hedera-strato-js",
+  "name": "@buidlerlabs/hashgraph-venin-js",
   "scripts": {
     "build:4-publish": "run-p build:cjs build:esm build:declarations",
     "build:cjs": "babel --env-name cjs lib --extensions .ts --out-dir lib.cjs --out-file-extension .cjs",
@@ -81,10 +81,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/buidler-labs/hedera-strato-js"
+    "url": "https://github.com/buidler-labs/hashgraph-venin-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "peerDependencies": {
     "@hashgraph/sdk": "~2.17.1"
   }

@@ -21,6 +21,9 @@ describe("Token", () => {
       .fn()
       .mockReturnValue({ tokenId: TokenId.fromString("0.0.69") });
     const session = {
+      defaults: {
+        tokenCreateTransactionFee: 0,
+      },
       execute: mockedSessionExecute,
       wallet: {
         account: {

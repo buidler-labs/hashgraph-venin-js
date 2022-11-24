@@ -89,6 +89,7 @@ export type SessionDefaults = {
   emitLiveContractReceipts: boolean;
   onlyReceiptsFromContractRequests: boolean;
   paymentForContractQuery: number;
+  tokenCreateTransactionFee: number;
 };
 
 const SESSION_CONSTRUCTOR_GUARD = {};

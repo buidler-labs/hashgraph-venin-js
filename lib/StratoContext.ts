@@ -252,6 +252,12 @@ export class StratoContext {
           resolveSessionDefaultValueFor("payment_for_contract_query") ??
             "20000000"
         ),
+      tokenCreateTransactionFee:
+        rParams.session?.defaults?.tokenCreateTransactionFee ??
+        parseInt(
+          resolveSessionDefaultValueFor("token_create_transaction_fee") ??
+            "5000000000"
+        ),
     };
   }
 }
