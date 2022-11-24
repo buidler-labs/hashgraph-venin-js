@@ -1,16 +1,16 @@
 # Hedera Venin JS
 
-![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hedera-venin-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
-[![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hedera-venin-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hedera-venin-js)
+![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hashgraph-venin-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
+[![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hashgraph-venin-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hashgraph-venin-js)
 
 [![Discord support channel](https://img.shields.io/discord/949250301792239686?style=flat-square)](https://discord.com/invite/4mYCre869F)
 ![contributions](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
-![license](https://img.shields.io/github/license/buidler-labs/hedera-venin-js.svg?colorB=ff0000&style=flat-square)
+![license](https://img.shields.io/github/license/buidler-labs/hashgraph-venin-js.svg?colorB=ff0000&style=flat-square)
 
 ![node version](https://img.shields.io/badge/Node.js-%3E%3D14.8.0-orange.svg?style=flat-square)
-![npm version](https://img.shields.io/npm/v/@buidlerlabs/hedera-venin-js.svg?style=flat-square)
+![npm version](https://img.shields.io/npm/v/@buidlerlabs/hashgraph-venin-js.svg?style=flat-square)
 
-[![NPM](https://nodei.co/npm/@buidlerlabs/hedera-venin-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hedera-venin-js/)
+[![NPM](https://nodei.co/npm/@buidlerlabs/hashgraph-venin-js.png?mini=true)](https://nodei.co/npm/@buidlerlabs/hashgraph-venin-js/)
 
 Write Web3 [Hedera](https://hedera.com/) smart-contract dApps frictionless and with ease, without having to deal with the hustle and bustle of [Hedera's verbose, underlying services](https://docs.hedera.com/guides/docs/sdks).
 
@@ -29,7 +29,7 @@ Venin already is packed with a lot of stuff:
 ✔️ Pubsub for contract emitted events  
 ✔️ Pubsub for transaction receipts  
 ✔️ Fine grained cost-control  
-✔️ Browser bundle-able via a custom made Rollup plugin ([webpack pending](https://github.com/buidler-labs/hedera-venin-js/issues/26))  
+✔️ Browser bundle-able via a custom made Rollup plugin ([webpack pending](https://github.com/buidler-labs/hashgraph-venin-js/issues/26))  
 ✔️ Using Hedera File Storage as a place to store generic files and JSONs  
 ✔️ Create token via the Hedera Token Service (HTS)  
 ✔️ Create a Hedera account  
@@ -114,7 +114,7 @@ $ npm test
 
 ## Contributions
 
-Do you think we missed anything? Want some feature badly? Do you have an idea of something that we might improve? Head over to [our issues page](https://github.com/buidler-labs/hedera-venin-js/issues) and let us know! We want Venin to be a community-lead initiative. This means that any opinion or critic is encouraged (and even welcomed)!
+Do you think we missed anything? Want some feature badly? Do you have an idea of something that we might improve? Head over to [our issues page](https://github.com/buidler-labs/hashgraph-venin-js/issues) and let us know! We want Venin to be a community-lead initiative. This means that any opinion or critic is encouraged (and even welcomed)!
 
 Of course, if you're eager to write it yourself, that's also fine and dandy! Just fork us, add your changes and open a pull request. We'll take it from there ...
 

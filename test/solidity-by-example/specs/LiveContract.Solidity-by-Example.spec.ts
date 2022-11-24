@@ -24,7 +24,7 @@ function loadContractRegistry(): ContractRegistry {
 }
 
 describe("LiveContract.Solidity-by-Example", () => {
-  // Requires: https://github.com/buidler-labs/hedera-venin-js/issues/11
+  // Requires: https://github.com/buidler-labs/hashgraph-venin-js/issues/11
   it.skip("not setting a query-payment should default to using the upper limit given by the maximum-query-payment available on the client which should allow the query to successfully resolve", async () => {
     const { session } = await ApiSession.default({
       session: {
