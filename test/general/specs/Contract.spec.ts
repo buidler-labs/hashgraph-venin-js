@@ -2,7 +2,8 @@ import * as path from "path";
 
 import { describe, expect, it } from "@jest/globals";
 
-import { CompileIssues, Contract } from "../../..";
+import { CompileIssues } from "../../../lib/errors/CompileIssues";
+import { Contract } from "../../../lib/static/upload/Contract";
 import { read } from "../../utils";
 
 const HELLO_IMPORTS_BYTECODE = read({ solo: "hello_imports" }).evm.bytecode
@@ -116,7 +117,7 @@ describe("Contract", () => {
     );
   });
 
-  it("given a solidity contract code which doesn't have a license, extracting all the Contracts should succede if we don't care about compiler warnings", async () => {
+  it("given a solidity contract code which doesn't have a license, extracting all the Contracts should succeed if we don't care about compiler warnings", async () => {
     await Contract.allFrom({
       code: read({ contract: "no_license_hello_world" }),
       ignoreWarnings: true,
