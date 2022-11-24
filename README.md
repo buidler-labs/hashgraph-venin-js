@@ -1,6 +1,6 @@
 # Hedera Venin JS
 
-![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hashgraph-venin-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
+![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hashgraph-venin-js/test-nodejs-jsdom?style=flat-square&label=tests&color=yellowgreen)
 [![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hashgraph-venin-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hashgraph-venin-js)
 
 [![Discord support channel](https://img.shields.io/discord/949250301792239686?style=flat-square)](https://discord.com/invite/4mYCre869F)
