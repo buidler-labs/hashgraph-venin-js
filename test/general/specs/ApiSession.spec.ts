@@ -23,11 +23,7 @@ describe("ApiSession", () => {
   it("sessions cannot be instantiated directly", async () => {
     const ctx = new StratoContext({});
 
-    const wallet = new Wallet(
-      "0.0.69",
-      PrivateKey.generateECDSA(),
-      new LocalProvider()
-    );
+    const wallet = new Wallet("0.0.69", PrivateKey.generateECDSA());
     const client = new BasicStratoWallet(wallet);
 
     expect(() => new ApiSession({}, { client, ctx })).toThrow();
