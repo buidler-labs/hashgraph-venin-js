@@ -84,7 +84,7 @@
     "url": "https://github.com/buidler-labs/hashgraph-venin-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.8.1",
+  "version": "0.8.2-beta.0",
   "peerDependencies": {
     "@hashgraph/sdk": "~2.17.1"
   }
