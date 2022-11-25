@@ -1,6 +1,6 @@
-# Hedera Venin JS
+# Hashgraph Venin JS
 
-![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hashgraph-venin-js/test-nodejs-jsdom-browser?style=flat-square&label=tests&color=yellowgreen)
+![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hashgraph-venin-js/test-nodejs-jsdom?style=flat-square&label=tests&color=yellowgreen)
 [![codecov](https://img.shields.io/codecov/c/github/buidler-labs/hashgraph-venin-js?style=flat-square)](https://codecov.io/gh/buidler-labs/hashgraph-venin-js)
 
 [![Discord support channel](https://img.shields.io/discord/949250301792239686?style=flat-square)](https://discord.com/invite/4mYCre869F)
@@ -82,7 +82,7 @@ HEDERAS_OPERATOR_KEY=...
 pragma solidity ^0.8.3;
 
 contract HelloWorld {
-    string public greet = "Hello Hedera Venin!";
+    string public greet = "Hello Hashgraph Venin!";
 }
 ```
 
@@ -98,7 +98,7 @@ const liveContract = await session.upload(helloWorldContract);
 console.log(await liveContract.greet());
 ```
 
-If all goes well, you should see the expected `Hello Hedera Venin!` logged inside your console signifying that the contract was successfully compiled, uploaded and executed.
+If all goes well, you should see the expected `Hello Hashgraph Venin!` logged inside your console signifying that the contract was successfully compiled, uploaded and executed.
 
 Also, if you want a quick play-through a similar example, please have a look at [our minimum-working code](https://github.com/buidler-labs/hsj-example) repo.
 
