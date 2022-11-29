@@ -1,6 +1,6 @@
 import * as fs from "fs";
+import * as os from "os";
 import * as sdkPath from "path";
-
 export interface SolidityRootCoordinate {
   /**
    * The initial path (if available) of the root solidity file to compile
@@ -158,9 +158,27 @@ export class CodeResolver {
         ? resolvedImportFilePath
         : this.getAbsolutePathFor(importedIdentifier[1]);
 
-      // TODO: log `[${fullSolPath}] Replacing '${importedEntity[1]}' with '${resolvedImportFilePath}'`
-      fSource = fSource.replace(match, `import '${resolvedImportFilePath}';`);
+      const driveIndependentImport = getDriveIndependentAbsolutePath(
+        resolvedImportFilePath
+      );
+
+      // TODO: log `[${fullSolPath}] Replacing '${importedIdentifier[1]}' with '${driveIndependentImport}'`
+      fSource = fSource.replace(match, `import '${driveIndependentImport}';`);
     }
     return fSource;
   }
+}
+
+/**
+ * Sanitizes an os-dependent, absolute-path, to please the solidity import value-parser.
+ * This is mostly needed for windows absolute paths where drive-containing paths (eg. C:\\A.sol)
+ * are not valid.
+ *
+ * @param path - Drive-dependent (if available), absolute-path like path
+ * @returns solidity-valid absolute-path import
+ */
+function getDriveIndependentAbsolutePath(path: string): string {
+  return os.platform() === "win32"
+    ? path.replace(/^.*:\\/, sdkPath.sep).replace(/\\/g, "/")
+    : path;
 }
