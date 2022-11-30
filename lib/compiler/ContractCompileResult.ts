@@ -2,7 +2,7 @@
  * This module is responsible for linking solidity-contract abi code against already deployed libraries
  *
  * Be very mindful when editing it to not include to many external module dependencies which
- * could burden the bundler plugins that reference it (eg. @buidlerlabs/rollup-plugin-hedera-strato).
+ * could burden the bundler plugins that reference it (eg. @buidlerlabs/rollup-plugin-hashgraph-venin).
  *
  * Note: This is also exported via package.json but is done so for internal use only and, as such,
  *       does not guarantee module api stability.

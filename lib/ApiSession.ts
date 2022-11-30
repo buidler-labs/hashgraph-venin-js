@@ -84,6 +84,7 @@ export type SessionDefaults = {
   contractCreationGas: number;
   contractTransactionGas: number;
   paymentForContractQuery: number;
+  tokenCreateTransactionFee: number;
 };
 
 const SESSION_CONSTRUCTOR_GUARD = {};

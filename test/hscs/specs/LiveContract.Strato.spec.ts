@@ -1,26 +1,22 @@
 import { describe, expect, it } from "@jest/globals";
 import { Hbar } from "@hashgraph/sdk";
 
-import {
-  ResourceReadOptions,
-  getTokenToTest,
-  read as readResource,
-} from "../../utils";
 import { Account } from "../../../lib/static/create/Account";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 import { GasFees } from "../../constants";
 import { TokenTypes } from "../../../lib/static/create/Token";
+import { getTokenToTest } from "../../utils";
 
-function read(what: ResourceReadOptions) {
-  return readResource({ relativeTo: "hscs", ...what });
+function getContractPath(fileName: string) {
+  return `hscs/contracts/${fileName}.sol`;
 }
 
 describe("LiveContract.Strato", () => {
   it("given a fungible, live, token, burning over a precompiled contract-service bridge should be permitted", async () => {
     const contract = await Contract.newFrom({
-      code: read({ contract: "HelloWorldBurn" }),
       ignoreWarnings: true,
+      path: getContractPath("HelloWorldBurn"),
     });
     const token = getTokenToTest();
 
@@ -44,11 +40,11 @@ describe("LiveContract.Strato", () => {
   });
 
   it("given a fungible, live, token, associating it to a live-contract should allow the contract to control the supply and transfer to associated accounts", async () => {
-    const token = getTokenToTest({ keys: { kyc: null } });
+    const token = getTokenToTest({}, TokenTypes.FungibleCommon, false);
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const contract = await Contract.newFrom({
-      code: read({ contract: "MintTransHTS" }),
       ignoreWarnings: true,
+      path: "hscs/contracts/MintTransHTS.sol",
     });
 
     // Make everything live
@@ -89,8 +85,8 @@ describe("LiveContract.Strato", () => {
       maxAutomaticTokenAssociations: 1,
     });
     const contract = await Contract.newFrom({
-      code: read({ contract: "MintTransHTS" }),
       ignoreWarnings: true,
+      path: getContractPath("MintTransHTS"),
     });
 
     // Make everything live
@@ -128,8 +124,8 @@ describe("LiveContract.Strato", () => {
   it("given a non-fungible, live, token, a contract would make use of the HTS to mint multiple and make the NFT transfers to associated accounts", async () => {
     const account = new Account({ maxAutomaticTokenAssociations: 1 });
     const contract = await Contract.newFrom({
-      code: read({ contract: "MintTransHTS" }),
       ignoreWarnings: true,
+      path: getContractPath("MintTransHTS"),
     });
 
     // Make everything live

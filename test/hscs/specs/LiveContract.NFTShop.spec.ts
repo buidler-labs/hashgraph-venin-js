@@ -6,11 +6,6 @@ import {
 } from "@hashgraph/sdk";
 import { describe, expect, it } from "@jest/globals";
 
-import {
-  ResourceReadOptions,
-  getTokenToTest,
-  read as readResource,
-} from "../../utils";
 import { Account } from "../../../lib/static/create/Account";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
@@ -18,9 +13,10 @@ import { GasFees } from "../../constants";
 import { LiveAccountWithPrivateKey } from "../../../lib/live/LiveAccount";
 import { StratoContractArgumentsEncoder } from "../../../lib/core/StratoContractArgumentsEncoder";
 import { TokenTypes } from "../../../lib/static/create/Token";
+import { getTokenToTest } from "../../utils";
 
-function read(what: ResourceReadOptions) {
-  return readResource({ relativeTo: "hscs", ...what });
+function getContractPath(fileName: string) {
+  return `hscs/contracts/${fileName}.sol`;
 }
 
 describe("LiveContract.NFTShop", () => {
@@ -34,8 +30,8 @@ describe("LiveContract.NFTShop", () => {
       maxAutomaticTokenAssociations: 1,
     });
     const contract = await Contract.newFrom({
-      code: read({ contract: "NFTShop" }),
       ignoreWarnings: true,
+      path: getContractPath("NFTShop"),
     });
     const client = session.network.client.setOperator(
       process.env.HEDERAS_OPERATOR_ID,
@@ -115,7 +111,7 @@ describe("LiveContract.NFTShop", () => {
       false
     );
     const contract = await Contract.newFrom({
-      code: read({ contract: "NFTShop" }),
+      path: getContractPath("NFTShop"),
     });
 
     const { session } = await ApiSession.default();
