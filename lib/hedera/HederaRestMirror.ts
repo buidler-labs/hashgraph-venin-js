@@ -1,4 +1,4 @@
-import fetch from "isomorphic-unfetch";
+import fetch from "cross-fetch";
 import { proto } from "@hashgraph/proto";
 
 import {
@@ -11,7 +11,6 @@ import {
   TransactionId,
   TransactionReceipt,
 } from "@hashgraph/sdk";
-import { HederaNetwork } from "./HederaNetwork";
 import { decodeFromHex } from "../core/Hex";
 
 export type StratoTransactionReceipt = {
@@ -39,7 +38,7 @@ export const FETCH_TIMEOUT = 120000;
 export class HederaRestMirror {
   private readonly baseUrl: string;
 
-  public constructor(network: HederaNetwork | string) {
+  public constructor(network: string | undefined) {
     let baseAddress: string;
 
     switch (network) {
@@ -53,7 +52,10 @@ export class HederaRestMirror {
         baseAddress = "https://previewnet.mirrornode.hedera.com";
         break;
       default:
-        if (
+        if (!network) {
+          // Default to local-node deployment address
+          baseAddress = "http://localhost:5551";
+        } else if (
           /^http[s]?:\/\/([0-9A-Za-z-\\.@:%_+~#=]+)+$/g.test(
             network as string
           ) == false
@@ -61,6 +63,9 @@ export class HederaRestMirror {
           throw new Error(
             `Invalid custom REST Mirror base URL address provided '${network}'. The accepted format should be: 'http[s]://<domain|ip>[:<port>]'`
           );
+        } else {
+          // The provided network is a valid url. We use that as the base-address
+          baseAddress = network;
         }
         break;
     }
@@ -200,27 +205,41 @@ export class HederaRestMirror {
     );
   }
 
-  private async jFetch(uPath: string, timeout: number) {
+  private async jFetch(uPath: string, timeout: number): Promise<any> {
     const reqStartDate = new Date().getTime();
 
     // Before searching for the response, give the operation some initial time to settle
     await new Promise((resolve) => setTimeout(resolve, FETCH_INITIAL_DELAY));
-    do {
-      const rawResponse = await fetch(`${this.baseUrl}/${uPath}`);
-      if (rawResponse.status === 404) {
-        if (new Date().getTime() - timeout > reqStartDate) {
-          throw new Error(
-            `Could not fetch meaningful data from '${uPath}' in the designated time of ${timeout} ms.`
-          );
+
+    try {
+      do {
+        const rawResponse = await fetch(`${this.baseUrl}/${uPath}`);
+
+        if (rawResponse.status === 404) {
+          if (new Date().getTime() - timeout > reqStartDate) {
+            throw new Error(
+              `Could not fetch meaningful mirror-data from '${uPath}' in the designated time of ${timeout} ms.`
+            );
+          }
+        } else {
+          // We got what we came here for
+          return await rawResponse.json();
         }
+
         // Not available yet, but we can still retry
         // Wait a bit before trying to fetch the mirror-node resource. This gives the transaction more time to settle
         await new Promise((resolve) => setTimeout(resolve, FETCH_RETRY_DELAY));
-      } else {
-        return await rawResponse.json();
+        // eslint-disable-next-line no-constant-condition
+      } while (true);
+    } catch (e) {
+      if (e.code === "ECONNREFUSED") {
+        throw new Error(
+          `Could not connect to mirror-data endpoint at ${this.baseUrl}. This should never happen, that's why no retrial will be carried out.`
+        );
       }
-      // eslint-disable-next-line no-constant-condition
-    } while (true);
+      // If we didn't expect this error, we propagate it upwards
+      throw e;
+    }
   }
 
   private formatForHederaUrl(tId: TransactionId) {

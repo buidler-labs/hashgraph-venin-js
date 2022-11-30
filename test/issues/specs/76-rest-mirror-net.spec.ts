@@ -54,7 +54,7 @@ describe("Issue #76 > REST Mirror Network Support", () => {
   });
 
   it("querying the receipt of a known/existing transaction should return it as requested", async () => {
-    const mirror = getTestNetMirror();
+    const mirror = getDevNetMirror();
     const groundTruthTransaction = await doGroundTruthTransaction(
       RequestType.ContractCreate
     );
@@ -66,7 +66,7 @@ describe("Issue #76 > REST Mirror Network Support", () => {
   });
 
   it("querying the receipt of a non-existing transaction should eventually timeout", async () => {
-    const mirror = getTestNetMirror();
+    const mirror = getDevNetMirror();
 
     await expect(
       mirror.getReceipt(TransactionId.fromString("0.0.1001@6.9"), 4000)
@@ -82,7 +82,7 @@ describe("Issue #76 > REST Mirror Network Support", () => {
   });
 
   it("polling for a contract function result that does not exist should timeout", async () => {
-    const mirror = getTestNetMirror();
+    const mirror = getDevNetMirror();
 
     await expect(
       mirror.getContractFunctionResult(
@@ -97,7 +97,7 @@ async function doAndCompareResultsAgainstMirror(
   requestType: RequestType,
   timeout = FETCH_TIMEOUT
 ) {
-  const mirror = getTestNetMirror();
+  const mirror = getDevNetMirror();
   const { transactionId, contractFunctionResult: groundTruthResult } =
     await doGroundTruthTransaction(requestType);
   const fetchedResult = await mirror.getContractFunctionResult(
@@ -108,8 +108,8 @@ async function doAndCompareResultsAgainstMirror(
   compareResults(groundTruthResult, fetchedResult);
 }
 
-function getTestNetMirror() {
-  return new HederaRestMirror(NetworkName.Testnet);
+function getDevNetMirror() {
+  return new HederaRestMirror(process.env.HEDERAS_REST_MIRROR_URL);
 }
 
 const TX_INFOS = {};

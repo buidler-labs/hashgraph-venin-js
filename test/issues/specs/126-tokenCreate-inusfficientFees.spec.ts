@@ -7,7 +7,7 @@ import { getTokenToTest } from "../../utils";
 
 describe("Issue #126 > INSUFFICIENT_TX_FEE when creating tokens", () => {
   it("creating a token with no maxTransactionFee specified should revert to using the sessions's default tokenCreateTransactionFee and succeed", async () => {
-    const session = await getApiSession();
+    const { session } = await ApiSession.default();
 
     await createTokenAndCheckTransactionFeeUsed(
       session,
@@ -17,7 +17,7 @@ describe("Issue #126 > INSUFFICIENT_TX_FEE when creating tokens", () => {
   });
 
   it("creating a token with a custom maxTransactionFee specified should use it instead of the the sessions's default tokenCreateTransactionFee one and succeed", async () => {
-    const session = await getApiSession();
+    const { session } = await ApiSession.default();
     const maxTxUsed = new Hbar(69);
 
     await createTokenAndCheckTransactionFeeUsed(session, maxTxUsed, maxTxUsed);
@@ -46,24 +46,13 @@ async function createTokenAndCheckTransactionFeeUsed(
         accept();
       }
     });
-    expect(
-      session.create(
+    session
+      .create(
         getTokenToTest({
           maxTransactionFee: usedMaxTxFee,
         })
       )
-    ).resolves.toBeInstanceOf(LiveToken);
+      .then((res) => expect(res).toBeInstanceOf(LiveToken))
+      .catch((e) => reject(e));
   });
-}
-
-async function getApiSession() {
-  const { session } = await ApiSession.default({
-    session: {
-      defaults: {
-        emitLiveContractReceipts: true,
-      },
-    },
-  });
-
-  return session;
 }

@@ -33,7 +33,7 @@ describe("ApiSession", () => {
   });
 
   it("if environment is not sane, it should error out when trying to instantiate the default api-session instance", async () => {
-    const validHederasNodes = "127.0.0.1:50211:#69";
+    const validHederasNodes = "127.0.0.1:50211#69";
 
     // HEDERAS_NETWORK part
     await expectDefaultApiSessionToThrowFor(

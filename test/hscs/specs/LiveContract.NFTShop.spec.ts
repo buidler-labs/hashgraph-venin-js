@@ -20,7 +20,7 @@ function getContractPath(fileName: string) {
 }
 
 describe("LiveContract.NFTShop", () => {
-  it("Given an NFT Shop, a user is able to mint", async () => {
+  it("Given a NFT Shop, a user is able to mint", async () => {
     const nftPrice = new Hbar(10);
     const amountToMint = 5;
 

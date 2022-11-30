@@ -27,79 +27,9 @@ describe("Contract", () => {
     }
   });
 
-  it("equality testing suite", async () => {
-    expect(
-      Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`).equals(
-        Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`)
-      )
-    ).toBeTruthy();
-    expect(
-      Contract.deserialize(`{"name": "A", "abi": []}`).equals(
-        Contract.deserialize(`{"name": "A", "abi": []}`)
-      )
-    ).toBeTruthy();
-    expect(
-      Contract.deserialize(
-        `{"name": "A", "abi": ["function set(uint256 _num)"]}`
-      ).equals(
-        Contract.deserialize(
-          `{"name": "A", "abi": ["function set(uint256 _num)"]}`
-        )
-      )
-    ).toBeTruthy();
-    expect(
-      Contract.deserialize(
-        `{"name": "B", "byteCode": "beef", "abi": ["function set(uint256 _num)"]}`
-      ).equals(
-        Contract.deserialize(
-          `{"name": "A", "byteCode": "beef", "abi": ["function set(uint256 _num)"]}`
-        )
-      )
-    ).toBeTruthy();
-    expect(
-      Contract.deserialize(
-        `{"name": "B", "byteCode": "beef", "abi": ["function num() view returns (uint256)", "function set(uint256 _num)"]}`
-      ).equals(
-        Contract.deserialize(
-          `{"name": "A", "byteCode": "beef", "abi": ["function set(uint256 _num)", "function num() view returns (uint256)"]}`
-        )
-      )
-    ).toBeTruthy();
-
-    expect(
-      Contract.deserialize(`{"name": "A", "byteCode": "ab", "abi": []}`).equals(
-        Contract.deserialize(`{"name": "A", "byteCode": "bc", "abi": []}`)
-      )
-    ).not.toBeTruthy();
-    expect(
-      Contract.deserialize(
-        `{"name": "A", "abi": ["function set(uint256 _num)"]}`
-      ).equals(Contract.deserialize(`{"name": "A", "abi": []}`))
-    ).not.toBeTruthy();
-  });
-
   it("given neither the source code nor the source path, instantiating a Contract should not be permitted", async () => {
     await expect(Contract.allFrom({})).rejects.toThrow();
     await expect(Contract.newFrom({})).rejects.toThrow();
-  });
-
-  it("given several serialized contracts, deserializing them should behave accordingly", async () => {
-    expect(() =>
-      Contract.deserialize(`{"name": "A", "abi": []}`)
-    ).not.toThrow();
-    expect(() =>
-      Contract.deserialize(`{"name": "A", "abi": [], "byteCode": "beef"}`)
-    ).not.toThrow();
-
-    expect(() =>
-      Contract.deserialize(`{"byteCode": "ab", "abi": []}`)
-    ).toThrow();
-    expect(() =>
-      Contract.deserialize(`{"name": "A", "byteCode": "$ab", "abi": []}`)
-    ).toThrow();
-    expect(() =>
-      Contract.deserialize(`{"name": "A", "byteCode": "ab"}`)
-    ).toThrow();
   });
 
   it("given a solidity contract code which doesn't have a license, extracting all the Contracts should fail if we care about compiler warnings", async () => {
