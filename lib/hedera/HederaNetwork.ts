@@ -42,6 +42,8 @@ export type NetworkDefaults = {
   restMirrorAddress: string;
 };
 
+const ACCEPTED_NETWORK_NAMES = Object.values(StratoNetworkNames);
+
 /**
  * The main entry-class for the Hedera Venin library.
  *
@@ -88,29 +90,39 @@ export class HederaNetwork {
   }
 
   public readonly nodes: HederaNodesAddressBook;
-  public readonly client: Client;
   public readonly mirror: HederaRestMirror;
 
   public constructor(private readonly params: HederaNetworkConstructorArgs) {
-    const acceptedNetworkNames = Object.values(StratoNetworkNames);
-
     if (typeof params.nodes === "string") {
       this.nodes = HederaNetwork.parseNetworkAddressBookFrom(params.nodes);
     } else {
       this.nodes = params.nodes;
     }
-    if (!acceptedNetworkNames.includes(this.name)) {
+    if (!ACCEPTED_NETWORK_NAMES.includes(this.name)) {
       throw new EnvironmentInvalidError(
         `There is no such '${
           this.params.name
-        }' network available. In order to continue, please choose a valid name from: ${acceptedNetworkNames.join(
+        }' network available. In order to continue, please choose a valid name from: ${ACCEPTED_NETWORK_NAMES.join(
           ", "
         )}`
       );
     }
 
+    this.mirror = new HederaRestMirror(
+      params.name === "customnet"
+        ? params.defaults.restMirrorAddress
+        : params.name
+    );
+  }
+
+  /**
+   * Builds and returns a new Hedera Client using the current HederaNetwork context.
+   *
+   * Note: the returned value is not cached, creating a new client instance for each and every call
+   */
+  public getClient() {
     try {
-      this.client = Client.forName(this.name as NetworkName);
+      return Client.forName(this.name as NetworkName);
     } catch (e) {
       // This is a non-standard client. Maybe it's a local-net one?
       if ("customnet" === this.name) {
@@ -119,24 +131,18 @@ export class HederaNetwork {
             `Please provide a list of network nodes in order to use a ${this.name} network.`
           );
         }
-        this.client = Client.forNetwork(this.nodes);
+        return Client.forNetwork(this.nodes);
       } else {
         // Note: this should never happen, but still ... better play it safe
         throw new EnvironmentInvalidError(
           `There is no such ${
             this.name
-          } network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(
+          } network available in this library. Available network names to choose from are: ${ACCEPTED_NETWORK_NAMES.join(
             ", "
           )}`
         );
       }
     }
-
-    this.mirror = new HederaRestMirror(
-      params.name === "customnet"
-        ? params.defaults.restMirrorAddress
-        : params.name
-    );
   }
 
   public get defaults() {

@@ -16,7 +16,7 @@ export default class LocalProvider implements Provider {
   public readonly client: Client;
 
   constructor(network: HederaNetwork) {
-    this.client = network.client;
+    this.client = network.getClient();
   }
 
   getLedgerId() {

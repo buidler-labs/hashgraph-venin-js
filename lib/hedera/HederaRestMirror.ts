@@ -34,6 +34,11 @@ export const FETCH_RETRY_DELAY = 2500;
  *       See {@link https://github.com/hashgraph/hedera-sdk-js/blob/2df2b4ed66d1be6dd2c0a71e90b4628929301cbb/src/transaction/Transaction.js#L61}
  */
 export const FETCH_TIMEOUT = 120000;
+/**
+ * When `fetch`-ing triggers an ECONNREFUSED issue, this is the maximum amount of times to retry before giving up.
+ * This is especially useful for customnet/devnet scenarios where infrastructure might hiccup from time to time.
+ */
+const FETCH_CONNERR_MAX_RETRY_COUNT = 3;
 
 export class HederaRestMirror {
   private readonly baseUrl: string;
@@ -206,13 +211,14 @@ export class HederaRestMirror {
   }
 
   private async jFetch(uPath: string, timeout: number): Promise<any> {
+    let attemptedRetryCount = 0;
     const reqStartDate = new Date().getTime();
 
     // Before searching for the response, give the operation some initial time to settle
     await new Promise((resolve) => setTimeout(resolve, FETCH_INITIAL_DELAY));
 
-    try {
-      do {
+    do {
+      try {
         const rawResponse = await fetch(`${this.baseUrl}/${uPath}`);
 
         if (rawResponse.status === 404) {
@@ -225,21 +231,25 @@ export class HederaRestMirror {
           // We got what we came here for
           return await rawResponse.json();
         }
+      } catch (e) {
+        if (e.code === "ECONNREFUSED") {
+          attemptedRetryCount++;
 
-        // Not available yet, but we can still retry
-        // Wait a bit before trying to fetch the mirror-node resource. This gives the transaction more time to settle
-        await new Promise((resolve) => setTimeout(resolve, FETCH_RETRY_DELAY));
-        // eslint-disable-next-line no-constant-condition
-      } while (true);
-    } catch (e) {
-      if (e.code === "ECONNREFUSED") {
-        throw new Error(
-          `Could not connect to mirror-data endpoint at ${this.baseUrl}. This should never happen, that's why no retrial will be carried out.`
-        );
+          if (attemptedRetryCount === FETCH_CONNERR_MAX_RETRY_COUNT) {
+            throw new Error(
+              `Could not connect to mirror-data endpoint at ${this.baseUrl}. This should never happen, that's why no retrial will be carried out.`
+            );
+          }
+        }
+        // If we didn't expect this error, we propagate it upwards
+        throw e;
       }
-      // If we didn't expect this error, we propagate it upwards
-      throw e;
-    }
+
+      // Not available yet, but we can still retry
+      // Wait a bit before trying to fetch the mirror-node resource. This gives the transaction more time to settle
+      await new Promise((resolve) => setTimeout(resolve, FETCH_RETRY_DELAY));
+      // eslint-disable-next-line no-constant-condition
+    } while (true);
   }
 
   private formatForHederaUrl(tId: TransactionId) {

@@ -20,23 +20,26 @@ function getContractPath(fileName: string) {
 }
 
 describe("LiveContract.NFTShop", () => {
+  // TODO: Issue #133 will allow cleaning up this test a bit
   it("Given a NFT Shop, a user is able to mint", async () => {
     const nftPrice = new Hbar(10);
-    const amountToMint = 5;
+    const amountToMint = 2;
 
     const { session } = await ApiSession.default();
     const account = new Account({
-      initialBalance: new Hbar(80),
+      initialBalance: new Hbar(40),
       maxAutomaticTokenAssociations: 1,
     });
     const contract = await Contract.newFrom({
       ignoreWarnings: true,
       path: getContractPath("NFTShop"),
     });
-    const client = session.network.client.setOperator(
-      process.env.HEDERAS_OPERATOR_ID,
-      process.env.HEDERAS_OPERATOR_KEY
-    );
+    const client = session.network
+      .getClient()
+      .setOperator(
+        process.env.HEDERAS_OPERATOR_ID,
+        process.env.HEDERAS_OPERATOR_KEY
+      );
     const privKey = PrivateKey.fromString(process.env.HEDERAS_OPERATOR_KEY);
     const token = getTokenToTest(
       {
@@ -49,10 +52,9 @@ describe("LiveContract.NFTShop", () => {
     );
 
     const aliceLiveAccount = await session.create(account);
-    const aliceClient = session.network.client.setOperator(
-      aliceLiveAccount.id,
-      aliceLiveAccount.privateKey
-    );
+    const aliceClient = session.network
+      .getClient()
+      .setOperator(aliceLiveAccount.id, aliceLiveAccount.privateKey);
     const tokenOwnerAccount = new LiveAccountWithPrivateKey({
       id: client._operator.accountId,
       privateKey: privKey,
@@ -68,7 +70,7 @@ describe("LiveContract.NFTShop", () => {
       "0xbeef"
     );
 
-    liveToken.assignSupplyControlTo(liveContract);
+    await liveToken.assignSupplyControlTo(liveContract);
 
     const transaction = new ContractExecuteTransaction()
       .setContractId(liveContract.id)
@@ -78,7 +80,7 @@ describe("LiveContract.NFTShop", () => {
           "mint"
         )
       )
-      .setPayableAmount(new Hbar(50))
+      .setPayableAmount(new Hbar(20))
       .setGas(GasFees.mintToken.toTinybars())
       .freezeWith(aliceClient);
     const signedTransaction = await tokenOwnerAccount.sign(transaction);
@@ -88,14 +90,14 @@ describe("LiveContract.NFTShop", () => {
 
     const aliceInfo = await aliceLiveAccount.getLiveEntityInfo();
     const contractInfo = await liveContract.getLiveEntityInfo();
-    expect(aliceInfo.ownedNfts.toNumber()).toEqual(5);
-    expect(aliceInfo.balance.toBigNumber().toNumber()).toBeLessThanOrEqual(30);
-    expect(contractInfo.balance.toBigNumber().toNumber()).toEqual(50);
+    expect(aliceInfo.ownedNfts.toNumber()).toEqual(2);
+    expect(aliceInfo.balance.toBigNumber().toNumber()).toBeLessThanOrEqual(20);
+    expect(contractInfo.balance.toBigNumber().toNumber()).toEqual(20);
   });
 
-  it("Given an NFT Shop, treasury is able to mint for user", async () => {
+  it("Given a NFT Shop, treasury is able to mint for user", async () => {
     const nftPrice = new Hbar(10);
-    const amountToMint = 5;
+    const amountToMint = 3;
     const metadata = Buffer.from(
       "Qmbp4hqKpwNDYjqQxsAAm38wgueSY8U2BSJumL74wyX2Dy"
     );
@@ -127,7 +129,7 @@ describe("LiveContract.NFTShop", () => {
       metadata
     );
 
-    liveToken.assignSupplyControlTo(liveContract);
+    await liveToken.assignSupplyControlTo(liveContract);
 
     liveContract.onEvent("NftMint", ({ tokenAddress, serialNumbers }) => {
       session.log.info(
