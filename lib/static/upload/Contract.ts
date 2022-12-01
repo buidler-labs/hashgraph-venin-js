@@ -190,20 +190,6 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   }
 
   /**
-   * Deserializes the provided Contract representation which is assumed to be the output of the {@link Contract.serialize} method call.
-   */
-  public static deserialize(what: string): Contract {
-    let jWhat: any = {};
-
-    try {
-      jWhat = JSON.parse(what);
-    } catch (e) {
-      throw new Error("Please provide something valid to be deserialized.");
-    }
-    return new Contract(jWhat);
-  }
-
-  /**
    * Returns an object of promised contracts which are present as resolved by the given `options` (eg. either from `path` or from `code`) and,
    * which potentially, are linked against the provided `libraries`.
    *
@@ -335,21 +321,6 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     return this.byteCode === other.byteCode && areAbisTheSame;
   }
 
-  /**
-   * Serializes the current entity. This then can be reversed via calling {@link Contract.deserialize}.
-   *
-   * Note: when de-serializing, the properties exported here should allow for a complete re-instantiation of the original {@link Contract}.
-   *
-   * @returns {string} - The serialized representation of the current instance
-   */
-  public serialize(): string {
-    return JSON.stringify({
-      abi: this.interface.format(),
-      byteCode: this.byteCode,
-      name: this.name,
-    });
-  }
-
   protected override async getContent() {
     if (!this.byteCode) {
       throw new Error(
@@ -371,15 +342,17 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     receipt,
     args = [],
   }: ArgumentsOnFileUploaded): Promise<LiveContractWithLogs> {
-    const { createContractOptions, emitConstructorLogs } =
-      await this._getContractCreateOptionsFor({ args, receipt, session });
+    const createContractOptions = await this._getContractCreateOptionsFor({
+      args,
+      receipt,
+      session,
+    });
     const createContractTransaction = new ContractCreateTransaction(
       createContractOptions
     );
 
     return await LiveContract.newFollowingUpload({
       contract: this,
-      emitConstructorLogs,
       session,
       transaction: createContractTransaction,
     });
@@ -392,7 +365,6 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
   }: ArgumentsOnFileUploaded) {
     const contractFileId = receipt.fileId;
     let contractCreationOverrides: any = {};
-    let emitConstructorLogs = session.defaults.emitConstructorLogs;
 
     if (
       args.length > 0 &&
@@ -401,32 +373,19 @@ export class Contract extends BasicUploadableEntity<LiveContractWithLogs> {
     ) {
       const contractCreationArgs = args[0]._contract;
 
-      // try locking onto library-controlling behavior flags
-      emitConstructorLogs =
-        contractCreationArgs.emitConstructorLogs !== undefined
-          ? contractCreationArgs.emitConstructorLogs
-          : emitConstructorLogs;
-      delete contractCreationArgs.emitConstructorLogs;
-
       // consider everything else as contract-creation constructor arguments
       contractCreationOverrides = contractCreationArgs;
 
       args = args.slice(1);
     }
     return {
-      createContractOptions: Object.assign(
-        {},
-        {
-          adminKey: session.wallet.account.publicKey,
-          bytecodeFileId: contractFileId,
-          constructorParameters: new StratoContractArgumentsEncoder(
-            this.interface
-          ).encode(args),
-          gas: session.defaults.contractCreationGas,
-          ...contractCreationOverrides,
-        }
-      ),
-      emitConstructorLogs,
+      adminKey: session.wallet.account.publicKey,
+      bytecodeFileId: contractFileId,
+      constructorParameters: new StratoContractArgumentsEncoder(
+        this.interface
+      ).encode(args),
+      gas: session.defaults.contractCreationGas,
+      ...contractCreationOverrides,
     };
   }
 }

@@ -1,8 +1,14 @@
 import * as dotenv from "dotenv";
 
-import { AVAILABLE_NETWORK_NAMES, NetworkDefaults } from "./HederaNetwork";
+import {
+  HederaNodesAddressBook,
+  NetworkDefaults,
+  StratoNetworkName,
+} from "./hedera/HederaNetwork";
 import { WalletType, WalletTypes } from "./wallet/WalletType";
-import { HederaNetwork } from "./HederaNetwork";
+import { Client } from "@hashgraph/sdk";
+import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
+import { HederaNetwork } from "./hedera/HederaNetwork";
 import { RecursivePartial } from "./core/UsefulTypes";
 import { SessionDefaults } from "./ApiSession";
 import { StratoLogger } from "./StratoLogger";
@@ -40,8 +46,8 @@ export type SessionRuntimeParameters = {
 };
 export type NetworkRuntimeParameters = {
   defaults: NetworkDefaults;
-  name: string;
-  nodes: string;
+  name: StratoNetworkName;
+  nodes: string | HederaNodesAddressBook;
 };
 export type StratoParameters = {
   wallet: WalletRuntimeParameters;
@@ -51,6 +57,9 @@ export type StratoParameters = {
 };
 
 export type StratoContextSource = {
+  /**
+   * Runtime parameters used to resolve a {@link StratoContext} configuration
+   */
   params?: RecursivePartial<StratoParameters>;
   /**
    * The file path where the `dotenv`-like file resides which is sourced for library params. If not provided, it usually is expected to default to `.env`.
@@ -62,20 +71,7 @@ export type StratoContextSource = {
 //       v2.17.1 increased the size to 4096
 const DEFAULT_FILE_CHUNK_SIZE = 4096;
 
-export const DefinedNetworkDefaults: { [k: string]: NetworkDefaults } = {
-  [AVAILABLE_NETWORK_NAMES.CustomNet]: {
-    fileChunkSize: DEFAULT_FILE_CHUNK_SIZE,
-  },
-  [AVAILABLE_NETWORK_NAMES.MainNet]: {
-    fileChunkSize: DEFAULT_FILE_CHUNK_SIZE,
-  },
-  [AVAILABLE_NETWORK_NAMES.TestNet]: {
-    fileChunkSize: DEFAULT_FILE_CHUNK_SIZE,
-  },
-  [AVAILABLE_NETWORK_NAMES.PreviewNet]: {
-    fileChunkSize: DEFAULT_FILE_CHUNK_SIZE,
-  },
-};
+export const DEFAULT_HEDERA_REST_MIRROR_URL = "http://127.0.0.1:5551";
 
 /**
  * Contains any parameters/objects that can be created with those parameters which are unpacked by other components in the library
@@ -105,34 +101,31 @@ export class StratoContext {
       });
 
     // Parse and extract the managed values
-    const networkName =
-      rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? "unspecified";
+    const networkParams = this.getNetworkConfig(eParams, rParams.network);
+    const loggerParams = {
+      enabled:
+        (rParams.logger?.enabled ??
+          eParams.HEDERAS_LOGGER_ENABLED ??
+          "false") === "true",
+      level: rParams.logger?.level ?? eParams.HEDERAS_LOGGER_LEVEL ?? "info",
+    };
 
     this.walletTypes = new WalletTypes();
     this.params = {
-      logger: {
-        enabled:
-          (rParams.logger?.enabled ??
-            eParams.HEDERAS_LOGGER_ENABLED ??
-            "false") === "true",
-        level: rParams.logger?.level ?? eParams.HEDERAS_LOGGER_LEVEL ?? "info",
-      },
-      network: {
-        defaults:
-          DefinedNetworkDefaults[
-            rParams.network?.name ?? eParams.HEDERAS_NETWORK ?? "unspecified"
-          ],
-        name: networkName,
-        nodes: rParams.network?.nodes ?? eParams.HEDERAS_NODES ?? "",
-      },
+      logger: loggerParams,
+      network: networkParams,
       session: {
-        defaults: this.parseSessionDefaultsFrom(networkName, rParams, eParams),
+        defaults: this.parseSessionDefaultsFrom(
+          networkParams.name,
+          rParams,
+          eParams
+        ),
       },
       wallet: this.computeWalletSpecsFrom(rParams, eParams),
     };
     this.walletControllers = new WalletControllers(this);
-    this.log = new StratoLogger(this.params.logger);
-    this.network = HederaNetwork.newFrom(this.params.network);
+    this.log = new StratoLogger(loggerParams);
+    this.network = new HederaNetwork(networkParams);
   }
 
   public async getWallet(
@@ -189,7 +182,7 @@ export class StratoContext {
 
     if (!this.walletTypes.isKnown(walletType)) {
       throw new Error(
-        "Only 'Sdk' and 'Browser' wallet types are currently supported. If not specified, it defaults to 'Sdk'."
+        "Only 'Sdk' and 'Browser' wallet types are currently supported. If you don't specify one, it will default to 'Sdk'."
       );
     }
     return {
@@ -213,13 +206,13 @@ export class StratoContext {
   }
 
   private parseSessionDefaultsFrom(
-    networkName: string,
+    network: StratoNetworkName,
     rParams: RecursivePartial<StratoParameters>,
     eParams: { [k: string]: string }
   ): SessionDefaults {
     const resolveSessionDefaultValueFor = (particle: string) =>
       eParams[
-        `HEDERAS_${networkName.toUpperCase()}_DEFAULT_${particle.toUpperCase()}`
+        `HEDERAS_${network.toUpperCase()}_DEFAULT_${particle.toUpperCase()}`
       ] || eParams[`HEDERAS_DEFAULT_${particle.toUpperCase()}`];
 
     return {
@@ -233,19 +226,6 @@ export class StratoContext {
         parseInt(
           resolveSessionDefaultValueFor("contract_transaction_gas") ?? "169000"
         ),
-      emitConstructorLogs:
-        rParams.session?.defaults?.emitConstructorLogs ??
-        (resolveSessionDefaultValueFor("emit_constructor_logs") ?? "true") ===
-          "true",
-      emitLiveContractReceipts:
-        rParams.session?.defaults?.emitLiveContractReceipts ??
-        (resolveSessionDefaultValueFor("emit_live_contracts_receipts") ??
-          "false") === "true",
-      onlyReceiptsFromContractRequests:
-        rParams.session?.defaults?.onlyReceiptsFromContractRequests ??
-        (resolveSessionDefaultValueFor(
-          "contract_requests_return_only_receipts"
-        ) ?? "true") === "true",
       paymentForContractQuery:
         rParams.session?.defaults?.paymentForContractQuery ??
         parseInt(
@@ -258,6 +238,59 @@ export class StratoContext {
           resolveSessionDefaultValueFor("token_create_transaction_fee") ??
             "5000000000"
         ),
+    };
+  }
+
+  private getNetworkConfig(
+    eParams: { [k: string]: string },
+    rNetworkParams: RecursivePartial<NetworkRuntimeParameters>
+  ): NetworkRuntimeParameters {
+    const networkName: StratoNetworkName =
+      rNetworkParams?.name ??
+      (eParams.HEDERAS_NETWORK as StratoNetworkName) ??
+      undefined;
+    let nodes: HederaNodesAddressBook;
+    let restMirrorUrl: string;
+
+    if (
+      networkName === undefined ||
+      (networkName !== "customnet" &&
+        networkName !== "mainnet" &&
+        networkName !== "previewnet" &&
+        networkName !== "testnet")
+    ) {
+      throw new EnvironmentInvalidError(
+        "Please provide a valid network name to operate on. Currently accepted values are: customnet, mainnet, previewnet or testnet."
+      );
+    } else {
+      if (networkName !== "customnet") {
+        const networkClient = Client.forName(networkName);
+
+        nodes = networkClient.network;
+      } else {
+        const customNodesList =
+          rNetworkParams?.nodes ?? eParams.HEDERAS_NODES ?? "";
+
+        if (typeof customNodesList === "string") {
+          nodes = HederaNetwork.parseNetworkAddressBookFrom(customNodesList);
+        } else {
+          nodes = customNodesList;
+        }
+      }
+
+      restMirrorUrl =
+        rNetworkParams?.defaults?.restMirrorAddress ??
+        eParams.HEDERAS_REST_MIRROR_URL ??
+        DEFAULT_HEDERA_REST_MIRROR_URL;
+    }
+
+    return {
+      defaults: {
+        fileChunkSize: DEFAULT_FILE_CHUNK_SIZE,
+        restMirrorAddress: restMirrorUrl,
+      },
+      name: networkName,
+      nodes,
     };
   }
 }

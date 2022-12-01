@@ -8,9 +8,9 @@ import {
   Transaction,
 } from "@hashgraph/sdk";
 
-import { ApiSession, TypeOfExecutionReturn } from "../ApiSession";
-import { Token, TokenFeatures } from "../static/create/Token";
 import { HederaEntityId, LiveEntity } from "./LiveEntity";
+import { Token, TokenFeatures } from "../static/create/Token";
+import { ApiSession } from "../ApiSession";
 
 type LiveTokenConstructorArgs = {
   session: ApiSession;
@@ -35,20 +35,12 @@ export class LiveToken extends LiveEntity<TokenId, TokenInfo, TokenFeatures> {
     const tokenUpdateTx = new TokenUpdateTransaction()
       .setTokenId(this.id)
       .setSupplyKey(key instanceof Key ? key : key.id);
-    await this.executeSanely(
-      tokenUpdateTx,
-      TypeOfExecutionReturn.Receipt,
-      true
-    );
+    await this.executeSanely(tokenUpdateTx);
   }
 
   public async getLiveEntityInfo(): Promise<TokenInfo> {
     const tokenInfoQuery = new TokenInfoQuery().setTokenId(this.id);
-    return this.executeSanely(
-      tokenInfoQuery,
-      TypeOfExecutionReturn.Result,
-      false
-    );
+    return this.executeSanely(tokenInfoQuery);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

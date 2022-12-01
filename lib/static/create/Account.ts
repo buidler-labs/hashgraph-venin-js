@@ -8,7 +8,7 @@ import {
 import { BigNumber } from "@hashgraph/sdk/lib/Transfer";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
-import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
+import { ApiSession } from "../../ApiSession";
 import { ArgumentsForCreate } from "../../core/CreatableEntity";
 import { BasicCreatableEntity } from "./BasicCreatableEntity";
 import { LiveAccountWithPrivateKey } from "../../live/LiveAccount";
@@ -104,11 +104,9 @@ export class Account extends BasicCreatableEntity<LiveAccountWithPrivateKey> {
     const createAccountTransaction = new AccountCreateTransaction(
       resolutedInfo
     );
-    const { accountId } = await session.execute(
-      createAccountTransaction,
-      TypeOfExecutionReturn.Receipt,
-      true
-    );
+    const {
+      receipt: { accountId },
+    } = await session.execute(createAccountTransaction);
 
     return new LiveAccountWithPrivateKey({
       id: accountId,

@@ -1,10 +1,12 @@
 import { AccountId, Client } from "@hashgraph/sdk";
 import { NetworkName } from "@hashgraph/sdk/lib/client/Client";
 
-import { EnvironmentInvalidError } from "./errors/EnvironmentInvalidError";
-import { NetworkRuntimeParameters } from "./StratoContext";
+import { EnvironmentInvalidError } from "../errors/EnvironmentInvalidError";
+import { HederaRestMirror } from "./HederaRestMirror";
+import { NetworkRuntimeParameters } from "../StratoContext";
 
 export type HederaNodesAddressBook = { [key: string]: string | AccountId };
+export type HederaNetworkConstructorArgs = NetworkRuntimeParameters;
 
 /**
  * The Hedera Network label value used in library configurations (such as the {@link ApiSession.default} method) to signify
@@ -27,18 +29,20 @@ export type HederaNodesAddressBook = { [key: string]: string | AccountId };
  * Please see our [dockerized-hedera-services](https://github.com/buidler-labs/dockerized-hedera-services) for more info as to how to run a local, [dockerized](https://hub.docker.com/r/buidlerlabs/hedera-services),
  * [hedera-services](https://github.com/hashgraph/hedera-services) network.
  */
-export const HEDERA_CUSTOM_NET_NAME = "customnet";
-
-export const AVAILABLE_NETWORK_NAMES = {
-  CustomNet: HEDERA_CUSTOM_NET_NAME,
-  MainNet: "mainnet",
-  PreviewNet: "previewnet",
-  TestNet: "testnet",
-};
+export const StratoNetworkNames = [
+  "mainnet",
+  "testnet",
+  "previewnet",
+  "customnet",
+] as const;
+export type StratoNetworkName = typeof StratoNetworkNames[number];
 
 export type NetworkDefaults = {
   fileChunkSize: number;
+  restMirrorAddress: string;
 };
+
+const ACCEPTED_NETWORK_NAMES = Object.values(StratoNetworkNames);
 
 /**
  * The main entry-class for the Hedera Venin library.
@@ -47,67 +51,6 @@ export type NetworkDefaults = {
  * client before allowing to generate an {@link ApiSession} through the {@link HederaNetwork.login} method call.
  */
 export class HederaNetwork {
-  public static newFrom(params: NetworkRuntimeParameters): HederaNetwork {
-    return new HederaNetwork(params.defaults, params.name, params.nodes);
-  }
-
-  public readonly nodes: HederaNodesAddressBook;
-
-  public constructor(
-    public readonly defaults: NetworkDefaults,
-    public readonly name: string,
-    public readonly nodesInfo: HederaNodesAddressBook | string
-  ) {
-    if (typeof nodesInfo === "string") {
-      this.nodes = this.parseNetworkAddressBookFrom(nodesInfo);
-    } else {
-      this.nodes = nodesInfo;
-    }
-
-    const acceptedNetworkNames = Object.values(AVAILABLE_NETWORK_NAMES);
-
-    if (!acceptedNetworkNames.includes(this.name)) {
-      throw new EnvironmentInvalidError(
-        `There is no such '${
-          this.name
-        }' network available. In order to continue, please choose a valid name from: ${acceptedNetworkNames.join(
-          ", "
-        )}`
-      );
-    }
-    try {
-      Client.forName(this.name as NetworkName);
-    } catch (e) {
-      // This is a non-standard client. Maybe it's a local-net one?
-      if (HEDERA_CUSTOM_NET_NAME === this.name) {
-        if (!this.nodes || Object.keys(this.nodes).length === 0) {
-          throw new EnvironmentInvalidError(
-            `Please provide a list of network nodes in order to use a ${this.name} network.`
-          );
-        }
-      } else {
-        // Note: this should never happen, but still ... better play it safe
-        throw new EnvironmentInvalidError(
-          `There is no such ${
-            this.name
-          } network available in this library. Available network names to choose from are: ${acceptedNetworkNames.join(
-            ", "
-          )}`
-        );
-      }
-    }
-  }
-
-  public getClient(): Client {
-    if (HEDERA_CUSTOM_NET_NAME === this.name) {
-      return Client.forNetwork(this.nodes);
-    }
-    // TODO: remove 'setMaxNodesPerTransaction' once upgrading away from 2.7.0 and tests are passing
-    return Client.forName(this.name as NetworkName).setMaxNodesPerTransaction(
-      1
-    );
-  }
-
   /**
    * Parses the provided string and constructs the hedera-network nodes object required to initialize a custom Hedera Client.
    * The expected {@param string} format is in the following form: <ip>:<port>#<account-id>[,<ip2>:<port2>#<account-id2>...]
@@ -117,7 +60,9 @@ export class HederaNetwork {
    *   "127.0.0.1:50212": new AccountId(5)
    * }
    */
-  private parseNetworkAddressBookFrom(val: string): HederaNodesAddressBook {
+  public static parseNetworkAddressBookFrom(
+    val: string
+  ): HederaNodesAddressBook {
     const networkInfo = {};
 
     if (val) {
@@ -142,5 +87,68 @@ export class HederaNetwork {
       }
     }
     return networkInfo;
+  }
+
+  public readonly nodes: HederaNodesAddressBook;
+  public readonly mirror: HederaRestMirror;
+
+  public constructor(private readonly params: HederaNetworkConstructorArgs) {
+    if (typeof params.nodes === "string") {
+      this.nodes = HederaNetwork.parseNetworkAddressBookFrom(params.nodes);
+    } else {
+      this.nodes = params.nodes;
+    }
+    if (!ACCEPTED_NETWORK_NAMES.includes(this.name)) {
+      throw new EnvironmentInvalidError(
+        `There is no such '${
+          this.params.name
+        }' network available. In order to continue, please choose a valid name from: ${ACCEPTED_NETWORK_NAMES.join(
+          ", "
+        )}`
+      );
+    }
+
+    this.mirror = new HederaRestMirror(
+      params.name === "customnet"
+        ? params.defaults.restMirrorAddress
+        : params.name
+    );
+  }
+
+  /**
+   * Builds and returns a new Hedera Client using the current HederaNetwork context.
+   *
+   * Note: the returned value is not cached, creating a new client instance for each and every call
+   */
+  public getClient() {
+    try {
+      return Client.forName(this.name as NetworkName);
+    } catch (e) {
+      // This is a non-standard client. Maybe it's a local-net one?
+      if ("customnet" === this.name) {
+        if (!this.nodes || Object.keys(this.nodes).length === 0) {
+          throw new EnvironmentInvalidError(
+            `Please provide a list of network nodes in order to use a ${this.name} network.`
+          );
+        }
+        return Client.forNetwork(this.nodes);
+      } else {
+        // Note: this should never happen, but still ... better play it safe
+        throw new EnvironmentInvalidError(
+          `There is no such ${
+            this.name
+          } network available in this library. Available network names to choose from are: ${ACCEPTED_NETWORK_NAMES.join(
+            ", "
+          )}`
+        );
+      }
+    }
+  }
+
+  public get defaults() {
+    return this.params.defaults;
+  }
+  public get name(): StratoNetworkName {
+    return this.params.name;
   }
 }

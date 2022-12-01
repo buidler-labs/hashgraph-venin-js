@@ -48,16 +48,16 @@ describe("LiveTopic", () => {
     );
     const topicInfo = await liveTopic.getLiveEntityInfo();
     expect(topicInfo.topicId.toString()).toEqual(liveTopic.id.toString());
-    expect(topicInfo.autoRenewAccountId.toString()).toEqual(
+    expect(topicInfo.autoRenewAccountId?.toString()).toEqual(
       walletAccountId.toString()
     );
-    expect(topicInfo.autoRenewPeriod.seconds.toString()).toEqual(
+    expect(topicInfo.autoRenewPeriod?.seconds.toString()).toEqual(
       renewPeriod.toString()
     );
-    expect(topicInfo.adminKey.toString()).toEqual(
+    expect(topicInfo.adminKey?.toString()).toEqual(
       walletPublicKey.toStringDer()
     );
-    expect(topicInfo.submitKey.toString()).toEqual(
+    expect(topicInfo.submitKey?.toString()).toEqual(
       walletPublicKey.toStringDer()
     );
     expect(topicInfo.topicMemo).toEqual(memoText);

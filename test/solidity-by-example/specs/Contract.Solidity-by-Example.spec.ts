@@ -19,19 +19,6 @@ describe("Contract.Solidity-by-Example", () => {
     });
   });
 
-  it("given a valid solidity contract, serializing and then deserializing it should give back the same contract", async () => {
-    const originalHelloWorldContract = await Contract.newFrom({
-      code: read({ contract: "hello_world" }),
-    });
-    const deserializedContract = Contract.deserialize(
-      originalHelloWorldContract.serialize()
-    );
-
-    expect(
-      originalHelloWorldContract.equals(deserializedContract)
-    ).toBeTruthy();
-  });
-
   it("given a simple valid solidity contract code, its resulting byteCode should be sane if querying without a contractName", async () => {
     const contracts = await Contract.allFrom({
       code: read({ contract: "hello_world" }),

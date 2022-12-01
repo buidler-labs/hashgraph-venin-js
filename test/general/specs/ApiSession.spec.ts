@@ -8,7 +8,6 @@ import { ApiSession } from "../../../lib/ApiSession";
 import { BasicStratoWallet } from "../../../lib/wallet/BasicStratoWallet";
 import { CredentialsInvalidError } from "../../../lib/errors/CredentialsInvalidError";
 import { EnvironmentInvalidError } from "../../../lib/errors/EnvironmentInvalidError";
-import { HEDERA_CUSTOM_NET_NAME } from "../../../lib/HederaNetwork";
 import { LiveToken } from "../../../lib/live/LiveToken";
 import { StratoContext } from "../../../lib/StratoContext";
 import { WalletType } from "../../../lib/wallet/WalletType";
@@ -34,7 +33,7 @@ describe("ApiSession", () => {
   });
 
   it("if environment is not sane, it should error out when trying to instantiate the default api-session instance", async () => {
-    const validHederasNodes = "127.0.0.1:50211:#69";
+    const validHederasNodes = "127.0.0.1:50211#69";
 
     // HEDERAS_NETWORK part
     await expectDefaultApiSessionToThrowFor(
@@ -53,7 +52,7 @@ describe("ApiSession", () => {
     );
 
     // HEDERAS_NODES part (if applicable)
-    if (ORIGINAL_ENV.HEDERAS_NETWORK === HEDERA_CUSTOM_NET_NAME) {
+    if (ORIGINAL_ENV.HEDERAS_NETWORK === "customnet") {
       await expectDefaultApiSessionToThrowFor(
         ORIGINAL_ENV.HEDERAS_NETWORK,
         "some totally bad node def",
@@ -106,7 +105,7 @@ describe("ApiSession", () => {
   it("if environment params are not provided yet a dot-env file is present, dot-env properties should be used for default-session instantiation", async () => {
     const tmpDotEnvFileName = `.env_testTemp`;
     const tmpDotEnvFileContent = {
-      HEDERAS_NETWORK: HEDERA_CUSTOM_NET_NAME,
+      HEDERAS_NETWORK: "customnet",
       HEDERAS_NODES: "127.0.0.1:123#69",
       HEDERAS_OPERATOR_ID: "0.0.1001",
       HEDERAS_OPERATOR_KEY:
@@ -159,11 +158,11 @@ describe("ApiSession", () => {
   });
 
   async function expectDefaultApiSessionToThrowFor(
-    networkName,
-    nodes,
-    operatorId,
-    operatorKey,
-    expectedErrorType
+    networkName?: string,
+    nodes?: string,
+    operatorId?: string,
+    operatorKey?: string,
+    expectedErrorType?: any
   ) {
     try {
       jest.resetModules();
@@ -186,7 +185,7 @@ describe("ApiSession", () => {
         "Test should have thrown an exception by now but it did not."
       );
     } catch (e) {
-      expect(e.constructor.name).toEqual(expectedErrorType.name);
+      expect(e.constructor.name).toEqual(expectedErrorType?.name);
     }
   }
 

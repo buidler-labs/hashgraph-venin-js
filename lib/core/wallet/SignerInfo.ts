@@ -5,7 +5,7 @@ import {
   TransactionRecord,
 } from "@hashgraph/sdk";
 
-import { HederaNodesAddressBook } from "../../HederaNetwork";
+import { HederaNodesAddressBook } from "../../hedera/HederaNetwork";
 
 /**
  * A set of sub-definitions for HIP-338's Signer interface

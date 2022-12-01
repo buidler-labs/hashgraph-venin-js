@@ -9,7 +9,7 @@ import {
 } from "@hashgraph/sdk";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
-import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
+import { ApiSession } from "../../ApiSession";
 import { ArgumentsForCreate } from "../../core/CreatableEntity";
 import { BasicCreatableEntity } from "./BasicCreatableEntity";
 import { LiveToken } from "../../live/LiveToken";
@@ -164,26 +164,25 @@ export class Token extends BasicCreatableEntity<LiveToken> {
     const createTokenTransaction = new TokenCreateTransaction(
       constructorArgs as unknown
     );
-    
+
     let transactionFee: Hbar;
-    if(this.info.maxTransactionFee) {
-      transactionFee = this.info.maxTransactionFee instanceof Hbar 
-        ? this.info.maxTransactionFee 
-        : new Hbar(this.info.maxTransactionFee)
+    if (this.info.maxTransactionFee) {
+      transactionFee =
+        this.info.maxTransactionFee instanceof Hbar
+          ? this.info.maxTransactionFee
+          : new Hbar(this.info.maxTransactionFee);
     } else if (session.defaults.tokenCreateTransactionFee > 0) {
       transactionFee = Hbar.fromTinybars(
         session.defaults.tokenCreateTransactionFee
       );
     }
-    if(transactionFee) {
+    if (transactionFee) {
       createTokenTransaction.setMaxTransactionFee(transactionFee);
     }
-    const creationReceipt = await session.execute(
-      createTokenTransaction,
-      TypeOfExecutionReturn.Receipt,
-      true
-    );
+    const {
+      receipt: { tokenId },
+    } = await session.execute(createTokenTransaction);
 
-    return new LiveToken({ id: creationReceipt.tokenId, session });
+    return new LiveToken({ id: tokenId, session });
   }
 }

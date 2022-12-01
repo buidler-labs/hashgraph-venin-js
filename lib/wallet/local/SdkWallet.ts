@@ -1,7 +1,7 @@
 import { AccountId, PrivateKey, Wallet } from "@hashgraph/sdk";
 
 import { BasicStratoWallet } from "../BasicStratoWallet";
-import { HederaNetwork } from "../../HederaNetwork";
+import { HederaNetwork } from "../../hedera/HederaNetwork";
 import LocalProvider from "./LocalProvider";
 import { StratoContext } from "../../StratoContext";
 import { WalletControllerEvents } from "../../core/wallet/WalletController";

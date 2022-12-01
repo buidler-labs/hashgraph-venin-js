@@ -1,4 +1,3 @@
-import { ApiSession, TypeOfExecutionReturn } from "../../ApiSession";
 import {
   ArgumentsForUpload,
   UploadableEntity,
@@ -10,6 +9,7 @@ import {
   TransactionReceipt,
 } from "@hashgraph/sdk";
 import { HederaEntityId, LiveEntity } from "../../live/LiveEntity";
+import { ApiSession } from "../../ApiSession";
 
 export type ArgumentsOnFileUploaded = {
   session: ApiSession;
@@ -52,19 +52,15 @@ export abstract class BasicUploadableEntity<
         content: whatToUpload,
         session,
       });
-    const transactionReceipt = await session.execute(
-      fileTransactions[0],
-      TypeOfExecutionReturn.Receipt,
-      true
-    );
+    const { receipt } = await session.execute(fileTransactions[0]);
 
-    if (transactionReceipt.status !== Status.Success) {
+    if (receipt.status !== Status.Success) {
       throw new Error(
-        `There was an issue while creating the file (status ${transactionReceipt.status}). Aborting file upload.`
+        `There was an issue while creating the file (status ${receipt.status}). Aborting file upload.`
       );
     } else {
       session.log.debug(
-        `Uploaded content to HFS resulting in file id ${transactionReceipt.fileId}`
+        `Uploaded content to HFS resulting in file id ${receipt.fileId}`
       );
       if (
         fileTransactions.length > 1 &&
@@ -73,13 +69,9 @@ export abstract class BasicUploadableEntity<
         session.log.debug(
           `Appending the remaining content with a total of ${appendTxCount} file-append transactions.`
         );
-        await session.execute(
-          fileTransactions[1].setFileId(transactionReceipt.fileId),
-          TypeOfExecutionReturn.Result,
-          true
-        );
+        await session.execute(fileTransactions[1].setFileId(receipt.fileId));
         session.log.verbose(
-          `Done appending. Content has been successfully uploaded and is available at HFS id ${transactionReceipt.fileId}`
+          `Done appending. Content has been successfully uploaded and is available at HFS id ${receipt.fileId}`
         );
       }
     }
@@ -89,7 +81,7 @@ export abstract class BasicUploadableEntity<
     }
     return this.onFileUploaded({
       args,
-      receipt: transactionReceipt,
+      receipt,
       session,
     });
   }

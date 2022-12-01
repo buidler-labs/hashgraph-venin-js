@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 
 import { AccountId } from "@hashgraph/sdk";
 
-import { HederaNetwork } from "../../HederaNetwork";
+import { HederaNetwork } from "../../hedera/HederaNetwork";
 import { StratoContext } from "../../StratoContext";
 import { Subscription } from "../../core/Subscription";
 import { WalletController } from "../../core/wallet/WalletController";

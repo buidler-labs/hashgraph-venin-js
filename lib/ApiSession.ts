@@ -1,6 +1,6 @@
 import {
   AccountId,
-  ContractCallQuery,
+  ContractCreateTransaction,
   ContractExecuteTransaction,
   ContractFunctionResult,
   ContractId,
@@ -9,9 +9,8 @@ import {
   PublicKey,
   Query,
   Transaction,
+  TransactionId,
   TransactionReceipt,
-  TransactionRecord,
-  TransactionRecordQuery,
   TransactionResponse,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Wallet,
@@ -19,7 +18,6 @@ import {
 import { EventEmitter } from "events";
 import { Interface } from "@ethersproject/abi";
 
-import { ContractFunctionCall, LiveContract } from "./live/LiveContract";
 import { HederaEntityId, LiveEntity } from "./live/LiveEntity";
 import { Promised, RecursivePartial } from "./core/UsefulTypes";
 import {
@@ -30,8 +28,9 @@ import {
 import { BasicUploadableEntity } from "./static/upload/BasicUploadableEntity";
 import { CreatableEntity } from "./core/CreatableEntity";
 import { File } from "./static/upload/File";
-import { HederaNetwork } from "./HederaNetwork";
+import { HederaNetwork } from "./hedera/HederaNetwork";
 import { Json } from "./static/upload/Json";
+import { LiveContract } from "./live/LiveContract";
 import { LiveFile } from "./live/LiveFile";
 import { LiveJson } from "./live/LiveJson";
 import { SolidityAddressable } from "./core/SolidityAddressable";
@@ -52,29 +51,28 @@ type ControlledSession = {
   controller: WalletController;
   session: ApiSession;
 };
-type SessionExecutable<R> = Query<R> | Transaction;
-type TransactionedReceipt<R> = {
+
+// Note: we could also embed back the {@link TransactionResponse} itself but that would pose issues with the encapsulation
+//       since that object also allows hedera specific operations to be carried out and we would reduce the overall control of
+//       strato in the matter
+export type TransactionedReceipt<R> = {
   transaction: SessionExecutable<R>;
   receipt: TransactionReceipt;
+  transactionId: TransactionId;
 };
 
-export const enum TypeOfExecutionReturn {
-  Receipt = "Receipt",
-  Record = "Record",
-  Result = "Result",
-}
-
+export type SessionExecutable<R> = Query<R> | Transaction;
 export type AllowedExecutionReturnTypes<R> =
-  | ContractFunctionResult
-  | TransactionResponse
+  | StratoContractCallResponse
+  | StratoTransactionResponse
   | R;
-export type ExecutionReturnTypes<
-  T extends AllowedExecutionReturnTypes<R>,
-  R = any
-> = {
-  [TypeOfExecutionReturn.Receipt]: TransactionReceipt;
-  [TypeOfExecutionReturn.Record]: TransactionRecord;
-  [TypeOfExecutionReturn.Result]: T;
+export type StratoContractCallResponse = StratoTransactionResponse & {
+  response: TransactionResponse;
+  result: ContractFunctionResult;
+};
+export type StratoTransactionResponse = {
+  response: TransactionResponse;
+  receipt: TransactionReceipt;
 };
 
 export type PublicAccountInfo = {
@@ -85,9 +83,6 @@ export type PublicAccountInfo = {
 export type SessionDefaults = {
   contractCreationGas: number;
   contractTransactionGas: number;
-  emitConstructorLogs: boolean;
-  emitLiveContractReceipts: boolean;
-  onlyReceiptsFromContractRequests: boolean;
   paymentForContractQuery: number;
   tokenCreateTransactionFee: number;
 };
@@ -209,84 +204,69 @@ export class ApiSession implements SolidityAddressable {
   }
 
   /**
-   * Queries/Executes a contract function, capable of returning the {@link ContractFunctionResult} if successful. This depends on the {@param returnType} of course.
+   * Queries/Executes a contract function, capable of returning the {@link StratoContractCallResponse} if successful.
    */
-  public async execute<T extends TypeOfExecutionReturn>(
-    transaction: ContractFunctionCall,
-    returnType?: T,
-    getReceipt?: boolean
-  ): Promise<ExecutionReturnTypes<ContractFunctionResult>[T]>;
+  public async execute(
+    transaction: ContractExecuteTransaction | ContractCreateTransaction
+  ): Promise<StratoContractCallResponse>;
 
   /**
-   * A catch-all/generic {@link Transaction} execution operation yielding, upon success, of a {@link TransactionResponse}.
+   * A catch-all/generic {@link Transaction} execution operation yielding, upon success, of a {@link StratoTransactionResponse}.
    */
-  public async execute<T extends TypeOfExecutionReturn>(
-    transaction: Transaction,
-    returnType?: T,
-    getReceipt?: boolean
-  ): Promise<ExecutionReturnTypes<TransactionResponse>[T]>;
+  public async execute(
+    transaction: Transaction
+  ): Promise<StratoTransactionResponse>;
 
   /**
    * A catch-all/generic {@link Query<R>} execution operation yielding, upon success, of the underlying generic-bounded response type, R.
    */
-  public async execute<T extends TypeOfExecutionReturn, R>(
-    transaction: Query<R>,
-    returnType?: T,
-    getReceipt?: boolean
-  ): Promise<ExecutionReturnTypes<R>[T]>;
+  public async execute<R>(transaction: Query<R>): Promise<R>;
 
   // Overload implementation
-  public async execute<T extends TypeOfExecutionReturn, R>(
-    transaction: SessionExecutable<R>,
-    returnType: T,
-    getReceipt = false
-  ): Promise<ExecutionReturnTypes<AllowedExecutionReturnTypes<R>>[T]> {
-    const isContractTransaction =
-      transaction instanceof ContractCallQuery ||
+  public async execute<R>(
+    transaction: SessionExecutable<R>
+  ): Promise<AllowedExecutionReturnTypes<R>> {
+    const isContractStateChangingTransaction =
+      transaction instanceof ContractCreateTransaction ||
       transaction instanceof ContractExecuteTransaction;
-    let executionResult: AllowedExecutionReturnTypes<R>;
-    let txReceipt: TransactionReceipt;
-    let txRecord: TransactionRecord;
     const txResponse = await this.client.execute(transaction);
 
-    // start with the assumption that either the execution is not a contract-transaction or that the transaction-response is not a TransactionResponse
-    executionResult = txResponse;
-
-    // see if the above assumption holds and refine executionResult if case may be
     if (txResponse instanceof TransactionResponse) {
       // start out by generating the receipt for the original transaction
-      txReceipt = await this.client.getReceipt(txResponse);
+      const sTxReceipt = await this.network.mirror.getReceipt(
+        txResponse.transactionId
+      );
+      const sTxResponse: StratoTransactionResponse = {
+        receipt: sTxReceipt.receipt,
+        response: txResponse,
+      };
 
-      if (
-        returnType === TypeOfExecutionReturn.Record ||
-        (isContractTransaction && returnType === TypeOfExecutionReturn.Result)
-      ) {
-        const txRecordQuery = new TransactionRecordQuery().setTransactionId(
-          txResponse.transactionId
-        );
+      this.events.emit(TRANSACTION_ON_RECEIPT_EVENT_NAME, {
+        receipt: sTxReceipt.receipt,
+        transaction: transaction,
+        transactionId: txResponse.transactionId,
+      });
 
-        txRecord = await this.client.execute(txRecordQuery);
-
-        // lock onto the contract-function-result of the record just in case a Result return-type is expected
-        executionResult = txRecord.contractFunctionResult;
+      if (!isContractStateChangingTransaction) {
+        // No need to go further. The transaction is not of a smart-contract nature so we have everything we need
+        return sTxResponse;
       }
 
-      if (this.canReceiptBeEmitted(getReceipt)) {
-        this.events.emit(TRANSACTION_ON_RECEIPT_EVENT_NAME, {
-          receipt: txReceipt,
-          transaction: transaction,
-        });
-      }
+      // This is a state-changing, contract call (create/execute).
+      // Fetch the underlying result (eg. logs and returned values)
+      const executionResult =
+        await this.network.mirror.getContractFunctionResult(sTxReceipt);
+
+      return {
+        ...sTxResponse,
+        result: executionResult,
+      } as StratoContractCallResponse;
     } else {
       // Note: ContractFunctionResult-s cannot emit receipts!
     }
 
-    // Depending on the return-type resolution, fetch the typed-result
-    return {
-      [TypeOfExecutionReturn.Record]: txRecord,
-      [TypeOfExecutionReturn.Receipt]: txReceipt,
-      [TypeOfExecutionReturn.Result]: executionResult,
-    }[returnType];
+    // fallback to a query response
+    return txResponse as R;
   }
 
   /**
@@ -351,11 +331,7 @@ export class ApiSession implements SolidityAddressable {
       );
     }
     const fileContentsQuery = new FileContentsQuery().setFileId(targetedFileId);
-    const fileContentsBuffer = await this.execute(
-      fileContentsQuery,
-      TypeOfExecutionReturn.Result,
-      false
-    );
+    const fileContentsBuffer = await this.execute(fileContentsQuery);
     const fileContents = new TextDecoder("utf8").decode(fileContentsBuffer);
 
     // TODO: use file Memo to store hash of file-contents and only return LiveJson instance if the 2 values match
@@ -373,9 +349,9 @@ export class ApiSession implements SolidityAddressable {
    *              a reference to both the actual transaction being executed and the resulting receipt.
    * @returns {ReceiptSubscription} - A subscription object that exposes a 'unsubscribe' method to cancel a subscription.
    */
-  public subscribeToReceiptsWith(clb: {
-    (receipt: TransactionedReceipt<any>): any;
-  }): Subscription<TransactionedReceipt<any>> {
+  public subscribeToReceiptsWith<R>(clb: {
+    (receipt: TransactionedReceipt<R>): any;
+  }): Subscription<TransactionedReceipt<R>> {
     return new Subscription(
       this.events,
       TRANSACTION_ON_RECEIPT_EVENT_NAME,
@@ -484,12 +460,5 @@ export class ApiSession implements SolidityAddressable {
       `Successfully created a ${uploadableWhat.nameOfUpload} id ${createdLiveEntity.id}.`
     );
     return createdLiveEntity;
-  }
-
-  private canReceiptBeEmitted(isEmitReceiptRequested: boolean): boolean {
-    return (
-      isEmitReceiptRequested &&
-      this.events.listenerCount(TRANSACTION_ON_RECEIPT_EVENT_NAME) !== 0
-    );
   }
 }

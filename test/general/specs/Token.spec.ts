@@ -19,7 +19,7 @@ describe("Token", () => {
     const { publicKey } = PrivateKey.generateED25519();
     const mockedSessionExecute = jest
       .fn()
-      .mockReturnValue({ tokenId: TokenId.fromString("0.0.69") });
+      .mockReturnValue({ receipt: { tokenId: TokenId.fromString("0.0.69") } });
     const session = {
       defaults: {
         tokenCreateTransactionFee: 0,

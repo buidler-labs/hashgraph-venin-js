@@ -10,7 +10,7 @@ import {
   TransactionResponse,
 } from "@hashgraph/sdk";
 import Executable from "@hashgraph/sdk/lib/Executable";
-import { HederaNetwork } from "../../HederaNetwork";
+import { HederaNetwork } from "../../hedera/HederaNetwork";
 
 export default class LocalProvider implements Provider {
   public readonly client: Client;
