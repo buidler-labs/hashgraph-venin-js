@@ -47,6 +47,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@babel/runtime": "^7.20.13",
     "@ethersproject/abi": "^5.5.0",
     "@ethersproject/bytes": "^5.5.0",
     "dotenv": "^10.0.0",
@@ -86,7 +87,7 @@
     "url": "https://github.com/buidler-labs/hashgraph-venin-js"
   },
   "types": "./types/index.d.ts",
-  "version": "0.8.2-beta.4",
+  "version": "0.8.2-beta.5",
   "peerDependencies": {
     "@hashgraph/sdk": "~2.19.2"
   }
