@@ -20,23 +20,40 @@ contract HelloWorldMint is HederaResponseCodes {
         }
     }
 
-    function brrr(uint64 amount) public returns(uint64) {
-        (int responseCode, uint64 newTotalSupply, int[] memory serialNumbers) = mintToken(tokenAddress, amount, new bytes[](0));
+    function brrr(uint64 amount) public returns (uint64) {
+        (
+            int responseCode,
+            uint64 newTotalSupply,
+            int[] memory serialNumbers
+        ) = mintToken(tokenAddress, amount, new bytes[](0));
         if (responseCode != 22 || serialNumbers.length > 0) {
             revert();
         }
         return newTotalSupply;
     }
 
-    function mintToken(address token, uint64 amount, bytes[] memory metadata) internal
-        returns (int responseCode, uint64 newTotalSupply, int[] memory serialNumbers)
+    function mintToken(
+        address token,
+        uint64 amount,
+        bytes[] memory metadata
+    )
+        internal
+        returns (
+            int responseCode,
+            uint64 newTotalSupply,
+            int[] memory serialNumbers
+        )
     {
-        (bool success, bytes memory result) = precompileAddress.delegatecall(
-            abi.encodeWithSelector(IHederaTokenService.mintToken.selector,
-            token, amount, metadata));
-        (responseCode, newTotalSupply, serialNumbers) =
-            success
-                ? abi.decode(result, (int32, uint64, int[]))
-                : (HederaResponseCodes.UNKNOWN, 0, new int[](0));
+        (bool success, bytes memory result) = precompileAddress.call(
+            abi.encodeWithSelector(
+                IHederaTokenService.mintToken.selector,
+                token,
+                amount,
+                metadata
+            )
+        );
+        (responseCode, newTotalSupply, serialNumbers) = success
+            ? abi.decode(result, (int32, uint64, int[]))
+            : (HederaResponseCodes.UNKNOWN, 0, new int[](0));
     }
 }
