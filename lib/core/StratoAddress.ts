@@ -1,4 +1,4 @@
-import { AccountId, ContractId } from "@hashgraph/sdk";
+import { AccountId, ContractId, Long } from "@hashgraph/sdk";
 import { Interface } from "@ethersproject/abi";
 
 import { HederaEntityId, LiveEntity } from "../live/LiveEntity";
@@ -9,7 +9,6 @@ import {
 import { ApiSession } from "../ApiSession";
 import { LiveAccount } from "../live/LiveAccount";
 import { LiveContract } from "../live/LiveContract";
-import Long from "long";
 
 export class StratoAddress implements SolidityAddressable {
   public readonly id: string;

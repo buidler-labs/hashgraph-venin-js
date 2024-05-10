@@ -6,6 +6,7 @@ import {
   Timestamp,
   TokenCreateTransaction,
   TokenSupplyType,
+  Long,
 } from "@hashgraph/sdk";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
@@ -164,18 +165,19 @@ export class Token extends BasicCreatableEntity<LiveToken> {
     const createTokenTransaction = new TokenCreateTransaction(
       constructorArgs as unknown
     );
-    
+
     let transactionFee: Hbar;
-    if(this.info.maxTransactionFee) {
-      transactionFee = this.info.maxTransactionFee instanceof Hbar 
-        ? this.info.maxTransactionFee 
-        : new Hbar(this.info.maxTransactionFee)
+    if (this.info.maxTransactionFee) {
+      transactionFee =
+        this.info.maxTransactionFee instanceof Hbar
+          ? this.info.maxTransactionFee
+          : new Hbar(this.info.maxTransactionFee);
     } else if (session.defaults.tokenCreateTransactionFee > 0) {
       transactionFee = Hbar.fromTinybars(
         session.defaults.tokenCreateTransactionFee
       );
     }
-    if(transactionFee) {
+    if (transactionFee) {
       createTokenTransaction.setMaxTransactionFee(transactionFee);
     }
     const creationReceipt = await session.execute(

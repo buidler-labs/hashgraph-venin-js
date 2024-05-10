@@ -121,7 +121,7 @@ describe("LiveContract.NFTShop", () => {
     const liveToken = await session.create(token);
     const liveContract = await session.upload(
       contract,
-      { _contract: { gas: 200_000 } },
+      { _contract: { gas: 250_000 } },
       liveToken,
       session,
       nftPrice,
@@ -154,7 +154,7 @@ describe("LiveContract.NFTShop", () => {
     const serialNumbers = await liveContract.mint(
       {
         amount: new Hbar(nftPrice.toBigNumber().toNumber() * amountToMint),
-        gas: 1_500_000,
+        gas: 2_000_000,
       },
       aliceLiveAccount,
       amountToMint

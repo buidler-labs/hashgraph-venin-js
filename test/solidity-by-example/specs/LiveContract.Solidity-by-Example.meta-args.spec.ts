@@ -1,10 +1,9 @@
-import Long from "long";
-
 import {
   ContractCallQuery,
   ContractExecuteTransaction,
   Hbar,
   TransactionId,
+  Long,
 } from "@hashgraph/sdk";
 import { describe, expect, it, jest } from "@jest/globals";
 

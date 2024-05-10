@@ -1,5 +1,4 @@
 import { EventEmitter } from "events";
-import Long from "long";
 
 import {
   ContractCallQuery,
@@ -14,6 +13,7 @@ import {
   Hbar,
   Transaction,
   TransactionId,
+  Long,
 } from "@hashgraph/sdk";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
 import BigNumber from "bignumber.js";

@@ -5,7 +5,7 @@ export const GasFees = {
   associateToken: new Hbar(0.015),
   burnToken: new Hbar(0.015),
   dissociateToken: new Hbar(0.015),
-  mintToken: new Hbar(0.015),
+  mintToken: new Hbar(0.02),
   transferToken: new Hbar(0.015),
 };
 
