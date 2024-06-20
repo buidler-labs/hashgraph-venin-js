@@ -12,4 +12,7 @@ module.exports = {
   transform: {
     "^.+\\.ts?$": "ts-jest",
   },
+  moduleNameMapper: {
+    "^axios$": require.resolve("axios"),
+  },
 };

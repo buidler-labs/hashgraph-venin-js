@@ -33,7 +33,10 @@ describe("LiveContract.TaskBar", () => {
       cappedRegistryHelperContract,
       maxNrOfTasksPerRegistry
     );
-    const taskRegistryLiveContract = await session.upload(taskRegistryContract);
+    const taskRegistryLiveContract = await session.upload(
+      taskRegistryContract,
+      { _contract: { gas: 200_000 } }
+    );
 
     await expect(
       taskRegistryLiveContract.initialize(

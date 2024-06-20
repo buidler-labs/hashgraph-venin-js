@@ -13,5 +13,5 @@ export interface CreatableEntity<
 > {
   get name(): string;
 
-  createVia({ session: ApiSession }: ArgumentsForCreate): Promise<T>;
+  createVia({ session }: ArgumentsForCreate): Promise<T>;
 }

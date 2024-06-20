@@ -13,7 +13,5 @@ export abstract class BasicCreatableEntity<
 {
   protected constructor(public readonly name: string) {}
 
-  public abstract createVia({
-    session: ApiSession,
-  }: ArgumentsForCreate): Promise<T>;
+  public abstract createVia({ session }: ArgumentsForCreate): Promise<T>;
 }

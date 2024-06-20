@@ -1,12 +1,11 @@
 import { describe, expect, it } from "@jest/globals";
-import { AccountId } from "@hashgraph/sdk";
+import { AccountId, Long } from "@hashgraph/sdk";
 
 import { load, read } from "../../utils";
 import { Account } from "../../../lib/static/create/Account";
 import { ApiSession } from "../../../lib/ApiSession";
 import { Contract } from "../../../lib/static/upload/Contract";
 import { LiveAccount } from "../../../lib/live/LiveAccount";
-import Long from "long";
 import { StratoAddress } from "../../../lib/core/StratoAddress";
 
 describe("LiveAddress", () => {

@@ -1,3 +1,6 @@
+# Important sunsetting notice 🌇
+## This project is no longer maintained. If you wish to develop on the [hedera](https://docs.hedera.com/hedera) network, please look at the [official JS hedera-sdk](https://github.com/hashgraph/hedera-sdk-js). Thank you for all your support and interest. It was a good run! 👋
+
 # Hashgraph Venin JS
 
 ![NodeJS/JsDOM/Browser tests](https://img.shields.io/github/workflow/status/buidler-labs/hashgraph-venin-js/test-nodejs-jsdom?style=flat-square&label=tests&color=yellowgreen)

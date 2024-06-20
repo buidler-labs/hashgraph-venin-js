@@ -4,6 +4,7 @@ import {
   Hbar,
   Key,
   PrivateKey,
+  Long,
 } from "@hashgraph/sdk";
 import { BigNumber } from "@hashgraph/sdk/lib/Transfer";
 import Duration from "@hashgraph/sdk/lib/Duration";

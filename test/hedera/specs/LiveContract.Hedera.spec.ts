@@ -23,7 +23,9 @@ describe("LiveContract.Hedera", () => {
     );
 
     // When
-    const newTotalSupply = parseInt(await liveContract.brrr(1));
+    const newTotalSupply = parseInt(
+      await liveContract.brrr({ gas: GasFees.mintToken.toTinybars() }, 1)
+    );
     const liveTokenInfo = await liveToken.getLiveEntityInfo();
 
     // Then

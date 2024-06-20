@@ -1,4 +1,4 @@
-import { AccountId, Key, TopicCreateTransaction } from "@hashgraph/sdk";
+import { AccountId, Key, TopicCreateTransaction, Long } from "@hashgraph/sdk";
 import Duration from "@hashgraph/sdk/lib/Duration";
 
 import { ArgumentsForCreate } from "../../core/CreatableEntity";
